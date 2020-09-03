@@ -225,7 +225,7 @@ class PayloadPlot(QtGui.QMainWindow):
         imu = []
         imuRpt = []
         sweeps = []
-        sweeptRpt = []
+        sweepsRpt = []
         interrupt = []
         pntr = 0
         while pntr < len(data):
