@@ -1,2 +1,0 @@
-dataFile_shield15-NoInter.txt :  Arduino not plugged in.
-dataFile_shield15-NoInter-v2.txt : Arduino pugged in but PIN 8 not set as output and not called in code loaded on Arduino 
