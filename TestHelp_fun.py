@@ -11,3 +11,5 @@ def test_times2seconds(time_lst, laps=True):
          else: 
              tsec_lst.append(minu*60+sec)
      return tsec_lst
+
+# def convert_time(time 
