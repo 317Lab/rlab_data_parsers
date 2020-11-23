@@ -941,7 +941,7 @@ for file_name in file_lst:
 
 
         import os
-        fig_path = figpath+dataFile.split('/')[-1].split('-')[1]+'/'
+        fig_path = figpath+"Shield"+str(shieldID)+'/'+dataFile.split('/')[-1].split('-')[1].partition('_')[-1]+'/'
         if not os.path.exists(fig_path): os.makedirs(fig_path)
         #path="./Figures/"+plottype+"/"
         #if not os.path.exists(path): os.makedirs(path)
