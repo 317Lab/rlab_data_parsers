@@ -967,6 +967,7 @@ for file_name in file_lst:
     del imuListRpt, axRpt, ayRpt, azRpt, gxRpt, gyRpt, gzRpt, mxRpt, myRpt, mzRpt, tempRpt, sweepListRpt, pip0Rpt, pip1Rpt 
     del imuPlot, axPlot, ayPlot, azPlot, gxPlot, gyPlot, gzPlot, mxPlot, myPlot, mzPlot , tempPlot, sweepPlot, pip0Plot, pip1Plot
     del dataFile, payload, payloads
+    test_chrono += 1
 
         ## In[40]:
         #
