@@ -36,7 +36,7 @@ file_name = "data_file_230k.txt"
 ## Files in Delamere Vacuum Chamber Tests' Sub-Directories 
 ################################################################
 main_dir = "./Delamere_Vacuum_Tests/" 
-main_figpath = "./FiguresPy-Delamere_Vacuum_Tests/Block_Limits"
+main_figpath = "./FiguresPy-Delamere_Vacuum_Tests/Block_Limits/"
 if pip_plttype=='nA': main_figpath = main_figpath+"Use_Gains/"
 
 #################################################
