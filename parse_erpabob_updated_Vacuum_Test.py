@@ -24,7 +24,7 @@ from scipy.io import savemat, loadmat
 
 GPS_time = None
 pip_plttype='V'
-#pip_plttype='nA'
+pip_plttype='nA'
 ########################################################################
 ## Files in Main Directory  
 ################################################################
@@ -36,13 +36,14 @@ file_name = "data_file_230k.txt"
 ## Files in Delamere Vacuum Chamber Tests' Sub-Directories 
 ################################################################
 main_dir = "./Delamere_Vacuum_Tests/" 
-main_figpath = "./FiguresPy-Delamere_Vacuum_Tests/New_Plot_Limits-"
-if pip_plttype=='nA': main_figpath = main_figpath+"Use_Gains/"
+#main_figpath = "./FiguresPy-Delamere_Vacuum_Tests/New_Plot_Limits-"
+main_figpath = "./FiguresPy-Delamere_Vacuum_Tests/Full_CB_Limits-"
 
 #################################################
 # Bob Vacuum Chamber Tests' Files 
 #################################################
 path = main_dir+"Bob_Vacuum/"; figpath = main_figpath+"Bob_Vacuum/"
+if pip_plttype=='nA': figpath = figpath+"Use_Gains-"
 file_lst =["data_file_230k-Shield17_First_Plasma-11_20_20.txt", 
         "data_file_230k-Shield17_First_Plasma_B-11_20_20.txt", 
         "data_file_230k-Shield17_Plasma_Roll10-11_20_20.txt", 
@@ -839,14 +840,18 @@ for file_name in file_lst:
 
         if pip_plttype is None or pip_plttype=='V':
             cb_unit='V'
-            cb_min = 1
-            cb_max = None
+            cb_min = 0
+#            cb_max=None
+            cb_max = [5.,5.]
         elif pip_plttype=='nA':
+            cb_unit='nA'
             pip0Plot= (pip0Plot-1.)/330.e-3
             pip1Plot= (pip1Plot-1.)/40.e-3
             cb_min = 0.
-            cb_max = None
-
+#            cb_max = None
+#            cb_max = [20, 160]
+#            cb_max = [5, 40]
+            cb_max = [5, 5]
         # commands to reorient pip array to match with other axes
         pip0_rot = np.rot90(pip0Plot, k=1, axes=(0, 1))
         pip1_rot = np.rot90(pip1Plot, k=1, axes=(0, 1))
@@ -856,7 +861,8 @@ for file_name in file_lst:
         line_style = '-'
 
         ax1 = plt.subplot2grid((4,2),(0,1),rowspan = 2)
-        plt.pcolormesh(sweepPlot, sweep_voltage, pip0_rot, cmap='plasma', vmin = cb_min, vmax = cb_max)
+#        plt.pcolormesh(sweepPlot, sweep_voltage, pip0_rot, cmap='plasma', vmin = cb_min, vmax = cb_max)
+        plt.pcolormesh(sweepPlot, sweep_voltage, pip0_rot, cmap='plasma', vmin = cb_min, vmax = cb_max[0])
         #plt.ylim([0,2])
         plt.xlim([sweepPlot[0],sweepPlot[-1]])
         ax1.set_xlabel("Flight Time (s)")
@@ -866,7 +872,8 @@ for file_name in file_lst:
         print ("6/7 Done")
 
         ax1 = plt.subplot2grid((4,2),(2,1),rowspan = 2)
-        plt.pcolormesh(sweepPlot, sweep_voltage, pip1_rot, cmap='plasma', vmin = cb_min, vmax = cb_max)
+#        plt.pcolormesh(sweepPlot, sweep_voltage, pip1_rot, cmap='plasma', vmin = cb_min, vmax = cb_max)
+        plt.pcolormesh(sweepPlot, sweep_voltage, pip0_rot, cmap='plasma', vmin = cb_min, vmax = cb_max[1])
         #plt.pcolormesh(sweepPlot, sweep_voltage, pip1_rot, cmap='plasma', vmin = 0.08, vmax = 1.02)
         #plt.ylim([0,2])
         plt.xlim([sweepPlot[0],sweepPlot[-1]])
