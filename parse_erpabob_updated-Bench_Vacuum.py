@@ -23,8 +23,8 @@ from scipy.io import savemat, loadmat
 #get_ipython().magic(u'matplotlib notebook')
 
 GPS_time = None
-#pip_plttype='V'
-pip_plttype='nA'
+pip_plttype='V'
+#pip_plttype='nA'
 ########################################################################
 ## Files in Main Directory  
 ################################################################
@@ -36,7 +36,8 @@ file_name = "data_file_230k.txt"
 ## Files in Delamere Vacuum Chamber Tests' Sub-Directories 
 ################################################################
 main_dir = "./Delamere_Vacuum_Tests/" 
-main_figpath = "./FiguresPy-Delamere_Vacuum_Tests/Use_Gains/"
+main_figpath = "./FiguresPy-Delamere_Vacuum_Tests/Block_Limits"
+if pip_plttype=='nA': main_figpath = main_figpath+"Use_Gains/"
 
 #################################################
 # Bob Vacuum Chamber Tests' Files 
@@ -735,6 +736,7 @@ for file_name in file_lst:
         plt.plot(imuPlot, azPlot, line_style, markersize=markersize) 
         plt.ylabel("Accel (m/s$^2$)")
         #plt.ylim([-2, 2])  
+        plt.xlim([imuPlot[0], imuPlot[-1]])
         if not debug_dual: plt.xlim([50,80])
         plt.xticks(visible=True)
         plt.xlabel("Time (s)")
@@ -750,6 +752,7 @@ for file_name in file_lst:
         #plt.ylim([-0.3, 0.3])                 
         plt.xticks(visible=True)
         plt.xlabel("Time (s)")
+        plt.xlim([imuPlot[0], imuPlot[-1]])
         print ("2/7 Done")
 
         fig.add_subplot(gs_left[2,0], sharex=axis)
@@ -758,6 +761,7 @@ for file_name in file_lst:
         plt.plot(imuPlot, gzPlot, line_style, markersize=markersize) 
         plt.ylabel("Gyro (Hz)")
         #plt.ylim([-0.5, 0.5])                  
+        plt.xlim([imuPlot[0], imuPlot[-1]])
         plt.xticks(visible=True)
         plt.xlabel("Time (s)")
         print ("3/7 Done")
@@ -767,6 +771,7 @@ for file_name in file_lst:
             fig.add_subplot(gs_left[3,0], sharex=axis)
             plt.plot(imuPlot, tempPlot, line_style, markersize=markersize)
             #plt.ylim([-1, 1])
+            plt.xlim([imuPlot[0], imuPlot[-1]])
             plt.ylabel("Temp C$^o$")
             plt.xlabel("Time (s)")
             print ("4/7 Done")
@@ -778,16 +783,21 @@ for file_name in file_lst:
         #        plt.plot(imuPlot[1:], np.diff(imuPlot), line_style, color='blue', markersize=markersize)
                 plt.plot(imuPlot[1:], np.diff(imuPlot)*1E3, line_style, color='blue', markersize=markersize)
                 plt.ylabel("IMU Cadence\n (ms)")
+                plt.xlim([imuPlot[0], imuPlot[-1]])
                 print ("4/7 Done")
                 fig.add_subplot(gs_left[4,0], sharex=ax2)
                 plt.plot(sweepPlot[1:], np.diff(sweepPlot)*1E3, line_style, color='red', markersize=markersize)
                 plt.ylabel("Sweep Cadence\n (ms)")
+                plt.xlim([sweepPlot[0], sweepPlot[-1]])
             else: 
                 fig.add_subplot(gs_left[4,0])
                 plt.plot(imuPlot[1:], np.diff(imuPlot)*1E3, line_style, color='blue', markersize=markersize)
                 #plt.plot(imuPlot[1:], np.diff(imuPlot), line_style, color='blue', markersize=markersize)
                 plt.plot(sweepPlot[1:], np.diff(sweepPlot)*1E3, line_style, color='red', markersize=markersize)
                 plt.ylabel("IMU Cadence-Blue\n Sweep Cadence-Red\n (ms)")
+                xlims = [np.min([sweepPlot[0], imuPlot[0]]), np.max([sweepPlot[-1], imuPlot[-1]])]
+                plt.xlim(xlims)
+                del xlims
             plt.ylim([20,26])
            # plt.ylim([15,50])
             ##plt.ylim([22,24])
