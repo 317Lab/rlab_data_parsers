@@ -11,9 +11,20 @@ import matplotlib.pyplot as plt
 import json
 import numpy as np
 
-get_ipython().magic(u'matplotlib notebook')
+#get_ipython().magic(u'matplotlib notebook')
 
 path = "./"
+
+file_lst = ['data_file_230k-Shield17_First_Plasma_Roll45_Pitch0-11_25_20.txt', \
+        'data_file_230k-Shield17_First_Plasma_Roll45_Pitch0_B-11_25_20.txt', \
+        'data_file_230k-Shield17_Plasma_Baseline_Roll45_Pitch0-11_25_20.txt', \
+        'data_file_230k-Shield17_Plasma_RollCWsweep15_Pitch0-11_25_20.txt', \
+        'data_file_230k-Shield17_Plasma_RollCCWsweep15_Pitch0-11_25_20.txt', \
+        'data_file_230k-Shield17_Plasma_DurationTest_Roll45_Pitch0-11_25_20.txt', \
+        'data_file_230k-Shield17_Plasma_RollCWsweep15_PitchDown10-11_25_20.txt', \
+        'data_file_230k-Shield17_Plasma_RollCCWsweep15_PitchDown10-11_25_20.txt']
+
+
 ### Following are Subtec8 Data ###
 #file_name = "./Boblet7_115_2_Decom_9MSource_Flight_D3D4_10_24_19.txt"
 #file_name = "./Boblet6_230_4_Decom_9MSource_Flight_D3D4_10_24_19.txt"
@@ -34,7 +45,7 @@ file_name = "./data_file_230k-Shield17_Plasma_45Roll_Horiz-11_20_20.txt"
 #file_name = "./test_data_w:buffer(2).txt"
 #file_name = "./test_data_w:buffer(3).txt"
 
-dataFile = path + file_name
+#dataFile = path + file_name
 
 class IMUData():
     def __init__(self):
@@ -164,6 +175,9 @@ def pad_data(original, new):  # original = non-time data array, new = same "new"
 
 
 # In[174]:
+test_chrono = 1 
+for file_name in file_lst: 
+    dataFile=path + file_name 
 
 ########### Load the data file ###########
 f = open(dataFile, 'r')
@@ -792,7 +806,10 @@ else:
 plt.suptitle(file_name+"\n"+"Data from Shield %s (Version: %s)\n Interrupt Time: %s" 
              %(shieldID, plottype, interruptNum), fontweight='bold')
     
-plt.show()
+#plt.show()
+fig.savefig(fig_path+figfname)
+plt.close()
+test_chrono += 1
 
 
 # In[ ]:
