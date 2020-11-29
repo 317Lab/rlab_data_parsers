@@ -3,6 +3,8 @@
 
 # In[173]:
 
+from __future__ import division
+
 import sys
 import os
 import matplotlib
@@ -624,11 +626,11 @@ for file_name in file_lst:
     #     print("Length of IMUList (buffer) is " + str(len(imuListRpt)))
     #     print("Length of sweepList (buffer) is " + str(len(sweepListRpt)))
         
-    #     interruptValue = (len(set(interruptArray)) == 1)
-    #     if interruptValue and len(interruptArray) > 100:
-    #         print("Time of interrupt is at " + str(interruptArray[0]) + " seconds.")
-    #     else:
-    #         print("Something wrong. Interrupt time doesn't make sense.")
+         interruptValue = (len(set(interruptArray)) == 1)
+         if interruptValue and len(interruptArray) > 100:
+             print("Time of interrupt is at " + str(interruptArray[0]) + " seconds.")
+         else:
+             print("Something wrong. Interrupt time doesn't make sense.")
 
 
     # In[176]:
@@ -687,7 +689,6 @@ for file_name in file_lst:
     import scipy.signal as sig
     from scipy.interpolate import interp1d
     from scipy.io import savemat, loadmat
-    from __future__ import division
 
     dots = True
 
@@ -814,7 +815,7 @@ for file_name in file_lst:
                  %(shieldID, plottype, interruptNum), fontweight='bold')
         
     #plt.show()
-    figfname = '%s-Shield%s-%s-DataPlot.png' % (test_chrono, shieldID, dataFile.split('/')[-1].partition('-')[-1].partition('_')[-1].partition('.')[0])0
+    figfname = '%s-Shield%s-%s-DataPlot.png' % (test_chrono, shieldID, dataFile.split('/')[-1].partition('-')[-1].partition('_')[-1].partition('.')[0])
     fig.savefig(fig_path+figfname)
     plt.close()
     test_chrono += 1
