@@ -8,8 +8,9 @@ from __future__ import division
 import sys
 import os
 import matplotlib
-if 'matplotlib.pyplot' not in sys.modules.keys():
-    matplotlib.use("Agg")
+matplotlib.use("Agg")
+#if 'matplotlib.pyplot' not in sys.modules.keys():
+#    matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import json
 import numpy as np
@@ -186,7 +187,7 @@ def pad_data(original, new):  # original = non-time data array, new = same "new"
 # In[174]:
 test_chrono = 1 
 for file_name in file_lst: 
-    print "**************\nAnalyzing Data "+file_name+"\n*************"
+    print "\n**************\nAnalyzing Data from Test #%s of %s\n*************" % (test_chrono, len(file_lst)) #, file_name)
     dataFile=path + file_name 
     print "Located at "+dataFile+"\n"
 
