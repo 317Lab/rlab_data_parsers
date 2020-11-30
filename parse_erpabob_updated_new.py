@@ -755,7 +755,7 @@ for file_name in file_lst:
         fig.add_subplot(gs_left[3,0])
         plt.plot(sweepSampleTime, pip0LPlot, line_style, markersize=markersize)
         plt.ylabel("PIP0 (V)")
-#        plt.ylim([1.3, 2.1])
+        plt.ylim([1.3, 2.1])
         plt.locator_params(axis='y', nbins=4)
         plt.xlim([imuTime[0]-20, imuTime[-1]+20])
         print("4/8 Done")
@@ -763,7 +763,7 @@ for file_name in file_lst:
         # Second PIP
         fig.add_subplot(gs_left[4,0])
         plt.plot(sweepSampleTime, pip1LPlot, line_style, markersize=markersize)
-#        plt.ylim([1, 1.5])
+        plt.ylim([1, 1.5])
         plt.locator_params(axis='y', nbins=4)
         plt.xlim([imuTime[0]-20, imuTime[-1]+20])
         plt.ylabel("PIP1 (V)")
