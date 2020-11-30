@@ -650,193 +650,195 @@ for file_name in file_lst:
     # In[177]:
 
     # choose original or repeat
-    plottype = 'Original'
+#    plottype = 'Original'
 
-    if plottype == 'Original':
-        imuPlot = imuList
-        axPlot = ax
-        ayPlot = ay
-        azPlot = az
-        gxPlot = gx
-        gyPlot = gy
-        gzPlot = gz
-        mxPlot = mx
-        myPlot = my
-        mzPlot = mz
-        tempPlot = temp
-        sweepPlot = sweepList
-        pip0Plot = pip0nA
-        pip1Plot = pip1nA 
-        
-    elif plottype == 'Repeat':
-        imuPlot = imuListRpt
-        axPlot = axRpt
-        ayPlot = ayRpt
-        azPlot = azRpt
-        gxPlot = gxRpt
-        gyPlot = gyRpt
-        gzPlot = gzRpt
-        mxPlot = mxRpt
-        myPlot = myRpt
-        mzPlot = mzRpt
-        tempPlot = tempRpt
-        sweepPlot = sweepListRpt
-        pip0Plot = pip0Rpt
-        pip1Plot = pip1Rpt
-
-
-    # In[182]:
-
-    matplotlib.use('nbagg')
-    import matplotlib.cm as cm
-    import scipy.signal as sig
-    from scipy.interpolate import interp1d
-    from scipy.io import savemat, loadmat
-
-    dots = True
-
-    gs_left = plt.GridSpec(6, 2,  hspace=0.7)
-
-    # Set up dots or not more cleanly
-    line_style = '-'
-    if dots:
-        line_style = '.'
-
-    markersize = 1
-
-    fig = plt.figure(figsize=(10, 7.5))
-
-    # **plot IMU time vs IMU data**
-    axis = fig.add_subplot(gs_left[0,0])
-    plt.plot(imuPlot, axPlot, line_style, markersize=markersize) 
-    plt.plot(imuPlot, ayPlot, line_style, markersize=markersize)  
-    plt.plot(imuPlot, azPlot, line_style, markersize=markersize) 
-    plt.ylabel("Accel (m/s$^2$)")
-    #plt.ylim([-2, 2])                
-    plt.locator_params(axis='y', nbins=4)
-    plt.xticks(visible=True)
-    plt.xlabel("Time (s)")
-    print ("1/8 Done")
-
-    fig.add_subplot(gs_left[1,0])
-    plt.plot(imuPlot, mxPlot, line_style, markersize=markersize) 
-    plt.plot(imuPlot, myPlot, line_style, markersize=markersize)  
-    plt.plot(imuPlot, mzPlot, line_style, markersize=markersize) 
-    plt.ylim([-0.02, 0.06])
-    plt.ylabel("Mag (Gauss)")
-    #plt.ylim([-0.3, 0.3])                 
-    plt.locator_params(axis='y', nbins=4)
-    plt.xticks(visible=True)
-    plt.xticks(visible=True)
-    plt.xlabel("Time (s)")
-    print ("2/8 Done")
-
-    fig.add_subplot(gs_left[2,0])
-    plt.plot(imuPlot, gxPlot, line_style, markersize=markersize) 
-    plt.plot(imuPlot, gyPlot, line_style, markersize=markersize)  
-    plt.plot(imuPlot, gzPlot, line_style, markersize=markersize) 
-    plt.ylabel("Gyro (Hz)")
-    #plt.ylim([-0.5, 0.5])                  
-    plt.locator_params(axis='y', nbins=4)
-    plt.xticks(visible=True)
-    plt.xlabel("Time (s)")
-    print ("3/8 Done")
-
-    # fig.add_subplot(gs_left[2,0], sharex=axis)
-    # plt.plot(imuPlot, tempPlot, line_style, markersize=markersize)
-    # #plt.ylim([-1, 1])
-    # plt.ylabel("Temp C$^o$")
-    # plt.xlabel("Time (s)")
-    # print ("3/7 Done")
-
-    # Plot sweep data (line)
-    # First PIP
-    fig.add_subplot(gs_left[3,0])
-    plt.plot(sweepSampleTime, pip0LPlot, line_style, markersize=markersize)
-    plt.ylabel("PIP0 (V)")
-    plt.ylim([1.3, 2.1])
-    plt.locator_params(axis='y', nbins=4)
-    plt.xlim([imuTime[0]-20, imuTime[-1]+20])
-    print("4/8 Done")
-
-    # Second PIP
-    fig.add_subplot(gs_left[4,0])
-    plt.plot(sweepSampleTime, pip1LPlot, line_style, markersize=markersize)
-    plt.ylim([1, 1.5])
-    plt.locator_params(axis='y', nbins=4)
-    plt.xlim([imuTime[0]-20, imuTime[-1]+20])
-    plt.ylabel("PIP1 (V)")
-    print("5/8 Done")
-
-    fig.add_subplot(gs_left[5,0])
-    plt.plot(np.diff(imuPlot), line_style, color='blue', markersize=markersize)
-    plt.plot(np.diff(sweepPlot)*1E3, line_style, color='red', markersize=markersize)
-    #plt.ylim([20,25])
-    plt.locator_params(axis='y', nbins=4)
-    plt.ylabel("Cadences (ms)\n IMU-Blue\n Sweep-Red")
-    plt.xlabel("Index")
-    print ("6/8 Done")
-
-    # **Plot sweep time vs sweep data (Color plots)**
-
-    # commands to reorient pip array to match with other axes
-    pip0_rot = np.rot90(pip0Plot, k=1, axes=(0, 1))
-    pip1_rot = np.rot90(pip1Plot, k=1, axes=(0, 1))
-
-    sweep_voltage = np.linspace(0,5,28)
-
-    line_style = '-'
-
-    ax1 = plt.subplot2grid((4,2),(0,1),rowspan = 2)
-    plt.pcolormesh(sweepPlot, sweep_voltage, pip0_rot, cmap='plasma', vmin = 1, vmax = 3)
-    #plt.ylim([0,2])
-    #plt.xlim([600,605])
-    plt.xlim([sweepPlot[0],sweepPlot[-1]])
-    ax1.set_xlabel("Flight Time (s)")
-    ax1.set_ylabel("Screen Bias (V)")
-    cb = plt.colorbar(pad = 0.2)
-    cb.set_label("PIP0 (nA)")
-    print ("7/8 Done")
-
-    ax1 = plt.subplot2grid((4,2),(2,1),rowspan = 2)
-    plt.pcolormesh(sweepPlot, sweep_voltage, pip1_rot, cmap='plasma', vmin = 1, vmax = 3)
-    #plt.ylim([0,2])
-    #plt.xlim([600,605])
-    plt.xlim([sweepPlot[0],sweepPlot[-1]])
-    ax1.set_xlabel("Flight Time (s)")
-    ax1.set_ylabel("Screen Bias (V)")
-    cb = plt.colorbar(pad = 0.2)
-    cb.set_label("PIP1 (nA)")
-    print ("8/8 Done")
+    for plottype in ['Original', 'Repeat']:
+        if plottype == 'Original':
+            imuPlot = imuList
+            axPlot = ax
+            ayPlot = ay
+            azPlot = az
+            gxPlot = gx
+            gyPlot = gy
+            gzPlot = gz
+            mxPlot = mx
+            myPlot = my
+            mzPlot = mz
+            tempPlot = temp
+            sweepPlot = sweepList
+            pip0Plot = pip0nA
+            pip1Plot = pip1nA 
             
-    # Adjust figure
-    fig.subplots_adjust(right=.90)
-    fig.subplots_adjust(left=0.10)
-    fig.subplots_adjust(top=0.90)
-    fig.subplots_adjust(bottom=0.10)
-    fig.subplots_adjust(hspace=0.75)
+        elif plottype == 'Repeat':
+            imuPlot = imuListRpt
+            axPlot = axRpt
+            ayPlot = ayRpt
+            azPlot = azRpt
+            gxPlot = gxRpt
+            gyPlot = gyRpt
+            gzPlot = gzRpt
+            mxPlot = mxRpt
+            myPlot = myRpt
+            mzPlot = mzRpt
+            tempPlot = tempRpt
+            sweepPlot = sweepListRpt
+            pip0Plot = pip0Rpt
+            pip1Plot = pip1Rpt
 
-    if interruptValue and len(interruptArray) > 100:
-        interruptNum = str(interruptArray[0]) + " seconds"
-    else:
-        interruptNum = "None"
-        
-    plt.suptitle(file_name+"\n"+"Data from Shield %s (Version: %s)\n Interrupt Time: %s" 
-                 %(shieldID, plottype, interruptNum), fontweight='bold')
-#    if version==0: 
-#        plt.suptitle(file_name+"\n"+"Data from Shield %s (Version: %s)\n Interrupt Time: %s" 
-#                     %(shieldID, plottype, interruptNum), fontweight='bold')
-#    elif version==1:
-#        exper_str = exper_dct[
-#        plt.suptitle(exper_str +"\nData from Shield %s (Version: %s)" 
-#                     %(shieldID, plottype, interruptNum), fontweight='bold')
-        
-    #plt.show()
-    figfname = '%s-Shield%s-%s-DataPlot.png' % (test_chrono, shieldID, dataFile.split('/')[-1].partition('-')[-1].partition('_')[-1].partition('.')[0])
-    print "Saving to "+fig_path+figfname
-    fig.savefig(fig_path+figfname)
 
-    plt.close()
+        # In[182]:
+
+        matplotlib.use('nbagg')
+        import matplotlib.cm as cm
+        import scipy.signal as sig
+        from scipy.interpolate import interp1d
+        from scipy.io import savemat, loadmat
+
+        dots = True
+
+        gs_left = plt.GridSpec(6, 2,  hspace=0.7)
+
+        # Set up dots or not more cleanly
+        line_style = '-'
+        if dots:
+            line_style = '.'
+
+        markersize = 1
+
+        fig = plt.figure(figsize=(10, 7.5))
+
+        # **plot IMU time vs IMU data**
+        axis = fig.add_subplot(gs_left[0,0])
+        plt.plot(imuPlot, axPlot, line_style, markersize=markersize) 
+        plt.plot(imuPlot, ayPlot, line_style, markersize=markersize)  
+        plt.plot(imuPlot, azPlot, line_style, markersize=markersize) 
+        plt.ylabel("Accel (m/s$^2$)")
+        #plt.ylim([-2, 2])                
+        plt.locator_params(axis='y', nbins=4)
+        plt.xticks(visible=True)
+        plt.xlabel("Time (s)")
+        print ("1/8 Done")
+
+        fig.add_subplot(gs_left[1,0])
+        plt.plot(imuPlot, mxPlot, line_style, markersize=markersize) 
+        plt.plot(imuPlot, myPlot, line_style, markersize=markersize)  
+        plt.plot(imuPlot, mzPlot, line_style, markersize=markersize) 
+        plt.ylim([-0.02, 0.06])
+        plt.ylabel("Mag (Gauss)")
+        #plt.ylim([-0.3, 0.3])                 
+        plt.locator_params(axis='y', nbins=4)
+        plt.xticks(visible=True)
+        plt.xticks(visible=True)
+        plt.xlabel("Time (s)")
+        print ("2/8 Done")
+
+        fig.add_subplot(gs_left[2,0])
+        plt.plot(imuPlot, gxPlot, line_style, markersize=markersize) 
+        plt.plot(imuPlot, gyPlot, line_style, markersize=markersize)  
+        plt.plot(imuPlot, gzPlot, line_style, markersize=markersize) 
+        plt.ylabel("Gyro (Hz)")
+        #plt.ylim([-0.5, 0.5])                  
+        plt.locator_params(axis='y', nbins=4)
+        plt.xticks(visible=True)
+        plt.xlabel("Time (s)")
+        print ("3/8 Done")
+
+        # fig.add_subplot(gs_left[2,0], sharex=axis)
+        # plt.plot(imuPlot, tempPlot, line_style, markersize=markersize)
+        # #plt.ylim([-1, 1])
+        # plt.ylabel("Temp C$^o$")
+        # plt.xlabel("Time (s)")
+        # print ("3/7 Done")
+
+        # Plot sweep data (line)
+        # First PIP
+        fig.add_subplot(gs_left[3,0])
+        plt.plot(sweepSampleTime, pip0LPlot, line_style, markersize=markersize)
+        plt.ylabel("PIP0 (V)")
+#        plt.ylim([1.3, 2.1])
+        plt.locator_params(axis='y', nbins=4)
+        plt.xlim([imuTime[0]-20, imuTime[-1]+20])
+        print("4/8 Done")
+
+        # Second PIP
+        fig.add_subplot(gs_left[4,0])
+        plt.plot(sweepSampleTime, pip1LPlot, line_style, markersize=markersize)
+#        plt.ylim([1, 1.5])
+        plt.locator_params(axis='y', nbins=4)
+        plt.xlim([imuTime[0]-20, imuTime[-1]+20])
+        plt.ylabel("PIP1 (V)")
+        print("5/8 Done")
+
+        fig.add_subplot(gs_left[5,0])
+        plt.plot(np.diff(imuPlot), line_style, color='blue', markersize=markersize)
+        plt.plot(np.diff(sweepPlot)*1E3, line_style, color='red', markersize=markersize)
+        #plt.ylim([20,25])
+        plt.locator_params(axis='y', nbins=4)
+        plt.ylabel("Cadences (ms)\n IMU-Blue\n Sweep-Red")
+        plt.xlabel("Index")
+        print ("6/8 Done")
+
+        # **Plot sweep time vs sweep data (Color plots)**
+
+        # commands to reorient pip array to match with other axes
+        pip0_rot = np.rot90(pip0Plot, k=1, axes=(0, 1))
+        pip1_rot = np.rot90(pip1Plot, k=1, axes=(0, 1))
+
+        sweep_voltage = np.linspace(0,5,28)
+
+        line_style = '-'
+
+        ax1 = plt.subplot2grid((4,2),(0,1),rowspan = 2)
+        plt.pcolormesh(sweepPlot, sweep_voltage, pip0_rot, cmap='plasma', vmin = 1, vmax = 3)
+        #plt.ylim([0,2])
+        #plt.xlim([600,605])
+        plt.xlim([sweepPlot[0],sweepPlot[-1]])
+        ax1.set_xlabel("Flight Time (s)")
+        ax1.set_ylabel("Screen Bias (V)")
+        cb = plt.colorbar(pad = 0.2)
+        cb.set_label("PIP0 (nA)")
+        print ("7/8 Done")
+
+        ax1 = plt.subplot2grid((4,2),(2,1),rowspan = 2)
+        plt.pcolormesh(sweepPlot, sweep_voltage, pip1_rot, cmap='plasma', vmin = 1, vmax = 3)
+        #plt.ylim([0,2])
+        #plt.xlim([600,605])
+        plt.xlim([sweepPlot[0],sweepPlot[-1]])
+        ax1.set_xlabel("Flight Time (s)")
+        ax1.set_ylabel("Screen Bias (V)")
+        cb = plt.colorbar(pad = 0.2)
+        cb.set_label("PIP1 (nA)")
+        print ("8/8 Done")
+                
+        # Adjust figure
+        fig.subplots_adjust(right=.90)
+        fig.subplots_adjust(left=0.10)
+        fig.subplots_adjust(top=0.90)
+        fig.subplots_adjust(bottom=0.10)
+        fig.subplots_adjust(hspace=0.75)
+
+        if interruptValue and len(interruptArray) > 100:
+            interruptNum = str(interruptArray[0]) + " seconds"
+        else:
+            interruptNum = "None"
+            
+        plt.suptitle(file_name+"\n"+"Data from Shield %s (Version: %s)\n Interrupt Time: %s" 
+                     %(shieldID, plottype, interruptNum), fontweight='bold')
+    #    if version==0: 
+    #        plt.suptitle(file_name+"\n"+"Data from Shield %s (Version: %s)\n Interrupt Time: %s" 
+    #                     %(shieldID, plottype, interruptNum), fontweight='bold')
+    #    elif version==1:
+    #        exper_str = exper_dct[
+    #        plt.suptitle(exper_str +"\nData from Shield %s (Version: %s)" 
+    #                     %(shieldID, plottype, interruptNum), fontweight='bold')
+            
+        #plt.show()
+        figfname = '%s-Shield%s-%s-%sDataPlot.png' % (test_chrono, shieldID, dataFile.split('/')[-1].partition('-')[-1].partition('_')[-1].partition('.')[0], plottype)
+        print "Saving to "+fig_path+figfname
+        fig.savefig(fig_path+figfname)
+
+        plt.close()
+
     test_chrono += 1
 
 
