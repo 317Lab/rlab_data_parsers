@@ -88,16 +88,16 @@ def num_valid(dct, sweepPlot, pip0_rot, pip1_rot, sweep_voltage):
             roll_locs = np.where(sweepPlot<dct['time'][roll+1])[0]
         else: 
             roll_locs = np.where(np.logical_and(dct['time'][roll]<=sweepPlot, sweepPlot<dct['time'][roll+1]))[0]
-            print '\n-------------\nRoll: %s degrees\n------------' % (dct['roll'][roll])
-            tmp0 = []
-            tmp1 = []
-            for volt in np.arange(0, len(sweep_voltage)): 
-                tmp0.append(len(np.where(np.isnan(pip0_rot[volt][roll_locs])==False)[0]))
-                tmp1.append(len(np.where(np.isnan(pip1_rot[volt][roll_locs])==False)[0]))
-            print 'Unique Counts for PIP0: %s' % (np.unique(tmp0))
-            print 'Unique Counts for PIP1: %s' % (np.unique(tmp1))
-            tmp0.extend(tmp1)
-            tmp.append(np.unique(tmp0))
-            del tmp0, tmp1
+        print '\n-------------\nRoll: %s degrees\n------------' % (dct['roll'][roll])
+        tmp0 = []
+        tmp1 = []
+        for volt in np.arange(0, len(sweep_voltage)): 
+            tmp0.append(len(np.where(np.isnan(pip0_rot[volt][roll_locs])==False)[0]))
+            tmp1.append(len(np.where(np.isnan(pip1_rot[volt][roll_locs])==False)[0]))
+        print 'Unique Counts for PIP0: %s' % (np.unique(tmp0))
+        print 'Unique Counts for PIP1: %s' % (np.unique(tmp1))
+        tmp0.extend(tmp1)
+        tmp.append(np.unique(tmp0))
+        del tmp0, tmp1
     return tmp 
 
