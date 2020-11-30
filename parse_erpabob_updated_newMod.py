@@ -17,7 +17,8 @@ import numpy as np
 
 #get_ipython().magic(u'matplotlib notebook')
 ### Specify figure output path ###
-fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/"
+#fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/"
+fig_path = "./FiguresPy/Delamere_Bob_Vacuum/Shield_17/"
 if not os.path.exists(fig_path): 
     os.makedirs(fig_path)
     print 'Made Figure Directory'
@@ -833,6 +834,7 @@ for file_name in file_lst:
     #                     %(shieldID, plottype, interruptNum), fontweight='bold')
             
         #plt.show()
+
         figfname = '%s-Shield%s-%s-%sDataPlot.png' % (test_chrono, shieldID, dataFile.split('/')[-1].partition('-')[-1].partition('_')[-1].partition('.')[0], plottype)
         print "Saving to "+fig_path+figfname
         fig.savefig(fig_path+figfname)
