@@ -713,6 +713,7 @@ for file_name in file_lst:
     plt.plot(imuPlot, azPlot, line_style, markersize=markersize) 
     plt.ylabel("Accel (m/s$^2$)")
     #plt.ylim([-2, 2])                
+    plt.locator_params(axis='y', nbins=4)
     plt.xticks(visible=True)
     plt.xlabel("Time (s)")
     print ("1/8 Done")
@@ -724,6 +725,8 @@ for file_name in file_lst:
     plt.ylim([-0.02, 0.06])
     plt.ylabel("Mag (Gauss)")
     #plt.ylim([-0.3, 0.3])                 
+    plt.locator_params(axis='y', nbins=4)
+    plt.xticks(visible=True)
     plt.xticks(visible=True)
     plt.xlabel("Time (s)")
     print ("2/8 Done")
@@ -734,6 +737,7 @@ for file_name in file_lst:
     plt.plot(imuPlot, gzPlot, line_style, markersize=markersize) 
     plt.ylabel("Gyro (Hz)")
     #plt.ylim([-0.5, 0.5])                  
+    plt.locator_params(axis='y', nbins=4)
     plt.xticks(visible=True)
     plt.xlabel("Time (s)")
     print ("3/8 Done")
@@ -751,6 +755,7 @@ for file_name in file_lst:
     plt.plot(sweepSampleTime, pip0LPlot, line_style, markersize=markersize)
     plt.ylabel("PIP0 (V)")
     plt.ylim([1.3, 2.1])
+    plt.locator_params(axis='y', nbins=4)
     plt.xlim([imuTime[0]-20, imuTime[-1]+20])
     print("4/8 Done")
 
@@ -758,6 +763,7 @@ for file_name in file_lst:
     fig.add_subplot(gs_left[4,0])
     plt.plot(sweepSampleTime, pip1LPlot, line_style, markersize=markersize)
     plt.ylim([1, 1.5])
+    plt.locator_params(axis='y', nbins=4)
     plt.xlim([imuTime[0]-20, imuTime[-1]+20])
     plt.ylabel("PIP1 (V)")
     print("5/8 Done")
@@ -766,6 +772,7 @@ for file_name in file_lst:
     plt.plot(np.diff(imuPlot), line_style, color='blue', markersize=markersize)
     plt.plot(np.diff(sweepPlot)*1E3, line_style, color='red', markersize=markersize)
     #plt.ylim([20,25])
+    plt.locator_params(axis='y', nbins=4)
     plt.ylabel("Cadences (ms)\n IMU-Blue\n Sweep-Red")
     plt.xlabel("Index")
     print ("6/8 Done")
@@ -816,6 +823,13 @@ for file_name in file_lst:
         
     plt.suptitle(file_name+"\n"+"Data from Shield %s (Version: %s)\n Interrupt Time: %s" 
                  %(shieldID, plottype, interruptNum), fontweight='bold')
+#    if version==0: 
+#        plt.suptitle(file_name+"\n"+"Data from Shield %s (Version: %s)\n Interrupt Time: %s" 
+#                     %(shieldID, plottype, interruptNum), fontweight='bold')
+#    elif version==1:
+#        exper_str = exper_dct[
+#        plt.suptitle(exper_str +"\nData from Shield %s (Version: %s)" 
+#                     %(shieldID, plottype, interruptNum), fontweight='bold')
         
     #plt.show()
     figfname = '%s-Shield%s-%s-DataPlot.png' % (test_chrono, shieldID, dataFile.split('/')[-1].partition('-')[-1].partition('_')[-1].partition('.')[0])
