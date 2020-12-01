@@ -11,19 +11,23 @@ def gen_subdct(ID):
         roll_locs = np.array([45]*len(times))
         pitch_locs = np.array([0]*len(times))
         if not len(roll_locs)==len(pitch_locs) or not len(roll_locs)==len(times) or not len(pitch_locs)==len(times): print 'Warning: Array Sizes Inconsistent!!!'
-        dct['']={'roll': roll_locs, 'pitch': pitch_locs, 'time': np.array(times)}
+        dct['Shield17_First_Plasma_Roll45_Pitch0-11_25_20']={'roll': roll_locs, 'pitch': pitch_locs, 'time': np.array(times)}
         del roll_locs, pitch_locs, stime, times
 
 
-        ##Environment Modification Test
-
-        ##Environment Baseline and/or Duration Tests
-
-        #dct['']=dict()
-        #times = funct.test_times2seconds(stime)
-        #if not len(roll_locs)==len(pitch_locs) or not len(roll_locs)==len(times) or not len(pitch_locs)==len(times): print 'Warning: Array Sizes Inconsistent!!!'
-        #dct['']={'roll': roll_locs, 'pitch': pitch_locs, 'time': np.array(times)}
-        #del roll_locs, pitch_locs, stime, times
+#        ##Environment Modification Test
+#        times = funct.test_times2seconds(stime)
+#        roll_locs = np.array([45]*len(times))
+#        pitch_locs = np.array([0]*len(times))
+#        if not len(roll_locs)==len(pitch_locs) or not len(roll_locs)==len(times) or not len(pitch_locs)==len(times): print 'Warning: Array Sizes Inconsistent!!!'
+#
+#        ##Environment Baseline and/or Duration Tests
+#
+#        #dct['']=dict()
+#        #times = funct.test_times2seconds(stime)
+#        #if not len(roll_locs)==len(pitch_locs) or not len(roll_locs)==len(times) or not len(pitch_locs)==len(times): print 'Warning: Array Sizes Inconsistent!!!'
+#        #dct['']={'roll': roll_locs, 'pitch': pitch_locs, 'time': np.array(times)}
+#        #del roll_locs, pitch_locs, stime, times
 
 
         ## Rotational Motion Tests
