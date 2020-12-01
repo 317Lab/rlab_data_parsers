@@ -17,7 +17,7 @@ import numpy as np
 
 #get_ipython().magic(u'matplotlib notebook')
 ### Specify figure output path ###
-fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/"
+fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/Original_Lims_FixedTicks"
 if not os.path.exists(fig_path): 
     os.makedirs(fig_path)
     print 'Made Figure Directory'
@@ -483,8 +483,19 @@ for file_name in file_lst:
         
         pip0 = np.array(payload.sweeps.pip0)*5./2**14
         pip1 = np.array(payload.sweeps.pip1)*5./2**14
-        pip1LPlot = pip1.flatten();
-        pip0LPlot = pip0.flatten();
+        pip1L = pip1.flatten();
+        pip0L = pip0.flatten();
+            
+        sweepSampleTimeRpt = []
+        for t in sweepTimeRpt: 
+            for n in range(0, sweepSize):
+                sweepSampleTimeRpt.append(t+sweepStepDt*n)
+        sweepSampleTimeRpt = np.array(sweepSampleTimeRpt)
+                                
+        pip0Rpt = np.array(payload.sweeps.pip0Rpt)*5./2**14
+        pip1Rpt = np.array(payload.sweeps.pip1Rpt)*5./2**14
+        pip0RptL = pip0Rpt.flatten();
+        pip1RptL = pip1Rpt.flatten();
         #SweepSampleMin = SweepSampleMin * sweepSize # Scale up sizing
         #SweepSampleMax = SweepSampleMax * sweepSize
         ############################################################
@@ -646,6 +657,8 @@ for file_name in file_lst:
     pip0nA = (pip0-1)*pip0V2I
     pip1nA = (pip1-1)*pip1V2I
 
+    pip0RptnA = (pip0Rpt-1)*pip0V2I
+    pip1RptnA = (pip1Rpt-1)*pip1V2I
 
     # In[177]:
 
@@ -669,6 +682,10 @@ for file_name in file_lst:
             pip0Plot = pip0nA
             pip1Plot = pip1nA 
             
+            pip0LPlot = pip0L
+            pip1LPlot = pip1L
+            sweepTimeLPlot = sweepSampleTime
+            
         elif plottype == 'Repeat':
             imuPlot = imuListRpt
             axPlot = axRpt
@@ -682,8 +699,12 @@ for file_name in file_lst:
             mzPlot = mzRpt
             tempPlot = tempRpt
             sweepPlot = sweepListRpt
-            pip0Plot = pip0Rpt
-            pip1Plot = pip1Rpt
+            pip0Plot = pip0RptnA
+            pip1Plot = pip1RptnA
+
+            pip0LPlot = pip0RptL
+            pip1LPlot = pip1RptL
+            sweepTimeLPlot = sweepSampleTimeRpt
 
 
         # In[182]:
@@ -753,7 +774,7 @@ for file_name in file_lst:
         # Plot sweep data (line)
         # First PIP
         fig.add_subplot(gs_left[3,0])
-        plt.plot(sweepSampleTime, pip0LPlot, line_style, markersize=markersize)
+        plt.plot(sweepTimeLPlot, pip0LPlot, line_style, markersize=markersize)
         plt.ylabel("PIP0 (V)")
         plt.ylim([1.3, 2.1])
         plt.locator_params(axis='y', nbins=4)
@@ -762,7 +783,7 @@ for file_name in file_lst:
 
         # Second PIP
         fig.add_subplot(gs_left[4,0])
-        plt.plot(sweepSampleTime, pip1LPlot, line_style, markersize=markersize)
+        plt.plot(sweepTimeLPlot, pip1LPlot, line_style, markersize=markersize)
         plt.ylim([1, 1.5])
         plt.locator_params(axis='y', nbins=4)
         plt.xlim([imuTime[0]-20, imuTime[-1]+20])
