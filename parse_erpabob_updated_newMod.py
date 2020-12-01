@@ -14,6 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import json
 import numpy as np
+import Delamere_Chamber_Rotation_Tests as rot_tests
 
 #get_ipython().magic(u'matplotlib notebook')
 ### Specify figure output path ###
@@ -23,15 +24,20 @@ if not os.path.exists(fig_path):
     os.makedirs(fig_path)
     print 'Made Figure Directory'
 
+full_dct = dict()
 ### Following are Nov. 25, 2020 chamber tests ###
 path = "./Delamere_Vacuum_Tests/Bob_Vacuum/"
 
-file_lst = ['data_file_230k-Shield17_First_Plasma_Roll45_Pitch0-11_25_20.txt', \
-        'data_file_230k-Shield17_First_Plasma_Roll45_Pitch0_B-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_Baseline_Roll45_Pitch0-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_RollCWsweep15_Pitch0-11_25_20.txt', \
+#file_lst = ['data_file_230k-Shield17_First_Plasma_Roll45_Pitch0-11_25_20.txt', \
+#        'data_file_230k-Shield17_First_Plasma_Roll45_Pitch0_B-11_25_20.txt', \
+#        'data_file_230k-Shield17_Plasma_Baseline_Roll45_Pitch0-11_25_20.txt', \
+#        'data_file_230k-Shield17_Plasma_RollCWsweep15_Pitch0-11_25_20.txt', \
+#        'data_file_230k-Shield17_Plasma_RollCCWsweep15_Pitch0-11_25_20.txt', \
+#        'data_file_230k-Shield17_Plasma_DurationTest_Roll45_Pitch0-11_25_20.txt', \
+#        'data_file_230k-Shield17_Plasma_RollCWsweep15_PitchDown10-11_25_20.txt', \
+#        'data_file_230k-Shield17_Plasma_RollCCWsweep15_PitchDown10-11_25_20.txt']
+file_lst = ['data_file_230k-Shield17_Plasma_RollCWsweep15_Pitch0-11_25_20.txt', \
         'data_file_230k-Shield17_Plasma_RollCCWsweep15_Pitch0-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_DurationTest_Roll45_Pitch0-11_25_20.txt', \
         'data_file_230k-Shield17_Plasma_RollCWsweep15_PitchDown10-11_25_20.txt', \
         'data_file_230k-Shield17_Plasma_RollCCWsweep15_PitchDown10-11_25_20.txt']
 
@@ -654,6 +660,7 @@ for file_name in file_lst:
 #    plottype = 'Original'
 
     for plottype in ['Original', 'Repeat']:
+#    for plottype in ['Original']:
         if plottype == 'Original':
             imuPlot = imuList
             axPlot = ax
@@ -787,7 +794,14 @@ for file_name in file_lst:
 
         sweep_voltage = np.linspace(0,5,28)
 
+#        dct = rot_tests.get_dct(file_name.partition('-')[-1].partition('.')[0])
+#        if np.nanmin(sweepPlot)<dct['time'][0]: dct['time'][0]=np.nanmin(sweepPlot)
+#        full_dct[file_name.partition('-')[-1].partition('.')[0]+'_'+plottype] = dct.copy()
+#        full_dct[file_name.partition('-')[-1].partition('.')[0]+'_'+plottype]['Ncounts']= rot_tests.num_valid(dct, sweepPlot, pip0_rot, pip1_rot, sweep_voltage) 
+#        import ipdb; ipdb.set_trace()
+
         line_style = '-'
+#        plt_kwargs = {'pip1_cplt': {'vmin':1, 'vmax':10}}
 
         ax1 = plt.subplot2grid((4,2),(0,1),rowspan = 2)
         plt.pcolormesh(sweepPlot, sweep_voltage, pip0_rot, cmap='plasma', vmin = 1, vmax = 3)
@@ -844,7 +858,7 @@ for file_name in file_lst:
     test_chrono += 1
 
 
-    # In[ ]:
+#     In[ ]:
 
 
 
