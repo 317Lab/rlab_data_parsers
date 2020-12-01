@@ -17,8 +17,8 @@ import numpy as np
 
 #get_ipython().magic(u'matplotlib notebook')
 ### Specify figure output path ###
-fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/Original_Lims_FixedTicks/"
-#fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/NoLims_PIP_Lineplots/"
+#fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/Original_Lims_FixedTicks/"
+fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/NoLims_PIP_Lineplots/"
 if not os.path.exists(fig_path): 
     os.makedirs(fig_path)
     print 'Made Figure Directory'
@@ -777,7 +777,7 @@ for file_name in file_lst:
         fig.add_subplot(gs_left[3,0])
         plt.plot(sweepTimeLPlot, pip0LPlot, line_style, markersize=markersize)
         plt.ylabel("PIP0 (V)")
-        plt.ylim([1.3, 2.1])
+#        plt.ylim([1.3, 2.1])
         plt.locator_params(axis='y', nbins=4)
         plt.xlim([imuTime[0]-20, imuTime[-1]+20])
         print("4/8 Done")
@@ -785,7 +785,7 @@ for file_name in file_lst:
         # Second PIP
         fig.add_subplot(gs_left[4,0])
         plt.plot(sweepTimeLPlot, pip1LPlot, line_style, markersize=markersize)
-        plt.ylim([1, 1.5])
+#        plt.ylim([1, 1.5])
         plt.locator_params(axis='y', nbins=4)
         plt.xlim([imuTime[0]-20, imuTime[-1]+20])
         plt.ylabel("PIP1 (V)")
