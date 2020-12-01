@@ -17,7 +17,8 @@ import numpy as np
 
 #get_ipython().magic(u'matplotlib notebook')
 ### Specify figure output path ###
-fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/Original_Lims_FixedTicks"
+fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/Original_Lims_FixedTicks/"
+#fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/NoLims_PIP_Lineplots/"
 if not os.path.exists(fig_path): 
     os.makedirs(fig_path)
     print 'Made Figure Directory'
