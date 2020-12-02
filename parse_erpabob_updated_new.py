@@ -15,25 +15,39 @@ import matplotlib.pyplot as plt
 import json
 import numpy as np
 
+shieldnum = 14 
 #get_ipython().magic(u'matplotlib notebook')
 ### Specify figure output path ###
 #fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/Original_Lims_FixedTicks/"
-fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/NoLims_PIP_Lineplots/"
+#fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/NoLims_PIP_Lineplots/"
+# Local Path 
+fig_path = "./FiguresPy/Delamere_Bob_Vacuum/Shield%s/Original_Lims_FixedTicks/" % (shieldnum)
+#fig_path = "./FiguresPy/Delamere_Bob_Vacuum/Shield%s/NoLims_PIP_Lineplots/" % (shieldnum)
 if not os.path.exists(fig_path): 
     os.makedirs(fig_path)
     print 'Made Figure Directory'
 
+path = "./Delamere_Vacuum_Tests/Bob_Vacuum/Shield%s/" % (shieldnum)
 ### Following are Nov. 25, 2020 chamber tests ###
-path = "./Delamere_Vacuum_Tests/Bob_Vacuum/"
+##path = "./Delamere_Vacuum_Tests/Bob_Vacuum/"
+if shieldnum == 17: 
+    file_lst = ['data_file_230k-Shield17_First_Plasma_Roll45_Pitch0-11_25_20.txt', \
+            'data_file_230k-Shield17_First_Plasma_Roll45_Pitch0_B-11_25_20.txt', \
+            'data_file_230k-Shield17_Plasma_Baseline_Roll45_Pitch0-11_25_20.txt', \
+            'data_file_230k-Shield17_Plasma_RollCWsweep15_Pitch0-11_25_20.txt', \
+            'data_file_230k-Shield17_Plasma_RollCCWsweep15_Pitch0-11_25_20.txt', \
+            'data_file_230k-Shield17_Plasma_DurationTest_Roll45_Pitch0-11_25_20.txt', \
+            'data_file_230k-Shield17_Plasma_RollCWsweep15_PitchDown10-11_25_20.txt', \
+            'data_file_230k-Shield17_Plasma_RollCCWsweep15_PitchDown10-11_25_20.txt']
 
-file_lst = ['data_file_230k-Shield17_First_Plasma_Roll45_Pitch0-11_25_20.txt', \
-        'data_file_230k-Shield17_First_Plasma_Roll45_Pitch0_B-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_Baseline_Roll45_Pitch0-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_RollCWsweep15_Pitch0-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_RollCCWsweep15_Pitch0-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_DurationTest_Roll45_Pitch0-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_RollCWsweep15_PitchDown10-11_25_20.txt', \
-        'data_file_230k-Shield17_Plasma_RollCCWsweep15_PitchDown10-11_25_20.txt']
+### Following are Dec. 1, 2020 chamber tests ###
+if shieldnum == 14: 
+    file_lst = ['data_file_230k-Shield14_First_Plasma-12_01_20.txt', \
+            'data_file_230k-Shield14_Plasma_RollCWsweep15_Pitch0-12_01_20.txt', \
+            'data_file_230k-Shield14_Plasma_RollCCWsweep15_Pitch0-12_01_20.txt', \
+            'data_file_230k-Shield14_Plasma_TestEVTgnd_Roll45_Pitch0-12_01_20.txt', \
+            'data_file_230k-Shield14_Plasma_TestEVT5V_Roll45_Pitch0-12_01_20.txt']
+
 
 #path = "./"
 ### Following are Subtec8 Data ###
@@ -777,7 +791,7 @@ for file_name in file_lst:
         fig.add_subplot(gs_left[3,0])
         plt.plot(sweepTimeLPlot, pip0LPlot, line_style, markersize=markersize)
         plt.ylabel("PIP0 (V)")
-#        plt.ylim([1.3, 2.1])
+        plt.ylim([1.3, 2.1])
         plt.locator_params(axis='y', nbins=4)
         plt.xlim([imuTime[0]-20, imuTime[-1]+20])
         print("4/8 Done")
@@ -785,7 +799,7 @@ for file_name in file_lst:
         # Second PIP
         fig.add_subplot(gs_left[4,0])
         plt.plot(sweepTimeLPlot, pip1LPlot, line_style, markersize=markersize)
-#        plt.ylim([1, 1.5])
+        plt.ylim([1, 1.5])
         plt.locator_params(axis='y', nbins=4)
         plt.xlim([imuTime[0]-20, imuTime[-1]+20])
         plt.ylabel("PIP1 (V)")
