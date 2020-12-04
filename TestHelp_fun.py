@@ -1,6 +1,18 @@
 
 import numpy as np 
  
+def volt2nA_pipRng(pip1=None, pip2=None, shieldnum=16):
+#    if np.any([shieldnum]*3 == [14, 16, 17]): 
+    pip1V2nA = 1.0/320.e-3
+    pip2V2nA = 1.0/40.e-3
+    if pip1 is not None: 
+        print 'PIP 1 Voltage=', pip1[0], '-', pip1[1]
+        print 'PIP 1 Current (nA) =', (pip1[0]-1.)*pip1V2nA, '-', (pip1[1]-1.)*pip1V2nA, '\n'
+    if pip2 is not None: 
+        print 'PIP 2 Voltage=', pip2[0], '-', pip2[1]
+        print 'PIP 2 Current (nA) =', (pip2[0]-1.)*pip2V2nA, '-', (pip2[1]-1.)*pip2V2nA, '\n'
+    return None
+
 def test_times2seconds(time_lst, laps=True):
     """
     Convert times from mm:ss to seconds. 
@@ -18,34 +30,34 @@ def test_times2seconds(time_lst, laps=True):
         List of times in seconds from time zero.
 
     """
-     minu, sec = time_lst[0]
+    minu, sec = time_lst[0]
 
-     tsec_lst = []
-     for minu, sec in time_lst: 
+    tsec_lst = []
+    for minu, sec in time_lst: 
          if laps and 0<len(tsec_lst):
              tsec_lst.append(minu*60+sec+tsec_lst[-1])
          else: 
              tsec_lst.append(minu*60+sec)
-     return tsec_lst
+    return tsec_lst
 
 
- def lap2totalElapsed_time(time_lst, input_units='s'): 
-     if hasattr(time_lst[0], '__itter__'): 
-         ##If of format [mm:ss], then 
-         if len(time_lst[0])==2: tsec_lst = test_times2seconds(time_lst, laps=True)
-         ## If format [[val0], [val1], ...]
-         elif len(time_lst[0] == 1): 
-             time_lst = [val[0] for val in time_lst]
-             flag = True
-    else: flag = True
-    
-    if flag == True: 
-
-
-
-     return tsec_lst
-     if not hastrr(time_lst[0], '__itter__'): 
-         print "List of seconds input"
-
-
-# def convert_time(time 
+# def lap2totalElapsed_time(time_lst, input_units='s'): 
+#     if hasattr(time_lst[0], '__itter__'): 
+#         ##If of format [mm:ss], then 
+#         if len(time_lst[0])==2: tsec_lst = test_times2seconds(time_lst, laps=True)
+#         ## If format [[val0], [val1], ...]
+#         elif len(time_lst[0] == 1): 
+#             time_lst = [val[0] for val in time_lst]
+#             flag = True
+#    else: flag = True
+#    
+#    if flag == True: 
+#
+#
+#
+#     return tsec_lst
+#     if not hastrr(time_lst[0], '__itter__'): 
+#         print "List of seconds input"
+#
+#
+## def convert_time(time 
