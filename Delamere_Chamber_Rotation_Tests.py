@@ -105,3 +105,93 @@ def num_valid(dct, sweepPlot, pip0_rot, pip1_rot, sweep_voltage):
         del tmp0, tmp1
     return tmp 
 
+def Vacuum_BobData_SubDir_Chronos(subdir, shieldnum=None, testdate=None): 
+    main_dir = './Delamere_Vacuum_Tests/Bob_Vacuum/'
+
+    #####################################################################
+    ### Data From High Vacuum Tests with Plasma in Chamber ###
+    if subdir == 'Shield14': 
+        file_lst = ['data_file_230k-Shield14_First_Plasma-12_01_20.txt', \
+                'data_file_230k-Shield14_Plasma_RollCWsweep15_Pitch0-12_01_20.txt', \
+                'data_file_230k-Shield14_Plasma_RollCCWsweep15_Pitch0-12_01_20.txt', \
+                'data_file_230k-Shield14_Plasma_TestEVTgnd_Roll45_Pitch0-12_01_20.txt', \
+                'data_file_230k-Shield14_Plasma_TestEVT5V_Roll45_Pitch0-12_01_20.txt', \
+                'data_file_230k-Shield14_First_Plasma-12_02_20.txt', \
+                'data_file_230k-Shield14_Plasma_RollCWsweep15_PitchUp10-12_02_20.txt', \
+                'data_file_230k-Shield14_Plasma_RollCCWsweep15_PitchUp10-12_02_20.txt', \
+                'data_file_230k-Shield14_Plasma_PostSweepsRun-12_02_20.txt', \
+                'data_file_230k-Shield14_Plasma_FinalEVTtest_Roll45_Pitch0-12_02_20.txt', \
+                'data_file_230k-Shield14_Plasma_TestEVTgndToPartner_Roll45_Pitch0-12_02_20.txt']
+    elif subdir == 'Shield16': 
+        file_lst = ['data_file_230k-Shield16_First_Plasma_TableCheck1_Roll45_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_First_Plasma_TableFix1_RollMove15_PitchMove10-12_04_20.txt', \
+                'data_file_230k-Shield16_First_Plasma_GasAdjust_Roll45_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_First_Plasma_PlasmaAdjust_Roll45_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_First_Plasma_PlasmaAdjust2_Roll45_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_First_Plasma_PlasmaAdjust3_Roll45_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_First_Plasma_PlasmaAdjust4_Roll45_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_Plasma_Start_Baseline_Roll45_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_Plasma_RollCWsweep15_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_Plasma_RollCCWsweep15_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_Plasma_RollCWsweep15_PitchDown10-12_04_20.txt', \
+                'data_file_230k-Shield16_Plasma_RollCCWsweep15_PitchDown10-12_04_20.txt', \
+                'data_file_230k-Shield16_Plasma_End_Baseline_Roll45_Pitch0-12_04_20.txt', \
+                'data_file_230k-Shield16_Plasma_TableBox_Test_Roll45_Pitch0-12_04_20.txt']
+    elif subdir == 'Shield17': 
+        file_lst = ['data_file_230k-Shield17_First_Plasma_Roll45_Pitch0-11_25_20.txt', \
+                'data_file_230k-Shield17_First_Plasma_Roll45_Pitch0_B-11_25_20.txt', \
+                'data_file_230k-Shield17_Plasma_Baseline_Roll45_Pitch0-11_25_20.txt', \
+                'data_file_230k-Shield17_Plasma_RollCWsweep15_Pitch0-11_25_20.txt', \
+                'data_file_230k-Shield17_Plasma_RollCCWsweep15_Pitch0-11_25_20.txt', \
+                'data_file_230k-Shield17_Plasma_DurationTest_Roll45_Pitch0-11_25_20.txt', \
+                'data_file_230k-Shield17_Plasma_RollCWsweep15_PitchDown10-11_25_20.txt', \
+                'data_file_230k-Shield17_Plasma_RollCCWsweep15_PitchDown10-11_25_20.txt']
+    #####################################################################
+
+    #####################################################################
+    ## Tests at Rough Vac, mainly investigating shield 14's troubles powering on at high vac in plasma ###
+    elif subdir == 'Rough_Vac':
+        file_lst = ['data_file_230k-Shield14_EVTsetupTest-12_02_20.txt', \
+                'data_file_230k-Shield14_EVT2setupTest-12_02_20.txt', \
+                'data_file_230k-Shield14_TableTest1_RoughVac-12_03_20.txt', \
+                'data_file_230k-Shield14_TableTest2_RoughVac-12_03_20.txt', \
+                'data_file_230k-Shield14_TableTest3_RoughVac-12_03_20.txt', \
+                'data_file_230k-Shield14_TableTest4_RoughVac-12_03_20.txt', \
+                'data_file_230k-Shield14_EVTgnd_RoughVac-12_03_20.txt']
+    #####################################################################
+
+    #####################################################################
+    ### Tests while chamber is open. Mainly to check connections, but somteimes to investigate problems revealed in high vac tests. ###
+    elif subdir == 'Open_Chamber_tests':
+        file_lst = [ 'data_file_230k-Connection1_Validation_Shield15-11_19_20.txt', \
+                'data_file_230k-Connection2_Validation_Shield15-11_19_20.txt', \
+                'data_file_230k-Connection2_Validation_Shield17-11_19_20.txt', \
+                'data_file_230k-Connection1_Validation2_Shield15-11_19_20.txt', \
+                'data_file_230k.txt', \
+                'data_file_230k-Connection1_FinalValidation_Shield17-11_19_20.txt', \
+                'data_file_230k-Shield14_Connection_Validation-12_01_20.txt', \
+                'data_file_230k-Shield14_TableTest1_Open-12_03_20.txt', \
+                'data_file_230k-Shield16_OpenChamber_Test-12_03_20.txt'1]
+    #####################################################################
+
+    #####################################################################
+    ### Tests at High Vac before Ignited Plasma to check Bob 17 during initial test ###
+    elif subdir == 'High_Vac_NoPlasma': 
+        file_lst = ['data_file_230k-Shield15_HighVac_NoPlasma_PowerON1-11_20_20.txt', \
+            'data_file_230k-Shield17_HighVac_NoPlasma_PowerON_20min-11_20_20.txt']
+    #####################################################################
+    
+    #####################################################################
+    ### Not sure what these were, but probably just tests of plasma generation???? ##
+    elif subdir == 'Prior_to_Wire_Shield': 
+        file_lst = ['data_file_230k-Shield17_First_Plasma-11_20_20.txt', \
+                'data_file_230k-Shield17_First_Plasma_B-11_20_20.txt', \
+                'data_file_230k-Shield17_Plasma_Roll10-11_20_20.txt', \
+                'data_file_230k-Shield17_Plasma_MoveVariac-11_20_20.txt', \
+                'data_file_230k-Shield17_Plasma_Horiz_Roll_Positive-11_20_20.txt', \
+                'data_file_230k-Shield17_Plasma_Horiz_Roll_Negative-11_20_20.txt', \
+                'data_file_230k-Shield17_Plasma_10Elev_Roll_Positive-11_20_20.txt', \
+                'data_file_230k-Shield17_Plasma_Move_to_SidePIP-11_20_20.txt', \
+                'data_file_230k-Shield17_Plasma_45Roll_Horiz-11_20_20.txt']
+    #####################################################################
+    return file_lst 
