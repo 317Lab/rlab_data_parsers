@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import json
 import numpy as np
 
-shieldnum = 14 
+shieldnum = 16 
 #get_ipython().magic(u'matplotlib notebook')
 ### Specify figure output path ###
 #fig_path = "/home/magda/Dropbox/ChamberFiguresPy_2020-11-25_Data/Original_Lims_FixedTicks/"
