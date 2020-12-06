@@ -40,15 +40,37 @@ if shieldnum == 17:
             'data_file_230k-Shield17_Plasma_RollCWsweep15_PitchDown10-11_25_20.txt', \
             'data_file_230k-Shield17_Plasma_RollCCWsweep15_PitchDown10-11_25_20.txt']
 
-### Following are Dec. 1, 2020 chamber tests ###
+### Following are Dec. 1, 2020 and Dec. 2, 2020 chamber tests ###
 if shieldnum == 14: 
     file_lst = ['data_file_230k-Shield14_First_Plasma-12_01_20.txt', \
             'data_file_230k-Shield14_Plasma_RollCWsweep15_Pitch0-12_01_20.txt', \
             'data_file_230k-Shield14_Plasma_RollCCWsweep15_Pitch0-12_01_20.txt', \
             'data_file_230k-Shield14_Plasma_TestEVTgnd_Roll45_Pitch0-12_01_20.txt', \
-            'data_file_230k-Shield14_Plasma_TestEVT5V_Roll45_Pitch0-12_01_20.txt']
+            'data_file_230k-Shield14_Plasma_TestEVT5V_Roll45_Pitch0-12_01_20.txt', \
+            'data_file_230k-Shield14_First_Plasma-12_02_20.txt', \
+            'data_file_230k-Shield14_Plasma_RollCWsweep15_PitchUp10-12_02_20.txt', \
+            'data_file_230k-Shield14_Plasma_RollCCWsweep15_PitchUp10-12_02_20.txt', \
+            'data_file_230k-Shield14_Plasma_PostSweepsRun-12_02_20.txt', \
+            'data_file_230k-Shield14_Plasma_FinalEVTtest_Roll45_Pitch0-12_02_20.txt', \
+            'data_file_230k-Shield14_Plasma_TestEVTgndToPartner_Roll45_Pitch0-12_02_20.txt']
 
 
+### Following are Dec 4, 2020 chamber tests ###
+if shieldnum == 16: 
+    file_lst = ['data_file_230k-Shield16_First_Plasma_TableCheck1_Roll45_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_First_Plasma_TableFix1_RollMove15_PitchMove10-12_04_20.txt', \
+            'data_file_230k-Shield16_First_Plasma_GasAdjust_Roll45_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_First_Plasma_PlasmaAdjust_Roll45_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_First_Plasma_PlasmaAdjust2_Roll45_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_First_Plasma_PlasmaAdjust3_Roll45_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_First_Plasma_PlasmaAdjust4_Roll45_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_Plasma_Start_Baseline_Roll45_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_Plasma_RollCWsweep15_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_Plasma_RollCCWsweep15_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_Plasma_RollCWsweep15_PitchDown10-12_04_20.txt', \
+            'data_file_230k-Shield16_Plasma_RollCCWsweep15_PitchDown10-12_04_20.txt', \
+            'data_file_230k-Shield16_Plasma_End_Baseline_Roll45_Pitch0-12_04_20.txt', \
+            'data_file_230k-Shield16_Plasma_TableBox_Test_Roll45_Pitch0-12_04_20.txt']
 #path = "./"
 ### Following are Subtec8 Data ###
 #file_name = "./Boblet7_115_2_Decom_9MSource_Flight_D3D4_10_24_19.txt"
