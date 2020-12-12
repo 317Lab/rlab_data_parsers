@@ -89,7 +89,7 @@ def rectimes2seconds(time_lst, laps=True, unit='s'):
     return tsec_lst
 
 # def lap2totalElapsed_time(time_lst, input_units='s'): 
-#     if hasattr(time_lst[0], '__itter__'): 
+#     if hasattr(time_lst[0], '__iter__'): 
 #         ##If of format [mm:ss], then 
 #         if len(time_lst[0])==2: tsec_lst = test_times2seconds(time_lst, laps=True)
 #         ## If format [[val0], [val1], ...]
@@ -103,7 +103,7 @@ def rectimes2seconds(time_lst, laps=True, unit='s'):
 #
 #
 #     return tsec_lst
-#     if not hastrr(time_lst[0], '__itter__'): 
+#     if not hastrr(time_lst[0], '__iter__'): 
 #         print "List of seconds input"
 #
 #
