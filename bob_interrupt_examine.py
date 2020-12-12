@@ -26,11 +26,13 @@ if test == 'all': tlst = ['baseline', 'horiz_cw', 'horiz_ccw', 'pitch_cw', 'pitc
 else: tlst = [test]
 
 fig_path = os.path.join('FiguresPy','Delamere_Bob_Vacuum', 'Interrupt_Plots')
+if pltype=='rel_split': 
+    fig_path = os.path.join(fig_path, 'Spilt_Plots')
+if not os.path.exists(fig_path): os.makedirs(fig_path)
 
 detail_compare = True
 #path = "./Delamere_Vacuum_Tests/Bob_Vacuum/Shield%s/" % (shieldnum)
 path = "./Delamere_Vacuum_Tests/Bob_Vacuum/"
-if not os.path.exists(fig_path): os.makedirs(fig_path)
 
 for test in tlst:
     if test == 'baseline': 
@@ -67,6 +69,13 @@ for test in tlst:
                     'Shield14/data_file_230k-Shield14_Plasma_RollCCWsweep15_PitchUp10-12_02_20.txt', \
                     'Shield16/data_file_230k-Shield16_Plasma_RollCCWsweep15_PitchDown10-12_04_20.txt']
         rel_etimes = [9*60.,11*60,11.5*60]
+        
+    elif test == 'table': 
+        title_str = 'Interrupts for Table Test Shield 16'
+        file_lst = ['Shield16/data_file_230k-Shield16_Plasma_TableBox_Test_Roll45_Pitch0-12_04_20.txt']
+
+    else: print 'Not a Valid Input'
+
 
     ### Following are Nov. 25, 2020 chamber tests ###
     #if shieldnum == 17: 
@@ -689,6 +698,78 @@ for test in tlst:
         ax.set_ylabel('Number of Interrupts Recorded')
         plt.title(title_str)
         ax.legend()
+        if detail_compare: suffix='All_Times' 
+        else: suffix = 'Grouped_Times'
+        figname = '-'.join([prefix, title_str.replace(' ', '_'), suffix])+'.png'
+        fig.savefig(os.path.join(fig_path, figname))
+
+    elif pltype == 'rel_split': 
+        fig = plt.figure()
+        etime_lst = np.array(stime_lst)+np.array(rel_etimes)
+        #If the maximum interrupt time is within the time range, just make one plot 
+        if not np.any((time_rng[1]-etime_lst)>120): 
+            ax = fig.add_subplot(111)
+            ax2=None
+        #Otherwise 
+        else:
+            ax = fig.add_axes([.125, .425, .8, .475])
+            ax2 = fig.add_axes([.125, .09, .8, .25])
+        max_etime = np.max(rel_etimes)+120
+        prefix = 'Relative_Times_Spilt'
+        marker_size =12 
+        vval_lst, vcolors = [], []
+        for shieldstr,stime, etime in zip(plt_lst, stime_lst, rel_etimes): 
+            if stime !=0: 
+                tmp = stime-10
+            else: tmp = None
+            # If no interrupt values for this shield, make line with value 0 go from 0s to 60s 
+            if len(lines_dct[shieldstr]['times'])<1: 
+                Xval = np.array([10])
+                Yval = np.array([0])
+                mark = 'x'
+#                if tmp is not None: vval_lst.append(etime-tmp)
+                vval_lst.append(etime)
+            elif stime != 0: 
+                tmp = stime-10
+                Xval = np.array(lines_dct[shieldstr]['times'])-tmp 
+                Yval = np.array(lines_dct[shieldstr]['cnt'])
+#                vval_lst.append(etime-tmp)
+                vval_lst.append(etime)
+                mark = '^'
+            # If interrupt values for shield, plot them 
+            else: 
+                Xval = np.array(lines_dct[shieldstr]['times'])
+                Yval = np.array(lines_dct[shieldstr]['cnt'])
+                vval_lst.append(etime)
+                mark = 'o'
+            if ax2 is not None: 
+                loc2 = np.where(max_etime<Xval)[0]
+                xval2 = Xval[loc2]
+                yval2 = Yval[loc2]
+                line2=ax2.plot(xval2, yval2, marker=mark, markersize=marker_size, linestyle='-', label=shieldstr[0:-2].capitalize()+' '+shieldstr[-2:]+' (start time = %ss)'%(stime))
+                loc = np.where(Xval<=max_etime)[0]
+                xval = Xval[loc]
+                yval = Yval[loc]
+                kwargs = {'color': line2[-1].properties()['color']}
+            else: 
+                xval = Xval 
+                yval = Yval
+                kwargs = {}
+            line = ax.plot(xval, yval, marker=mark, markersize=marker_size, linestyle='-', label=shieldstr[0:-2].capitalize()+' '+shieldstr[-2:]+' (start time = %ss)'%(stime), **kwargs)
+            vcolors.append(line[-1].properties()['color'])
+            marker_size -= 2
+
+        ax.vlines(vval_lst, ax.get_ylim()[0], ax.get_ylim()[1], color=vcolors, linestyle='--')
+        ax.set_ylabel('Number of Recordings')
+        ax.set_title('Interrupts With Timestamps in Test Time', fontsize=11) 
+        if ax2 is not None: 
+            ax2.set_title('Interrupts With Timestamps Not in Test Time', fontsize=11) 
+            ax2.set_xlabel('Interrupt Time Relative to Test Start Time (s)')
+            ax2.set_ylabel('Number of Recordings')
+        else: 
+            ax.set_xlabel('Interrupt Time Relative to Test Start Time (s)')
+        fig.suptitle(title_str, fontsize=12)
+        ax.legend(loc=0)
         if detail_compare: suffix='All_Times' 
         else: suffix = 'Grouped_Times'
         figname = '-'.join([prefix, title_str.replace(' ', '_'), suffix])+'.png'
