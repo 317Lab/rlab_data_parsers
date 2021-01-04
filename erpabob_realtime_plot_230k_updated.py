@@ -98,7 +98,8 @@ class PayloadPlot(QtGui.QMainWindow):
         port_name = port.split(".")[-1]
         
         # Open file to write to 
-        self.dataFile = open('data_file_230k.txt', 'w')
+#        self.dataFile = open('data_file_230k.txt', 'w')
+        self.dataFile = open('data_file_230k_%s.txt' %port_name, 'w')
         self.closed = False
         time.sleep(10)
         self.rawData = ''
