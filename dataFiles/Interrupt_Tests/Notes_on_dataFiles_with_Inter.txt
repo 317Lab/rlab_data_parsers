@@ -1,9 +1,0 @@
-##Note that in all cases the Ardunio code had PIN 8 set to LOW initialy and then switched it to HIGH after a set ammount of time (originally 10s but some files may have had that set to 25s or 11s)
-
-dataFile_shield15-NoInter.txt   :   Arduino not plugged in.
-dataFile_shield15-NoInter-v2.txt : Arduino pugged in but PIN 8 not set as output and not called in code loaded on Arduino 
-dataFile_shield15-
-    *long_Inter.txt OR *Inter_long.txt  :   Arduino code left PIN 8 on HIGH after switching it from LOW to HIGH.
-    *Inter-500.txt                      :   Had 500 entries in recorded interupt array. 
-    *<#>s_Inter.txt OR Inter_<#>s.txt   :   Arduino code turned off PIN 8 (i.e. set to LOW) after <#> seconds on HIGH. 
-
