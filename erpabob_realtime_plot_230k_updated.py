@@ -90,7 +90,7 @@ class PayloadPlot(QtGui.QMainWindow):
     def __init__(self, port):
         super(PayloadPlot, self).__init__()
         # open serial port
-        self.ser = serial.Serial(port, 230400, timeout=0)
+        self.ser = serial.Serial(port, 230400, timeout=None)
         # self.ser = serial.Serial(port, 115200, timeout=0)
         #self.ser = serial.Serial(port, 57600, timeout=0)
         
