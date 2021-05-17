@@ -59,13 +59,13 @@ DeltInx=[100, 300, 200]
 ##** All Dallas Day of Launch Flight Files  **##
 #path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"]
 #file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt", \
-#        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"]]
+#        ["Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"]]
 ##** All Main Day of Launch Flight Files  **##
 #path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
 #file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt", \
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", "Playback-data_file_230k_3-05_16_21.txt", "Playback-data_file_230k_4-05_16_21.txt"]]
 
-##** Day of Launch Realtime Flight Files **## 
+#** Day of Launch Realtime Flight Files **## 
 path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/", "./wallops_intDel/LaunchDay7_20210516-Main/"] 
 file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"], \
         ["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]]
@@ -101,6 +101,14 @@ yLnZooms['pip0']=[1, 5]
 yLnZooms['pip1']=[1, 5]
 Xlims = [[1100,1250], [1100, 1250]]
 cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
+
+#figsuffix = "Zoom_Cbar0-20"
+#yLnZooms['cad'] = [15, 55]
+#yLnZooms['mag'] = [-0.5, 0.5]
+#yLnZooms['pip0']=[1, 5]
+#yLnZooms['pip1']=[1, 5]
+#Xlims = "default" #None 
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
 #figsuffix = "ZoomB"
 #yLnZooms['cad'] = [15, 55]
@@ -1145,7 +1153,7 @@ for path, flist in zip(path_lst, file_lst):
         del imuPlot, axPlot, ayPlot, azPlot, gxPlot, gyPlot, gzPlot, mxPlot, myPlot, mzPlot , tempPlot, sweepPlot, pip0Plot, pip1Plot
         del dataFile, payload, payloads
         print "***********************\n"
-    if notify: os.system('say "Done Parsing Files in Folder') 
+    if notify: os.system('say "Done Parsing Files in Folder"') 
 ### End of Main Loop ###
 ###################################################################################
 
