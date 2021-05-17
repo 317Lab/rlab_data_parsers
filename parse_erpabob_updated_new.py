@@ -1132,7 +1132,7 @@ for path, flist in zip(path_lst, file_lst):
         # figsuffix = "Zoom_Ejection" # figsuffix = 'ZoomB'
         # figsuffix = "NoZooms"
         if figsuffix is None: figfname = path+fig_subpath+"Fig_%s_%sPlot.png" % (file_name.partition(".")[0], version)
-        else: figfname = path+"Fig_%s_%sPlot%s.png" % (file_name.partition(".")[0], version, figsuffix) 
+        else: figfname = path+fig_subpath+"Fig_%s_%sPlot%s.png" % (file_name.partition(".")[0], version, figsuffix) 
 
         fig.savefig(figfname)
         # fig.axes[3].properties()['ylim']
