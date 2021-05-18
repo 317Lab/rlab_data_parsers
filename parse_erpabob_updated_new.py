@@ -22,6 +22,7 @@ from scipy.interpolate import interp1d
 from scipy.io import savemat, loadmat
 
 #get_ipython().magic(u'matplotlib notebook')
+cplt_kwargs = None
 
 bad_tmwrd_files = ['./wallops_intDel/Dallas_Vibration_20210329/Dallas1_X-Axis_RandomVibe_3-29-2021.txt', 
                   './wallops_intDel/20210429_Tests-Dallas/data_file_230k_1-Test8-04_29_21.txt', 
@@ -65,7 +66,7 @@ DeltInx=[100, 300, 200]
 #file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt", \
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", "Playback-data_file_230k_3-05_16_21.txt", "Playback-data_file_230k_4-05_16_21.txt"]]
 
-#** Day of Launch Realtime Flight Files **## 
+##** Day of Launch Realtime Flight Files **## 
 path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/", "./wallops_intDel/LaunchDay7_20210516-Main/"] 
 file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"], \
         ["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]]
@@ -73,6 +74,12 @@ file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFl
 #path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/", "./wallops_intDel/LaunchDay7_20210516-Main/"] 
 #file_lst = [["Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"], \
 #        ["Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", "Playback-data_file_230k_3-05_16_21.txt", "Playback-data_file_230k_4-05_16_21.txt"]]
+
+##** Select Day of Launch Flight Files **## 
+#path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/", "./wallops_intDel/LaunchDay7_20210516-Main/"] 
+#file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt", \
+#        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"], \
+#        ["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]]
 
 notify_every = False #Option: Whether or not to give a audio notification when done with parsing each file
 notify = True
@@ -89,18 +96,26 @@ xLnZooms = dict()
 #figsuffix = "ZoomA_Cbar0-20"
 #yLnZooms['cad'] = [15, 55]
 #yLnZooms['mag'] = [-0.5, 0.5]
-#yLnZooms['pip0']=[1, 5]
-#yLnZooms['pip1']=[1, 5]
+#yLnZooms['pip0']=[0, 5]
+#yLnZooms['pip1']=[0, 5]
 #Xlims = "default" #None 
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
-figsuffix = "ZoomB2_Cbar0-8"
-yLnZooms['cad'] = [15, 55]
-yLnZooms['mag'] = [-0.5, 0.5]
-yLnZooms['pip0']=[1, 5]
-yLnZooms['pip1']=[1, 5]
-Xlims = [[1100,1250], [1100, 1250]]
-cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
+#figsuffix = "ZoomB2_Cbar0-8"
+#yLnZooms['cad'] = [15, 55]
+#yLnZooms['mag'] = [-0.5, 0.5]
+#yLnZooms['pip0']=[0, 5]
+#yLnZooms['pip1']=[0, 5]
+#Xlims = [[1100,1250], [1100, 1250]]
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
+#
+#figsuffix = "ZoomB2b_Cbar0-4"
+#yLnZooms['cad'] = [15, 55]
+#yLnZooms['mag'] = [-0.5, 0.5]
+#yLnZooms['pip0']=[0, 5]
+#yLnZooms['pip1']=[0, 5]
+#Xlims = [[1100,1250], [1100, 1250]]
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':4}, 'pip1':{'vmin':0, 'vmax':4}}
 
 #figsuffix = "Zoom_Cbar0-20"
 #yLnZooms['cad'] = [15, 55]
@@ -108,6 +123,32 @@ cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
 #yLnZooms['pip0']=[1, 5]
 #yLnZooms['pip1']=[1, 5]
 #Xlims = "default" #None 
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
+
+figsuffix = "ZoomT0" #_Cbar0-20"
+yLnZooms['cad'] = [15, 55]
+yLnZooms['mag'] = [-0.5, 0.5]
+yLnZooms['pip0']=[0, 5]
+yLnZooms['pip1']=[0, 5]
+Xlims = [[1050, 1050.22],[1050, 1050.22]] 
+#cplt_kwargs={'pip0': {}, 'pip1':{}}
+cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
+
+#figsuffix = "ZoomT1"
+#yLnZooms['cad'] = [15, 55]
+#yLnZooms['mag'] = [-0.5, 0.5]
+#yLnZooms['pip0']=[0, 5]
+#yLnZooms['pip1']=[0, 5]
+#Xlims = [[1170, 1170.22],[1170, 1170.22]] 
+#cplt_kwargs={'pip0': {}, 'pip1':{}}
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
+#
+#figsuffix = "ZoomT1b_Cbar20"
+#yLnZooms['cad'] = [15, 55]
+#yLnZooms['mag'] = [-0.5, 0.5]
+#yLnZooms['pip0']=[0, 5]
+#yLnZooms['pip1']=[0, 5]
+#Xlims = [[1180, 1180.22],[1180, 1180.22]] 
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
 #figsuffix = "ZoomB"
@@ -129,6 +170,10 @@ cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
 #xlims = [1150, 1250]
 #xlims2 = [1150, 1250]
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':20}}
+
+##fig_subpath = fig_subpath + figsuffix+"/"
+
+#if cplt_kwargs is not None: cplt_lst = [cplt_kwargs]*len(path_lst)
 ###################################################################################
 
 ###################################################################################
@@ -239,6 +284,7 @@ def timefix(l, new, dt):   # l = time data as list, new = empty list, dt = delta
 ### Main Loop 
 ##################
 # In[2]:
+#for path, flist, cplt_kwargs in zip(path_lst, file_lst, cplt_lst): 
 for path, flist in zip(path_lst, file_lst): 
     for file_name in flist: 
         dataFile = path + file_name
