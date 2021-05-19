@@ -59,17 +59,17 @@ DeltInx=[100, 300, 200]
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", "Playback-data_file_230k_3-05_16_21.txt", "Playback-data_file_230k_4-05_16_21.txt"]]
 ##** All Dallas Day of Launch Flight Files  **##
 #path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"]
-#file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt", \
+#file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"]] #, \
 #        ["Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"]]
 ##** All Main Day of Launch Flight Files  **##
-#path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
-#file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt", \
+path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
+file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", "Playback-data_file_230k_3-05_16_21.txt", "Playback-data_file_230k_4-05_16_21.txt"]]
 
 ##** Day of Launch Realtime Flight Files **## 
-path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/", "./wallops_intDel/LaunchDay7_20210516-Main/"] 
-file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"], \
-        ["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]]
+#path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/", "./wallops_intDel/LaunchDay7_20210516-Main/"] 
+#file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"], \
+#        ["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]]
 ##** Day of Launch Playback Flight Files **## 
 #path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/", "./wallops_intDel/LaunchDay7_20210516-Main/"] 
 #file_lst = [["Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"], \
@@ -85,6 +85,7 @@ notify_every = False #Option: Whether or not to give a audio notification when d
 notify = True
 
 fig_subpath = 'Script_Plots/'
+#figpath_lst = [os.path.join(pth,fig_subpath) for pth in path_lst] 
 plottype = 1
 yLnZooms = dict()
 xLnZooms = dict()
@@ -93,6 +94,36 @@ xLnZooms = dict()
 #Xlims = "default" #None 
 #cplt_kwargs={'pip0': {}, 'pip1':{}}
 
+figsuffix = "ZoomSweep_1203" #_Cbar0-20"
+path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
+file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
+yLnZooms['cad'] = [15, 55]
+yLnZooms['mag'] = [-0.5, 0.5]
+yLnZooms['pip0']=[0, 5]
+yLnZooms['pip1']=[0, 5]
+Xlims = [[1203-0.22, 1203+.22],[1203-.22, 1203+.22]] 
+cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
+
+#figsuffix = "ZoomDt_1180-1120"
+#path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
+#file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
+#yLnZooms['cad'] = [15, 55]
+#yLnZooms['mag'] = [-0.5, 0.5]
+#yLnZooms['pip0']=[0, 5]
+#yLnZooms['pip1']=[0, 5]
+#Xlims = [[1180, 1220],[1180, 1220]] 
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
+#
+figsuffix = "ZoomDt_1190-1230" 
+path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"]
+file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"]] #, \
+yLnZooms['cad'] = [15, 55]
+yLnZooms['mag'] = [-0.5, 0.5]
+yLnZooms['pip0']=[0, 5]
+yLnZooms['pip1']=[0, 5]
+Xlims = [[1190, 1230],[1190, 1230]] 
+cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
+#
 #figsuffix = "ZoomA_Cbar0-20"
 #yLnZooms['cad'] = [15, 55]
 #yLnZooms['mag'] = [-0.5, 0.5]
@@ -125,14 +156,14 @@ xLnZooms = dict()
 #Xlims = "default" #None 
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
-figsuffix = "ZoomT0" #_Cbar0-20"
-yLnZooms['cad'] = [15, 55]
-yLnZooms['mag'] = [-0.5, 0.5]
-yLnZooms['pip0']=[0, 5]
-yLnZooms['pip1']=[0, 5]
-Xlims = [[1050, 1050.22],[1050, 1050.22]] 
-#cplt_kwargs={'pip0': {}, 'pip1':{}}
-cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
+#figsuffix = "ZoomT0" #_Cbar0-20"
+#yLnZooms['cad'] = [15, 55]
+#yLnZooms['mag'] = [-0.5, 0.5]
+#yLnZooms['pip0']=[0, 5]
+#yLnZooms['pip1']=[0, 5]
+#Xlims = [[1050, 1050.22],[1050, 1050.22]] 
+##cplt_kwargs={'pip0': {}, 'pip1':{}}
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
 #figsuffix = "ZoomT1"
 #yLnZooms['cad'] = [15, 55]
@@ -171,7 +202,7 @@ cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 #xlims2 = [1150, 1250]
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':20}}
 
-##fig_subpath = fig_subpath + figsuffix+"/"
+fig_subpath = fig_subpath + figsuffix+"/"
 
 #if cplt_kwargs is not None: cplt_lst = [cplt_kwargs]*len(path_lst)
 ###################################################################################
@@ -1185,6 +1216,7 @@ for path, flist in zip(path_lst, file_lst):
         # yLnZooms['pip1']=[0.9975, 1.0075]
         # figsuffix = "Zoom_Ejection" # figsuffix = 'ZoomB'
         # figsuffix = "NoZooms"
+        if not os.path.exists(path+fig_subpath): os.makedirs(path+fig_subpath)
         if figsuffix is None: figfname = path+fig_subpath+"Fig_%s_%sPlot.png" % (file_name.partition(".")[0], version)
         else: figfname = path+fig_subpath+"Fig_%s_%sPlot%s.png" % (file_name.partition(".")[0], version, figsuffix) 
 
