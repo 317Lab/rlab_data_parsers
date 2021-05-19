@@ -1170,6 +1170,7 @@ for path, flist in zip(path_lst, file_lst):
                 if len(np.where(np.array(interruptArray) == event)[0]) > numRec:
                     numRec = len(np.where(np.array(interruptArray) == event)[0])
                     if numRec>100: interruptNum = str(event) + " seconds"
+#                    if numRec>100: interruptNum = str(event-8.00622) + " s (Corrected)"
                     else: interruptNum = "None"
         else:
             interruptNum = "None"
