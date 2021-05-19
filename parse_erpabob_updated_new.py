@@ -54,16 +54,18 @@ DeltInx=[100, 300, 200]
 ##** All Day of Launch Flight Files **##
 #path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/", "./wallops_intDel/LaunchDay7_20210516-Main/"] 
 #file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt", \
-#        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"], \
+#        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", \
+#        "Dallas1_FlightData_5-16-2021.txt", "Dallas4_FlightData_5-16-2021.txt"], \
 #        ["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt", \
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", "Playback-data_file_230k_3-05_16_21.txt", "Playback-data_file_230k_4-05_16_21.txt"]]
 ##** All Dallas Day of Launch Flight Files  **##
 #path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"]
-#file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"]] #, \
-#        ["Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"]]
+#file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt", \
+#        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", \
+#        "Dallas1_FlightData_5-16-2021.txt", "Dallas4_FlightData_5-16-2021.txt"]]
 ##** All Main Day of Launch Flight Files  **##
-path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
-file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
+#path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
+#file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", "Playback-data_file_230k_3-05_16_21.txt", "Playback-data_file_230k_4-05_16_21.txt"]]
 
 ##** Day of Launch Realtime Flight Files **## 
@@ -81,70 +83,51 @@ file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"], \
 #        ["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]]
 
+path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"]
+file_lst = [["Dallas1_FlightData_5-16-2021.txt", "Dallas4_FlightData_5-16-2021.txt"]]
+
 notify_every = False #Option: Whether or not to give a audio notification when done with parsing each file
 notify = True
 
 fig_subpath = 'Script_Plots/'
-#figpath_lst = [os.path.join(pth,fig_subpath) for pth in path_lst] 
 plottype = 1
 yLnZooms = dict()
 xLnZooms = dict()
 
-#figsuffix = None
-#Xlims = "default" #None 
-#cplt_kwargs={'pip0': {}, 'pip1':{}}
+figsuffix = None
+Xlims = "default" #None 
+cplt_kwargs={'pip0': {}, 'pip1':{}}
 
-figsuffix = "ZoomSweep_1203" #_Cbar0-20"
-path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
-file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
-yLnZooms['cad'] = [15, 55]
-yLnZooms['mag'] = [-0.5, 0.5]
-yLnZooms['pip0']=[0, 5]
-yLnZooms['pip1']=[0, 5]
-Xlims = [[1203-0.22, 1203+.22],[1203-.22, 1203+.22]] 
-cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
+#figsuffix = "ZoomSweep_1203" #_Cbar0-20"
+#path_lst, file_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"], [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
+#Xlims = [[1203-0.22, 1203+.22],[1203-.22, 1203+.22]] 
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
 
 #figsuffix = "ZoomDt_1180-1120"
-#path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
-#file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
-#yLnZooms['cad'] = [15, 55]
-#yLnZooms['mag'] = [-0.5, 0.5]
-#yLnZooms['pip0']=[0, 5]
-#yLnZooms['pip1']=[0, 5]
+#path_lst, file_lst= ["./wallops_intDel/LaunchDay7_20210516-Main/"], [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
 #Xlims = [[1180, 1220],[1180, 1220]] 
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
 #
-figsuffix = "ZoomDt_1190-1230" 
-path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"]
-file_lst = [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"]] #, \
-yLnZooms['cad'] = [15, 55]
-yLnZooms['mag'] = [-0.5, 0.5]
-yLnZooms['pip0']=[0, 5]
-yLnZooms['pip1']=[0, 5]
-Xlims = [[1190, 1230],[1190, 1230]] 
-cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
+#figsuffix = "ZoomDt_1190-1230" 
+#path_lst, file_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"], [["PreLaunchAndFlight-data_file_230k_1-05_16_21.txt", "PreLaunchAndFlight-data_file_230k_2-05_16_21.txt"]] #, \
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
+#Xlims = [[1190, 1230],[1190, 1230]] 
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
 #
 #figsuffix = "ZoomA_Cbar0-20"
-#yLnZooms['cad'] = [15, 55]
-#yLnZooms['mag'] = [-0.5, 0.5]
-#yLnZooms['pip0']=[0, 5]
-#yLnZooms['pip1']=[0, 5]
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
 #Xlims = "default" #None 
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
 #figsuffix = "ZoomB2_Cbar0-8"
-#yLnZooms['cad'] = [15, 55]
-#yLnZooms['mag'] = [-0.5, 0.5]
-#yLnZooms['pip0']=[0, 5]
-#yLnZooms['pip1']=[0, 5]
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
 #Xlims = [[1100,1250], [1100, 1250]]
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
 #
 #figsuffix = "ZoomB2b_Cbar0-4"
-#yLnZooms['cad'] = [15, 55]
-#yLnZooms['mag'] = [-0.5, 0.5]
-#yLnZooms['pip0']=[0, 5]
-#yLnZooms['pip1']=[0, 5]
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
 #Xlims = [[1100,1250], [1100, 1250]]
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':4}, 'pip1':{'vmin':0, 'vmax':4}}
 
@@ -157,28 +140,19 @@ cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
 #figsuffix = "ZoomT0" #_Cbar0-20"
-#yLnZooms['cad'] = [15, 55]
-#yLnZooms['mag'] = [-0.5, 0.5]
-#yLnZooms['pip0']=[0, 5]
-#yLnZooms['pip1']=[0, 5]
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
 #Xlims = [[1050, 1050.22],[1050, 1050.22]] 
 ##cplt_kwargs={'pip0': {}, 'pip1':{}}
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
 #figsuffix = "ZoomT1"
-#yLnZooms['cad'] = [15, 55]
-#yLnZooms['mag'] = [-0.5, 0.5]
-#yLnZooms['pip0']=[0, 5]
-#yLnZooms['pip1']=[0, 5]
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
 #Xlims = [[1170, 1170.22],[1170, 1170.22]] 
 #cplt_kwargs={'pip0': {}, 'pip1':{}}
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 #
 #figsuffix = "ZoomT1b_Cbar20"
-#yLnZooms['cad'] = [15, 55]
-#yLnZooms['mag'] = [-0.5, 0.5]
-#yLnZooms['pip0']=[0, 5]
-#yLnZooms['pip1']=[0, 5]
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
 #Xlims = [[1180, 1180.22],[1180, 1180.22]] 
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
@@ -202,7 +176,7 @@ cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':8}}
 #xlims2 = [1150, 1250]
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':8}, 'pip1':{'vmin':0, 'vmax':20}}
 
-fig_subpath = fig_subpath + figsuffix+"/"
+if figsuffix is not None: fig_subpath = fig_subpath + figsuffix+"/"
 
 #if cplt_kwargs is not None: cplt_lst = [cplt_kwargs]*len(path_lst)
 ###################################################################################
