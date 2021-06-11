@@ -20,6 +20,8 @@ import matplotlib.cm as cm
 import scipy.signal as sig
 from scipy.interpolate import interp1d
 from scipy.io import savemat, loadmat
+import pickle
+
 
 #get_ipython().magic(u'matplotlib notebook')
 cplt_kwargs = None
@@ -64,8 +66,8 @@ DeltInx=[100, 300, 200]
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", \
 #        "Dallas1_FlightData_5-16-2021.txt", "Dallas4_FlightData_5-16-2021.txt"]]
 ##** All Main Day of Launch Flight Files  **##
-#path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
-#file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
+path_lst = ["./wallops_intDel/LaunchDay7_20210516-Main/"] 
+file_lst = [["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]] #, \
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt", "Playback-data_file_230k_3-05_16_21.txt", "Playback-data_file_230k_4-05_16_21.txt"]]
 
 ##** Day of Launch Realtime Flight Files **## 
@@ -83,8 +85,8 @@ DeltInx=[100, 300, 200]
 #        "Playback-data_file_230k_1-05_16_21.txt", "Playback-data_file_230k_2-05_16_21.txt"], \
 #        ["Flight-data_file_230k_1-05_16_21.txt", "Flight-data_file_230k_2-05_16_21.txt", "Flight-data_file_230k_3-05_16_21.txt", "Flight-data_file_230k_4-05_16_21.txt"]]
 
-path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"]
-file_lst = [["Dallas1_FlightData_5-16-2021.txt", "Dallas4_FlightData_5-16-2021.txt"]]
+#path_lst = ["./wallops_intDel/LaunchDay7_20210516-Dallas/"]
+#file_lst = [["Dallas1_FlightData_5-16-2021.txt", "Dallas4_FlightData_5-16-2021.txt"]]
 
 notify_every = False #Option: Whether or not to give a audio notification when done with parsing each file
 notify = True
@@ -120,6 +122,16 @@ cplt_kwargs={'pip0': {}, 'pip1':{}}
 #yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
 #Xlims = "default" #None 
 #cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
+#
+#figsuffix = "ZoomA2_Cbar0-20"
+#yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
+#Xlims = [[550, 1345], [550, 1345]] 
+#cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
+
+figsuffix = "ZoomA3_Cbar0-20"
+yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
+Xlims = [[550, 1345], [550, 1345]] 
+cplt_kwargs={'pip0': {'vmin':0, 'vmax':20}, 'pip1':{'vmin':0, 'vmax':20}}
 
 #figsuffix = "ZoomB2_Cbar0-8"
 #yLnZooms['cad'] = [15, 55]; yLnZooms['mag'] = [-0.5, 0.5]; yLnZooms['pip0']=[0, 5]; yLnZooms['pip1']=[0, 5]
@@ -766,6 +778,29 @@ for path, flist in zip(path_lst, file_lst):
 
 
         # In[6]:
+        #### Save Pickle File ####
+        dct = dict()
+        version="Original"
+        dct['shieldID']=shieldID; dct['interruptArray']=interruptArray
+        dct['imuPlot']=imuList; dct['axPlot']=axPlot=ax; dct['ayPlot']=ay; dct['azPlot']=az
+        dct['gxPlot']=gx; dct['gyPlot']=gy; dct['gzPlot']=gz; dct['mxPlot']=mx; dct['myPlot']=my; dct['mzPlot']=mz
+        dct['tempPlot']=temp; dct['sweepPlot']=sweepList; dct['sweepTimeLPlot']=sweepSampleTime
+        dct['pip0Plot']=pip0nA; dct['pip1Plot']=pip1nA; dct['pip0LPlot']=pip0L; dct['pip1LPlot']=pip1L
+        pklfname = path+"ParsedData_wDInx%sto%s-%s-%s.pkl" % (DeltInx[0], DeltInx[1], file_name.partition(".")[0], version)
+        pklf = open(pklfname, "wb"); pickle.dump(dct, pklf); pklf.close()
+        print pklfname
+        del pklf, pklfname, dct
+
+        dct=dict()
+        version = "Repeat"
+        dct['shieldID']=shieldID; dct['interruptArray']=interruptArray
+        dct['imuPlot']=imuListRpt; dct['axPlot']=axRpt; dct['ayPlot']=ayRpt; dct['azPlot']=azRpt
+        dct['gxPlot']=gxRpt; dct['gyPlot']=gyRpt; dct['gzPlot']=gzRpt; dct['mxPlot']=mxRpt; dct['myPlot']=myRpt; dct['mzPlot']=mzRpt
+        dct['tempPlot']=tempRpt; dct['sweepPlot']=sweepListRpt; dct['sweepTimeLPlot']=sweepSampleTimeRpt
+        dct['pip0Plot']=pip0RptnA; dct['pip1Plot']=pip1RptnA; dct['pip0LPlot']=pip0RptL; dct['pip1LPlot']=pip1RptL
+        pklfname = path+"ParsedData_wDInx%sto%s-%s-%s.pkl" % (DeltInx[0], DeltInx[1], file_name.partition(".")[0], version)
+        pklf = open(pklfname, "wb"); pickle.dump(dct, pklf); pklf.close()
+        print pklfname
 
 
         # choose original or repeat
