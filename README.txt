@@ -5,23 +5,23 @@ Dartmouth 112/317 Rocket Lab GSE codes for shields.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Description of Files & Folders
 ++++++++++++++++++++++++++++++++++
-archived_summer21: Holds previous versions of GSE code as well as miscellaneous GSE codes generated prior to 2021/08/05 update.  
-delamere_extraCode: Another archive folder that contains code that was used and may need to be referenced in analysis of the Delamere rocket.
-useful_pyscripts: Collection of useful (OPTIONAL) python scripts for various purposes. (See bellow)
-erpabob_data_collection_summer_2021.ipynb: IPython notebook for collecting data from a shield and saving it to a file. 
-erpabob_realtime_plot_summer2021_delamere.py: Python script that collects, saves and plots realtime shield data for shields with both original and 10s buffered data in their transmissions (like for Delamere).
+* archived_summer21: Holds previous versions of GSE code as well as miscellaneous GSE codes generated prior to 2021/08/05 update.  
+* delamere_extraCode: Another archive folder that contains code that was used and may need to be referenced in analysis of the Delamere rocket.
+* useful_pyscripts: Collection of useful (OPTIONAL) python scripts for various purposes. (See bellow)
+* erpabob_data_collection_summer_2021.ipynb: IPython notebook for collecting data from a shield and saving it to a file. 
+* erpabob_realtime_plot_summer2021_delamere.py: Python script that collects, saves and plots realtime shield data for shields with both original and 10s buffered data in their transmissions (like for Delamere).
                                               NOTE: Must specify data transmission speed in code!
-erpabob_realtime_plot_summer2021_stripped.py: Python script that collects, saves and plots realtime shield data for shields with only current data in their transmissions. 
+* erpabob_realtime_plot_summer2021_stripped.py: Python script that collects, saves and plots realtime shield data for shields with only current data in their transmissions. 
                                               NOTE: Must specify data transmission speed in code!
-parse_erpabob_summer2021_delamere.ipynb: IPython notebook for parsing and plotting data files output from erpabob_realtime_plot_summer2021_delamere.py OR erpabob_data_collection_summer_2021.ipynb 
-parse_erpabob_summer2021_stripped.ipynb: IPython notebook for parsing and plotting data files output from erpabob_realtime_plot_summer2021_stripped.py OR erpabob_data_collection_summer_2021.ipynb 
+* parse_erpabob_summer2021_delamere.ipynb: IPython notebook for parsing and plotting data files output from erpabob_realtime_plot_summer2021_delamere.py OR erpabob_data_collection_summer_2021.ipynb 
+* parse_erpabob_summer2021_stripped.ipynb: IPython notebook for parsing and plotting data files output from erpabob_realtime_plot_summer2021_stripped.py OR erpabob_data_collection_summer_2021.ipynb 
 
 ------------------------------------------------------------------------------
 Files in useful_pyscripts Folder 
 ---------------------------------
-TestHelp_fun.py: Collection of functions by Magdalina Moses to help with some of the test data analysis. NOT required for any other file in this repo.
-erpabob_functions.py: A start on a collection of functions used often in gse data handling and analysis.  
-make_pickle_files.py: A script intended for batch conversion of shield data files to processed pickle files.
+* TestHelp_fun.py: Collection of functions by Magdalina Moses to help with some of the test data analysis. NOT required for any other file in this repo.
+* erpabob_functions.py: A start on a collection of functions used often in gse data handling and analysis.  
+* make_pickle_files.py: A script intended for batch conversion of shield data files to processed pickle files.
 ------------------------------------------------------------------------------
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
