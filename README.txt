@@ -10,9 +10,9 @@ Description of Files & Folders
 * useful_pyscripts: Collection of useful (OPTIONAL) python scripts for various purposes. (See bellow)
 * erpabob_data_collection_summer_2021.ipynb: IPython notebook for collecting data from a shield and saving it to a file. 
 * erpabob_realtime_plot_summer2021_delamere.py: Python script that collects, saves and plots realtime shield data for shields with both original and 10s buffered data in their transmissions (like for Delamere).
-NOTE: Must specify data transmission speed in code!
+    --> NOTE: Must specify data transmission speed in code!
 * erpabob_realtime_plot_summer2021_stripped.py: Python script that collects, saves and plots realtime shield data for shields with only current data in their transmissions. 
-NOTE: Must specify data transmission speed in code!
+    --> NOTE: Must specify data transmission speed in code!
 * parse_erpabob_summer2021_delamere.ipynb: IPython notebook for parsing and plotting data files output from erpabob_realtime_plot_summer2021_delamere.py OR erpabob_data_collection_summer_2021.ipynb 
 * parse_erpabob_summer2021_stripped.ipynb: IPython notebook for parsing and plotting data files output from erpabob_realtime_plot_summer2021_stripped.py OR erpabob_data_collection_summer_2021.ipynb 
 
