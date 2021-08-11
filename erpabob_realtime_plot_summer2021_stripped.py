@@ -151,6 +151,7 @@ class PayloadPlot(QtGui.QMainWindow):
         self.win = pg.GraphicsWindow()  
         self.p00 = self.win.addPlot(row=0, col=0)
         self.p00.setLabels(left=('Accel'))
+#        self.p00.setLabels(left=('Accel'+str(self.payload.shieldID)))
         self.p01 = self.win.addPlot(row=1, col=0)
         self.p01.setLabels(left=('Mag'))
         self.p02 = self.win.addPlot(row=2, col=0)
@@ -159,6 +160,7 @@ class PayloadPlot(QtGui.QMainWindow):
         #self.p03.setLabels(left=('Temp'))
         self.p03 = self.win.addPlot(row=3, col=0)
         self.p03.setLabels(left=('Cadence'))
+#        self.p03.setLabels(left=('Cad. '+str(self.payload.shieldID)))
         self.p04 = self.win.addPlot(row=4, col=0)
         self.p04.setLabels(left=('PIP 1'))
         self.p05 = self.win.addPlot(row=5, col=0)
@@ -312,7 +314,8 @@ class PayloadPlot(QtGui.QMainWindow):
         individualSweepsPIP1 = np.array(individualSweepsPIP1, dtype='int16')*pipScale
         
         if init:
-            payload.shieldID = 1 # payloadID[0]
+#            payload.shieldID = 1 # payloadID[0]
+            payload.shieldID = payloadID[0]
             payload.sweeps.time = sweepTime/1.E6
             payload.sweeps.pip0 = individualSweepsPIP0
             payload.sweeps.pip1 = individualSweepsPIP1
