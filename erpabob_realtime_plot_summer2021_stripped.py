@@ -73,15 +73,15 @@ class PayloadPlot(QtGui.QMainWindow):
     def __init__(self, port):
         super(PayloadPlot, self).__init__()
         # open serial port, choose 115k or 230k
-        self.ser = serial.Serial(port, 230400, timeout=None)
-#        self.ser = serial.Serial(port, 115200, timeout=None)
+#        self.ser = serial.Serial(port, 230400, timeout=None)
+        self.ser = serial.Serial(port, 115200, timeout=None)
         
         # Split out the port name to save with:
         port_name = port.split(".")[-1]
         
         # Open file to write to
-        self.dataFile = open('data_file_230k_%s.txt' %port_name, 'w')
-#        self.dataFile = open('data_file_115k_%s.txt' %port_name, 'w')
+#        self.dataFile = open('data_file_230k_%s.txt' %port_name, 'w')
+        self.dataFile = open('data_file_115k_%s.txt' %port_name, 'w')
         self.closed = False
         time.sleep(10)
         self.rawData = ''
@@ -150,15 +150,19 @@ class PayloadPlot(QtGui.QMainWindow):
         # Generates grids with multiple items
         self.win = pg.GraphicsWindow()  
         self.p00 = self.win.addPlot(row=0, col=0)
-        self.p00.setLabels(left=('Accel'))
+#        self.p00.setLabels(left=('Accel'))
+        self.p00.setLabels(left=('Sh'+str(self.payload.shieldID)+' Accel'))
         self.p01 = self.win.addPlot(row=1, col=0)
-        self.p01.setLabels(left=('Mag'))
+#        self.p01.setLabels(left=('Mag'))
+        self.p01.setLabels(left=('Sh'+str(self.payload.shieldID)+' Mag'))
         self.p02 = self.win.addPlot(row=2, col=0)
-        self.p02.setLabels(left=('Gyro'))
+#        self.p02.setLabels(left=('Gyro'))
+        self.p02.setLabels(left=('Sh'+str(self.payload.shieldID)+' Gyro'))
         #self.p03 = self.win.addPlot(row=3, col=0)
         #self.p03.setLabels(left=('Temp'))
         self.p03 = self.win.addPlot(row=3, col=0)
         self.p03.setLabels(left=('Cadence'))
+#        self.p03.setLabels(left=('Cad. '+str(self.payload.shieldID)))
         self.p04 = self.win.addPlot(row=4, col=0)
         self.p04.setLabels(left=('PIP 1'))
         self.p05 = self.win.addPlot(row=5, col=0)
@@ -312,7 +316,8 @@ class PayloadPlot(QtGui.QMainWindow):
         individualSweepsPIP1 = np.array(individualSweepsPIP1, dtype='int16')*pipScale
         
         if init:
-            payload.shieldID = 1 # payloadID[0]
+#            payload.shieldID = 1 # payloadID[0]
+            payload.shieldID = payloadID[0]
             payload.sweeps.time = sweepTime/1.E6
             payload.sweeps.pip0 = individualSweepsPIP0
             payload.sweeps.pip1 = individualSweepsPIP1
