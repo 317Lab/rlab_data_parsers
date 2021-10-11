@@ -73,15 +73,15 @@ class PayloadPlot(QtGui.QMainWindow):
     def __init__(self, port):
         super(PayloadPlot, self).__init__()
         # open serial port, choose 115k or 230k
-#        self.ser = serial.Serial(port, 230400, timeout=None)
-        self.ser = serial.Serial(port, 115200, timeout=None)
+        self.ser = serial.Serial(port, 230400, timeout=None)
+#        self.ser = serial.Serial(port, 115200, timeout=None)
         
         # Split out the port name to save with:
         port_name = port.split(".")[-1]
         
         # Open file to write to
-#        self.dataFile = open('data_file_230k_%s.txt' %port_name, 'w')
-        self.dataFile = open('data_file_115k_%s.txt' %port_name, 'w')
+        self.dataFile = open('data_file_230k_%s.txt' %port_name, 'w')
+#        self.dataFile = open('data_file_115k_%s.txt' %port_name, 'w')
         self.closed = False
         time.sleep(10)
         self.rawData = ''
