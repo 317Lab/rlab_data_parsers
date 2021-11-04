@@ -164,9 +164,9 @@ class PayloadPlot(QtGui.QMainWindow):
         self.p03.setLabels(left=('Cadence'))
 #        self.p03.setLabels(left=('Cad. '+str(self.payload.shieldID)))
         self.p04 = self.win.addPlot(row=4, col=0)
-        self.p04.setLabels(left=('PIP 1'))
+        self.p04.setLabels(left=('PIP 0'))
         self.p05 = self.win.addPlot(row=5, col=0)
-        self.p05.setLabels(left=('PIP 2'))
+        self.p05.setLabels(left=('PIP 1'))
         
         # Plots for first payload 
         self.ax_0 = self.p00.plot([], [], pen=blue)
