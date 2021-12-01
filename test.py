@@ -11,11 +11,14 @@ numSweepBytes = sweepSamples * 2 * 2 + 4 + 1
 # 9 2-byte data points + 2-byte temp + 4-byte timestamp
 numIMUBytes = 24
 
-ser = serial.Serial('COM4', 230400, timeout=None)
+ser = serial.Serial('/dev/cu.usbserial-FT611XTTA', 230400, timeout=None)
 f = open('test.txt','wb')
-rawdata = b''
-while True:
+# rawdata = b''
+for i in range(1000):
+    print(i)
     rawByte = ser.read()
+    print(rawByte)
+    f.write(rawByte)
     if rawByte == b'#':
         nextRawByte = ser.read()
         if nextRawByte == b'S':
@@ -26,11 +29,11 @@ while True:
             exit()
 
 
-for i in range(500):
-    data =ser.read()
-    if data == b'#':
-        f.write(data)
-        print(data)
+#for i in range(500):
+#    data =ser.read()
+#    if data == b'#':
+#        f.write(data)
+#        print(data)
 f.close()
 # x = b'\xff\x00'
 # y = b'\xd9\x00'
