@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # parameters
 numSampleBytes = 28 # How many samples per message
-numSweepBytes = 4 + 1 + numSampleBytes * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
+numSWPBytes = 4 + 1 + numSampleBytes * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
 numIMUBytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 tScale = 1.e-6; aScale = 4*9.8/2**15; mScale = 1./2**15; gScale = 2000./360/2**15; pScale = 5/2**14 # data scales
 freq = 45 # Set data frequency in Hz
@@ -38,59 +38,66 @@ def conc(word):
         return (word[3]<<24) | (word[2]<<16) | (word[1]<<8) | word[0]
 
 while plotting:
-    rawBytes = ser.read(plotTime*freq*(numSweepBytes+numIMUBytes+2)) # N seconds worth of bytes
+    rawBytes = ser.read(plotTime*freq*(numSWPBytes+numIMUBytes+2)) # N seconds worth of bytes
     f.write(rawBytes)
     numBytes = len(rawBytes)
+    numDataSWP = round(plotTime*freq*numSampleBytes)
+    numDataIMU = round(plotTime*freq)
 
-    sweepTime = [] # need to change this to preallocated arrays numpy concatenate start to nparray
-    payloadID = []
-    pip0Voltages = []
-    pip1Voltages = []
-    IMUTime = []
-    ax = []; ay = []; az = [] 
-    mx = []; my = []; mz = []
-    gx = []; gy = []; gz = []
-    IMUTemp = []
+    SWPTime = np.zeros(numDataSWP,dtype='uint32')
+    payloadID = np.zeros(numDataSWP,dtype='uint8')
+    pip0Voltages = np.zeros(numDataSWP,dtype='int16')
+    pip1Voltages = np.zeros(numDataSWP,dtype='int16')
+    IMUTime = np.zeros(numDataIMU,dtype='uint32')
+    ax = np.zeros(numDataIMU,dtype='int16'); ay = np.zeros(numDataIMU,dtype='int16'); az = np.zeros(numDataIMU,dtype='int16') 
+    mx = np.zeros(numDataIMU,dtype='int16'); my = np.zeros(numDataIMU,dtype='int16'); mz = np.zeros(numDataIMU,dtype='int16')
+    gx = np.zeros(numDataIMU,dtype='int16'); gy = np.zeros(numDataIMU,dtype='int16'); gz = np.zeros(numDataIMU,dtype='int16')
+    IMUTemp = np.zeros(numDataIMU,dtype='int16')
 
-    for i in range(numBytes-numSweepBytes-2):
+    posSWP = 0
+    posIMU = 0
+    for i in range(numBytes-numSWPBytes-2):
         if rawBytes[i] == 35: # byte is #: start of data
             if rawBytes[i+1] == 83: # byte is "S": start of sweep data
-                if i+numSweepBytes+2 <= numBytes:
-                    if rawBytes[i+numSweepBytes+2] == 35: # next "#" correct number of sweep bytes
-                        sweepBytes = rawBytes[i+2:i+numSweepBytes+2]
-                        pip0Bytes = sweepBytes[5:5+2*numSampleBytes]
-                        pip1Bytes = sweepBytes[5+2*numSampleBytes:]
+                if i+numSWPBytes+2 <= numBytes:
+                    if rawBytes[i+numSWPBytes+2] == 35: # next "#" correct number of sweep bytes
+                        SWPBytes = rawBytes[i+2:i+numSWPBytes+2]
+                        pip0Bytes = SWPBytes[5:5+2*numSampleBytes]
+                        pip1Bytes = SWPBytes[5+2*numSampleBytes:]
                         for sample in range(0,2*numSampleBytes,2):
-                            sweepTime.append(conc(sweepBytes[0:4])) # copy for each sample
-                            payloadID.append(sweepBytes[4])
-                            pip0Voltages.append(conc(pip0Bytes[sample:sample+2]))
-                            pip1Voltages.append(conc(pip1Bytes[sample:sample+2]))
+                            SWPTime[posSWP] = conc(SWPBytes[0:4]) # copy for each sample
+                            payloadID[posSWP] = SWPBytes[4]
+                            pip0Voltages[posSWP] = conc(pip0Bytes[sample:sample+2])
+                            pip1Voltages[posSWP] = conc(pip1Bytes[sample:sample+2])
+                            posSWP += 1
             elif rawBytes[i+1] == 73: # byte is "I": start of IMU data
                 if i+numIMUBytes+2 <= numBytes:
                     if rawBytes[i+numIMUBytes+2] == 35: # next "#" correct number of IMU bytes
                         IMUBytes = rawBytes[i+2:i+numIMUBytes+2]
-                        IMUTime.append(conc(IMUBytes[0:4]))
-                        ax.append(conc(IMUBytes[4:6]))
-                        ay.append(conc(IMUBytes[6:8]))
-                        az.append(conc(IMUBytes[8:10]))
-                        mx.append(conc(IMUBytes[10:12]))
-                        my.append(conc(IMUBytes[12:14]))
-                        mz.append(conc(IMUBytes[14:16]))
-                        gx.append(conc(IMUBytes[16:18]))
-                        gy.append(conc(IMUBytes[18:20]))
-                        gz.append(conc(IMUBytes[20:22]))
-                        IMUTemp.append(conc(IMUBytes[22:24]))
+                        IMUTime[posIMU] = conc(IMUBytes[0:4])
+                        ax[posIMU] = conc(IMUBytes[4:6])
+                        ay[posIMU] = conc(IMUBytes[6:8])
+                        az[posIMU] = conc(IMUBytes[8:10])
+                        mx[posIMU] = conc(IMUBytes[10:12])
+                        my[posIMU] = conc(IMUBytes[12:14])
+                        mz[posIMU] = conc(IMUBytes[14:16])
+                        gx[posIMU] = conc(IMUBytes[16:18])
+                        gy[posIMU] = conc(IMUBytes[18:20])
+                        gz[posIMU] = conc(IMUBytes[20:22])
+                        IMUTemp[posIMU] = conc(IMUBytes[22:24])
+                        posIMU += 1
+    print(payloadID)
 
     # Converting bytes and scaling data
-    sweepTime = np.array(sweepTime, dtype='uint32')*tScale
-    payloadID = np.array(payloadID, dtype='uint8')
-    pip0Voltages = np.array(pip0Voltages, dtype='int16')*pScale
-    pip1Voltages = np.array(pip1Voltages, dtype='int16')*pScale
-    IMUTime = np.array(IMUTime, dtype='uint32')*tScale
-    ax = np.array(ax, dtype='int16')*aScale; ay = np.array(ay, dtype='int16')*aScale; az = np.array(az, dtype='int16')*aScale
-    mx = np.array(mx, dtype='int16')*mScale; my = np.array(my, dtype='int16')*mScale; mz = np.array(mz, dtype='int16')*mScale
-    gx = np.array(gx, dtype='int16')*mScale; gy = np.array(gy, dtype='int16')*mScale; gz = np.array(gz, dtype='int16')*mScale
-    IMUTemp = np.array(IMUTemp, dtype='int16')
+    SWPTime = SWPTime[0:posSWP]*tScale
+    payloadID = payloadID[0:posSWP]
+    pip0Voltages = pip0Voltages[0:posSWP]*pScale
+    pip1Voltages = pip1Voltages[0:posSWP]*pScale
+    IMUTime = IMUTime[0:posIMU]*tScale
+    ax = ax[0:posIMU]*aScale; ay = ay[0:posIMU]*aScale; az = az[0:posIMU]*aScale
+    mx = mx[0:posIMU]*mScale; my = my[0:posIMU]*mScale; mz = mz[0:posIMU]*mScale
+    gx = gx[0:posIMU]*mScale; gy = gy[0:posIMU]*mScale; gz = gz[0:posIMU]*mScale
+    IMUTemp = IMUTemp[0:posIMU]
 
     IMUCad = np.diff(IMUTime)*1e3
     IMUCad = np.append(IMUCad,IMUCad[-1]) # make array same length
@@ -136,13 +143,13 @@ while plotting:
     axs[3].xaxis.set_ticklabels([])
 
     axs[4].clear()
-    axs[4].plot(sweepTime[1:],pip0Voltages[1:])
+    axs[4].plot(SWPTime[1:],pip0Voltages[1:])
     axs[4].set_ylabel('P0 [V]')
     axs[4].grid()
     axs[4].xaxis.set_ticklabels([])
 
     axs[5].clear()
-    axs[5].plot(sweepTime[1:],pip1Voltages[1:])
+    axs[5].plot(SWPTime[1:],pip1Voltages[1:])
     axs[5].set_ylabel('P1 [V]')
     axs[5].grid()
     axs[5].set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
