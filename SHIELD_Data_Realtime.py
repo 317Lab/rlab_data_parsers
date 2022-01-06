@@ -111,8 +111,8 @@ while plotting:
     IMUCad = np.append(IMUCad,IMUCad[-1]) # make array same length
     pip0rms = np.sqrt(np.mean(np.square(pip0Voltages-np.mean(pip0Voltages))))*1e3 # determine rms
     pip1rms = np.sqrt(np.mean(np.square(pip1Voltages-np.mean(pip1Voltages))))*1e3
-    pip0std = np.std(pip0Voltages) # determine standard deviation
-    pip1std = np.std(pip1Voltages)
+    pip0std = np.std(pip0Voltages)*1e3 # determine standard deviation
+    pip1std = np.std(pip1Voltages)*1e3
 
     # Plotting
     fig.canvas.mpl_connect('close_event', on_close) # exit loop when closing figure
