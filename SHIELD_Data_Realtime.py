@@ -10,6 +10,7 @@ import serial
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 # parameters
 numSamples = 28 # how many samples per message
@@ -172,4 +173,5 @@ while plotting:
 
 plt.show()
 f.close()
+time.sleep(1)
 os.rename(fn,fn[:-4]+'_'+str(payloadID[-1])+'.bin')
