@@ -27,7 +27,7 @@ if len(sys.argv)==3: # optional suffix argument
     suffix = '_' + sys.argv[2]
 else:
     suffix = ''
-ser = serial.Serial(port, baud, timeout=None) # timeout off, wait until all bytes are read
+ser = serial.Serial(port, baud, timeout=300) # timeout off, wait until all bytes are read
 ser.reset_input_buffer() # flush serial port
 fn = datetime.now().strftime("%Y%m%dT%H%M%S") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
 f = open(fn,'ab')
@@ -50,8 +50,8 @@ while plotting:
     rawBytes = ser.read(plotTime*freq*(numSWPBytes+numIMUBytes+2)) # read N seconds worth of bytes
     f.write(rawBytes)
     numBytes = len(rawBytes)
-    numDataSWP = round(plotTime*freq*numSamples)
-    numDataIMU = round(plotTime*freq)
+    numDataSWP = round(plotTime*freq*numSamples*1.05) # add 5% for safety
+    numDataIMU = round(plotTime*freq*1.05)
 
     # pre-allocate arrays of maximum possible sizes
     SWPTime = np.zeros(numDataSWP,dtype='uint32') # unsigned 4 bytes
