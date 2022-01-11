@@ -1,6 +1,8 @@
 # Data collection + realtime parsing & plotting of SHIELD housekeeping and PIP data
 # Updated version for python 3
-# Arguments: 1) Portname, 2) Data filename suffix (Optional)
+# Arguments:
+#   1) Portname
+#   2) (Optional) Data filename suffix
 # Writes all captured bytes to bin file in separate thread
 # 15 minute initial timeout to allow for early code execution
 # Loop terminates after a 10 minute timeout with no data after initial full frame capture
