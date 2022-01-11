@@ -1,16 +1,14 @@
 # Data collection + realtime parsing & plotting of SHIELD housekeeping and PIP data
 # Updated version for python 3
 # Arguments: 1) Portname, 2) Data filename suffix (Optional)
-# Writes all captured bytes to bin file in daemonic thread
-# Parses and plots in set intervals
+# Writes all captured bytes to bin file in separate thread
 # 15 minute initial timeout to allow for early code execution
 # Loop terminates after a 10 minute timeout with no data after initial full frame capture
-# To stop recording close figure.
+# To stop recording close figure
 # Contact: jules.van.irsel.gr@dartmouth.edu
 
 import sys
 import os
-from numpy.lib.arraysetops import in1d
 import serial
 from datetime import datetime
 import numpy as np
@@ -38,9 +36,9 @@ ser = serial.Serial(port, baud, timeout=900) # wait until all bytes are read or 
 ser.reset_input_buffer() # flush serial port
 fn = datetime.now().strftime("%Y%m%dT%H%M%S") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
 f = open(fn,'ab')
-fig, axs = plt.subplots(6, 1, figsize=(16,9))
+fig, axs = plt.subplots(6, 1, figsize=(8,6))
 
-# initialize global params
+# initialize global parameters
 plotting = True
 rawBytes = b'\x00'
 payloadID = 0
@@ -57,12 +55,7 @@ def conc(word):
     if len(word) == 4:
         return (word[3]<<24) | (word[2]<<16) | (word[1]<<8) | word[0]
 
-# for closing on key capture
-# def key_capture_thread():
-#     global plotting
-#     input('Press Enter and close figure to stop exit.')
-#     plotting = False
-
+# background read + write thread
 def read_write_thread():
     global plotting, rawBytes, payloadID
     while plotting:
@@ -74,19 +67,16 @@ def read_write_thread():
 # start main loop
 def main():
     global plotting, rawBytes, payloadID
-    # th.Thread(target=key_capture_thread, args=(), daemon=False).start() # thread awaiting input
     th.Thread(target=read_write_thread, args=(), name='read_write_thread', daemon=False).start() # thread reading and writing raw bytes
     
     # initialize history arrays
     SWPTimeOld = np.zeros(0,dtype='uint32') # unsigned 4 bytes
-    payloadIDOld = np.zeros(0,dtype='uint8') # unsigned 1 byte
     pip0VoltagesOld = np.zeros(0,dtype='int16') # signed 2 bytes
     pip1VoltagesOld = np.zeros(0,dtype='int16')
     IMUTimeOld = np.zeros(0,dtype='uint32')
     axOld = np.zeros(0,dtype='int16'); ayOld = np.zeros(0,dtype='int16'); azOld = np.zeros(0,dtype='int16') 
     mxOld = np.zeros(0,dtype='int16'); myOld = np.zeros(0,dtype='int16'); mzOld = np.zeros(0,dtype='int16')
     gxOld = np.zeros(0,dtype='int16'); gyOld = np.zeros(0,dtype='int16'); gzOld = np.zeros(0,dtype='int16')
-    IMUTempOld = np.zeros(0,dtype='int16')
     IMUCadOld = np.zeros(0,dtype='uint32')
 
     while plotting:
@@ -160,6 +150,7 @@ def main():
                 gx = gx[0:posIMU]*mScale; gy = gy[0:posIMU]*mScale; gz = gz[0:posIMU]*mScale
                 IMUTemp = IMUTemp[0:posIMU]
 
+                # data calculations
                 IMUCad = np.diff(IMUTime)*1e3
                 IMUCad = np.append(IMUCad,IMUCad[-1]) # make array same length
                 pip0rms = np.sqrt(np.mean(np.square(pip0Voltages-np.mean(pip0Voltages))))*1e3 # calculate rms
@@ -171,8 +162,8 @@ def main():
                 fig.canvas.mpl_connect('close_event', on_close) # exit loop when closing figure
                 fig.subplots_adjust(hspace=0)
                 lw = 1
-                
-                axs[0].clear()
+            
+                axs[0].clear() # accelerometer
                 axs[0].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((axOld,ax)),linewidth=lw)
                 axs[0].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((ayOld,ay)),linewidth=lw)
                 axs[0].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((azOld,az)),linewidth=lw)
@@ -184,7 +175,7 @@ def main():
                 axs[0].xaxis.set_label_position('top')
                 axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payloadID), transform=axs[0].transAxes)
 
-                axs[1].clear()
+                axs[1].clear() # magnetometer
                 axs[1].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((mxOld,mx)),linewidth=lw)
                 axs[1].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((myOld,my)),linewidth=lw)
                 axs[1].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((mzOld,mz)),linewidth=lw)
@@ -193,7 +184,7 @@ def main():
                 axs[1].ticklabel_format(useOffset=False)
                 axs[1].xaxis.set_ticklabels([])
 
-                axs[2].clear()
+                axs[2].clear() # gyrometer
                 axs[2].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((gxOld,gx)),linewidth=lw)
                 axs[2].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((gyOld,gy)),linewidth=lw)
                 axs[2].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((gzOld,gz)),linewidth=lw)
@@ -202,21 +193,21 @@ def main():
                 axs[2].ticklabel_format(useOffset=False)
                 axs[2].xaxis.set_ticklabels([])
                 
-                axs[3].clear()
+                axs[3].clear() # Cadance
                 axs[3].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((IMUCadOld,IMUCad)),linewidth=lw/2)
                 axs[3].set_ylabel('CAD [ms]')
                 axs[3].grid()
                 axs[3].ticklabel_format(useOffset=False)
                 axs[3].xaxis.set_ticklabels([])
                 
-                axs[4].clear()
+                axs[4].clear() # pip0 voltage
                 axs[4].plot(np.concatenate((SWPTimeOld,SWPTime[1:])),np.concatenate((pip0VoltagesOld,pip0Voltages[1:])),linewidth=lw/2)
                 axs[4].set_ylabel('P0 [V]')
                 axs[4].grid()
                 axs[4].ticklabel_format(useOffset=False)
                 axs[4].xaxis.set_ticklabels([])
 
-                axs[5].clear()
+                axs[5].clear() # pip1 voltage
                 axs[5].plot(np.concatenate((SWPTimeOld,SWPTime[1:])),np.concatenate((pip1VoltagesOld,pip1Voltages[1:])),linewidth=lw)
                 axs[5].set_ylabel('P1 [V]')
                 axs[5].grid()
@@ -228,16 +219,14 @@ def main():
                 axs[5].text( 0.1, -0.8, 'P1 STD: ' + "{0:.1f}".format(pip1std) + ' mV', transform=axs[5].transAxes)
 
                 SWPTimeOld = SWPTime
-                payloadIDOld = payloadID
                 pip0VoltagesOld = pip0Voltages
                 pip1VoltagesOld =pip1Voltages
                 IMUTimeOld = IMUTime
                 axOld = ax; ayOld = ay; azOld = az
                 mxOld = mx; myOld = my; mzOld = mz
                 gxOld = gx; gyOld = gy; gzOld = gz
-                IMUTempOld = IMUTemp
                 IMUCadOld = IMUCad
 
                 plt.pause(plotTime) # needed for pyplot realtime plotting. might switch back to pyqtgraph
 
-main() # run main loop
+main()
