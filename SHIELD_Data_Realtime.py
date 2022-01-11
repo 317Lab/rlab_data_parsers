@@ -82,8 +82,6 @@ def main():
     IMUCadOld = np.zeros(0,dtype='uint32')
 
     while plotting:
-        # rawBytes = ser.read(numBytesTarget)
-        # f.write(rawBytes)
         numBytes = len(rawBytes)
         if numBytes == 0: # end recording if no bytes after timeout
             print('No data after serial timeout',flush=True)
@@ -149,7 +147,7 @@ def main():
                 IMUTime = IMUTime[0:posIMU]*tScale
                 ax = ax[0:posIMU]*aScale; ay = ay[0:posIMU]*aScale; az = az[0:posIMU]*aScale
                 mx = mx[0:posIMU]*mScale; my = my[0:posIMU]*mScale; mz = mz[0:posIMU]*mScale
-                gx = gx[0:posIMU]*mScale; gy = gy[0:posIMU]*mScale; gz = gz[0:posIMU]*mScale
+                gx = gx[0:posIMU]*gScale; gy = gy[0:posIMU]*gScale; gz = gz[0:posIMU]*gScale
                 IMUTemp = IMUTemp[0:posIMU]
 
                 # data calculations
