@@ -30,11 +30,15 @@ numBytesTarget = plotTime*freq*(numSWPBytes+numIMUBytes+2) # N seconds worth of 
 # opening data port/file
 port = sys.argv[1]
 baud = 230400
+initial_timeout = 600
+plotting_timeout = 300
+print('Reading from port',port,'at baud rate',baud,flush=True)
 if len(sys.argv)==3: # optional suffix argument
     suffix = '_' + sys.argv[2]
 else:
     suffix = ''
-ser = serial.Serial(port, baud, timeout=900) # wait until all bytes are read or x seconds pass
+ser = serial.Serial(port, baud, timeout=initial_timeout) # wait until all bytes are read or x seconds pass
+print('Initial serial port timeout =',ser.timeout,'seconds',flush=True)
 ser.reset_input_buffer() # flush serial port
 fn = datetime.now().strftime("%Y%m%dT%H%M%S") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
 f = open(fn,'ab')
@@ -42,12 +46,14 @@ fig, axs = plt.subplots(6, 1, figsize=(8,6))
 
 # initialize global parameters
 plotting = True
+initial_print = True
 rawBytes = b'\x00'
 payloadID = 0
 
 # for closing on figure exit
 def on_close(event):
-    global plotting 
+    global plotting
+    print('Close event captured at',datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
     plotting = False
 
 # concatenate multiple bytes
@@ -59,19 +65,19 @@ def conc(word):
 
 # background read + write thread
 def read_write_thread():
-    global plotting, rawBytes, payloadID
+    global plotting, rawBytes
     while plotting:
         rawBytes = ser.read(numBytesTarget)
         f.write(rawBytes)
-    f.close()
-    os.rename(fn,fn[:-4]+'_'+str(payloadID)+'.bin') # add payload ID to filename
 
 # start main loop
 def main():
-    global plotting, rawBytes, payloadID
-    th.Thread(target=read_write_thread, args=(), name='read_write_thread', daemon=False).start() # thread reading and writing raw bytes
+    global plotting, rawBytes, initial_print
+    rw_thread = th.Thread(target=read_write_thread, args=(), name='read_write_thread', daemon=False) # thread reading and writing raw bytes
+    rw_thread.start()
     
     # initialize history arrays
+    # history stitches poorly due to messages getting cut between frames
     SWPTimeOld = np.zeros(0,dtype='uint32') # unsigned 4 bytes
     pip0VoltagesOld = np.zeros(0,dtype='int16') # signed 2 bytes
     pip1VoltagesOld = np.zeros(0,dtype='int16')
@@ -85,9 +91,10 @@ def main():
         numBytes = len(rawBytes)
         if numBytes == 0: # end recording if no bytes after timeout
             print('No data after serial timeout',flush=True)
+            print('Terminating at',datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
             plotting = False
         elif numBytes == numBytesTarget:
-            ser.timeout = 600 # shorten timeout after initial message capture
+            ser.timeout = plotting_timeout # shorten timeout after initial message capture
             numDataSWP = round(plotTime*freq*numSamples*2.5) # add 250% for safety
             numDataIMU = round(plotTime*freq*2.5)
 
@@ -136,9 +143,13 @@ def main():
                                 posIMU += 1
 
             if posSWP==0 or posIMU==0: # no full messages found indicating scrambled bytes
-                print('DATA DROPOUT AT ' + datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
+                print('DATA DROPOUT AT',datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
                 time.sleep(1) # print in 1 second intervals until end of data drop
             else:
+                if initial_print:
+                    print('Initial message capture at',datetime.now().strftime("%Y%m%dT%H%M%S"))
+                    print('Serial port timeout =',ser.timeout,'seconds')
+                    initial_print = False
                 # Converting bytes and scaling data
                 SWPTime = SWPTime[0:posSWP]*tScale # chop off unused zeros
                 payloadID = payloadID[0]
@@ -194,21 +205,21 @@ def main():
                 axs[2].xaxis.set_ticklabels([])
                 
                 axs[3].clear() # Cadance
-                axs[3].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((IMUCadOld,IMUCad)),linewidth=lw/2)
+                axs[3].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((IMUCadOld,IMUCad)),linewidth=lw)
                 axs[3].set_ylabel('CAD [ms]')
                 axs[3].grid()
                 axs[3].ticklabel_format(useOffset=False)
                 axs[3].xaxis.set_ticklabels([])
                 
                 axs[4].clear() # pip0 voltage
-                axs[4].plot(np.concatenate((SWPTimeOld,SWPTime[1:])),np.concatenate((pip0VoltagesOld,pip0Voltages[1:])),linewidth=lw/2)
+                axs[4].plot(np.concatenate((SWPTimeOld,SWPTime)),np.concatenate((pip0VoltagesOld,pip0Voltages)),linewidth=lw/2)
                 axs[4].set_ylabel('P0 [V]')
                 axs[4].grid()
                 axs[4].ticklabel_format(useOffset=False)
                 axs[4].xaxis.set_ticklabels([])
 
                 axs[5].clear() # pip1 voltage
-                axs[5].plot(np.concatenate((SWPTimeOld,SWPTime[1:])),np.concatenate((pip1VoltagesOld,pip1Voltages[1:])),linewidth=lw)
+                axs[5].plot(np.concatenate((SWPTimeOld,SWPTime)),np.concatenate((pip1VoltagesOld,pip1Voltages)),linewidth=lw/2)
                 axs[5].set_ylabel('P1 [V]')
                 axs[5].grid()
                 axs[5].ticklabel_format(useOffset=False)
@@ -228,5 +239,10 @@ def main():
                 IMUCadOld = IMUCad
 
                 plt.pause(plotTime) # needed for pyplot realtime plotting. might switch back to pyqtgraph
+    ser.close()
+    if not ser.is_open:
+        print('Serial port',port,'closed')
+    f.close()
+    os.rename(fn,fn[:-4]+'_'+str(payloadID)+'.bin') # add payload ID to filename
 
 main()
