@@ -1,4 +1,4 @@
-if [[ $1 == "m" ]]; then
+if [[ $1 == "-m" ]]; then
     echo "MONITORING ONLY MODE"
     python SHIELD_Data_Monitor.py COM4 &
     python SHIELD_Data_Monitor.py COM5 &

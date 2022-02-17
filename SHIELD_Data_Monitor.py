@@ -187,7 +187,7 @@ def main():
                 axs[0].xaxis.set_label_position('top')
                 axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payloadID), transform=axs[0].transAxes,fontsize=15)
                 if flash:
-                    axs[0].text(-0.1, 1.5, 'MONITORING MODE', transform=axs[0].transAxes, color='red',fontsize=20)
+                    axs[0].text(-0.1, 1.5, 'MONITORING MODE', transform=axs[0].transAxes, color='red',fontsize=20,weight="bold")
                     flash = False
                 else:
                     flash = True
