@@ -47,6 +47,7 @@ fig, axs = plt.subplots(6, 1, figsize=(8,6))
 # initialize global parameters
 plotting = True
 initial_print = True
+flash = True
 rawBytes = b'\x00'
 payloadID = 0
 
@@ -72,7 +73,7 @@ def read_write_thread():
 
 # start main loop
 def main():
-    global plotting, rawBytes, initial_print
+    global plotting, rawBytes, initial_print, flash
     rw_thread = th.Thread(target=read_write_thread, args=(), name='read_write_thread', daemon=False) # thread reading and writing raw bytes
     rw_thread.start()
     
@@ -184,8 +185,12 @@ def main():
                 axs[0].set_xlabel('IMU TIME SINCE SHIELD POWER [s]')
                 axs[0].xaxis.tick_top()
                 axs[0].xaxis.set_label_position('top')
-                axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payloadID), transform=axs[0].transAxes)
-                axs[0].text(-0.1, 1.5, 'MONITORING MODE', transform=axs[0].transAxes, color='red',fontsize=20)
+                axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payloadID), transform=axs[0].transAxes,fontsize=15)
+                if flash:
+                    axs[0].text(-0.1, 1.5, 'MONITORING MODE', transform=axs[0].transAxes, color='red',fontsize=20)
+                    flash = False
+                else:
+                    flash = True
 
                 axs[1].clear() # magnetometer
                 axs[1].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((mxOld,mx)),linewidth=lw)

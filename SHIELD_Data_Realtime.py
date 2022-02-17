@@ -184,7 +184,7 @@ def main():
                 axs[0].set_xlabel('IMU TIME SINCE SHIELD POWER [s]')
                 axs[0].xaxis.tick_top()
                 axs[0].xaxis.set_label_position('top')
-                axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payloadID), transform=axs[0].transAxes)
+                axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payloadID), transform=axs[0].transAxes, fontsize=15)
 
                 axs[1].clear() # magnetometer
                 axs[1].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((mxOld,mx)),linewidth=lw)
