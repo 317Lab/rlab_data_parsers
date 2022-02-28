@@ -30,7 +30,7 @@ numBytesTarget = plotTime*freq*(numSWPBytes+numIMUBytes+2) # N seconds worth of 
 # opening data port/file
 port = sys.argv[1]
 baud = 230400
-initial_timeout = 600
+initial_timeout = 3600
 plotting_timeout = 300
 print('Reading from port',port,'at baud rate',baud,flush=True)
 if len(sys.argv)==3: # optional suffix argument

@@ -30,7 +30,7 @@ numBytesTarget = plotTime*freq*(numSWPBytes+numIMUBytes+2) # N seconds worth of 
 # opening data port/file
 port = sys.argv[1]
 baud = 230400
-initial_timeout = 600
+initial_timeout = 3600
 plotting_timeout = 300
 print('Reading from port',port,'at baud rate',baud,flush=True)
 if len(sys.argv)==3: # optional suffix argument
@@ -40,7 +40,7 @@ else:
 ser = serial.Serial(port, baud, timeout=initial_timeout) # wait until all bytes are read or x seconds pass
 print('Initial serial port timeout =',ser.timeout,'seconds',flush=True)
 ser.reset_input_buffer() # flush serial port
-fn = datetime.now().strftime("%Y%m%dT%H%M%S") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
+fn = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
 f = open(fn,'ab')
 fig, axs = plt.subplots(6, 1, figsize=(8,6))
 
