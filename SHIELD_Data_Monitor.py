@@ -30,8 +30,8 @@ numBytesTarget = plotTime*freq*(numSWPBytes+numIMUBytes+2) # N seconds worth of 
 # opening data port/file
 port = sys.argv[1]
 baud = 230400
-initial_timeout = 3600
-plotting_timeout = 300
+initial_timeout = 4*3600
+plotting_timeout = 4*3600
 print('Reading from port',port,'at baud rate',baud,flush=True)
 if len(sys.argv)==3: # optional suffix argument
     suffix = '_' + sys.argv[2]
@@ -47,9 +47,9 @@ fig, axs = plt.subplots(6, 1, figsize=(8,6))
 # initialize global parameters
 plotting = True
 initial_print = True
-flash = True
 rawBytes = b'\x00'
 payloadID = 0
+flash = True
 
 # for closing on figure exit
 def on_close(event):
@@ -73,7 +73,7 @@ def read_write_thread():
 
 # start main loop
 def main():
-    global plotting, rawBytes, initial_print, flash
+    global plotting, initial_print, rawBytes, payloadID, flash
     rw_thread = th.Thread(target=read_write_thread, args=(), name='read_write_thread', daemon=False) # thread reading and writing raw bytes
     rw_thread.start()
     
