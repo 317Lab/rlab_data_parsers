@@ -1,13 +1,15 @@
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Dartmouth 112/317 Rocket Lab GSE codes for shields.  
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+***Dartmouth 112/317 Rocket Lab GSE codes for shields. *** 
 
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Description of Files & Folders
-++++++++++++++++++++++++++++++++++
+**Quick Start Guide**
+*Core Files*
+* SHIELD_Data_Monitor.py: Monitor realtime shield data without saving to a file. 
+* SHIELD_Data_Realtime.py: Monitor and Save realtime shield data. (Saves data to .bin file)
+* parse_shield_fall2022.py: Parse .bin files, save parsed data in Frickle file (.hdf5 format) and make survey plots of shield data. 
+
+**Description of Files & Folders**
 * archived: Holds previous versions of GSE codes.  
-    >> archived_fall21: Subfolder that holds the versions of parse_erpabob_summer2021_stri.ipynb and parse_erpabob_summer2021_stripped.ipynb prior to the 2021/10/07 update/partial-merge.
-    >> archived_summer21: Subfolder that holds previous versions of GSE code as well as miscellaneous GSE codes generated prior to 2021/08/05 update.  
+    >> * archived_fall21: Subfolder that holds the versions of parse_erpabob_summer2021_stri.ipynb and parse_erpabob_summer2021_stripped.ipynb prior to the 2021/10/07 update/partial-merge.
+    >> * archived_summer21: Subfolder that holds previous versions of GSE code as well as miscellaneous GSE codes generated prior to 2021/08/05 update.  
 * delamere_extraCode: Another archive folder that contains code that was used and may need to be referenced in analysis of the Delamere rocket.
 * useful_pyscripts: Collection of useful (OPTIONAL) python scripts for various purposes. (See bellow)
 * erpabob_data_collection_summer_2021.ipynb: IPython notebook for collecting data from a shield and saving it to a file. 
@@ -21,7 +23,7 @@ Description of Files & Folders
 * parse_erpabob_fall2021_stripped.ipynb: Same as parse_erpabob_summer2021_delamere.ipynb except for cleaner plotting section. [IPython notebook for parsing and plotting data files output from erpabob_realtime_plot_summer2021_stripped.py OR erpabob_data_collection_summer_2021.ipynb]
 
 ------------------------------------------------------------------------------
-Files in useful_pyscripts Folder 
+*Files in useful_pyscripts Folder* 
 ---------------------------------
 * TestHelp_fun.py: Collection of functions by Magdalina Moses to help with some of the test data analysis. NOT required for any other file in this repo.
 * erpabob_functions.py: A start on a collection of functions used often in gse data handling and analysis.  
@@ -31,7 +33,7 @@ Files in useful_pyscripts Folder
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Master Branch Update Log
+**Master Branch Update Log**
 ++++++++++++++++++++++++++++++++++
 * Update 2021/10/20: Implemented new method of converting pip screen voltage to nA using pip-specific voltage offsets instead of assuming 1V for all pips. Also, added option to set cadance plots' xlims to the plotting section. 
 * Update 2021/10/11: Created parse_erpabob_fall2021_delamere.ipynb and parse_erpabob_fall2021_stripped.ipynb. These are identical to the summer2021 versions EXCEPT for the plotting section. The fall2021 plotting section has a more straightforward method of setting x and y axis limits for the plot (based on crex_gse code). 
