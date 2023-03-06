@@ -32,17 +32,17 @@
 * archived: Holds previous versions of GSE codes.  
     >> * archived\_fall21: Subfolder that holds the versions of parse\_erpabob\_summer2021\_stri.ipynb and parse\_erpabob\_summer2021\_stripped.ipynb prior to the 2021/10/07 update/partial-merge.
     >> * archived\_summer21: Subfolder that holds previous versions of GSE code as well as miscellaneous GSE codes generated prior to 2021/08/05 update.  
-* delamere\_extraCode: Another archive folder that contains code that was used and may need to be referenced in analysis of the Delamere rocket. [python2] 
-* useful\_pyscripts: Collection of useful (OPTIONAL) python scripts for various purposes. (See bellow)
-* erpabob\_data\_collection\_summer\_2021.ipynb: [python2] IPython notebook for collecting data from a shield and saving it to a file. 
-* erpabob\_realtime\_plot\_summer2021\_delamere.py: [python2] Python script that collects, saves and plots realtime shield data for shields with both original and 10s buffered data in their transmissions (like for Delamere).
-    --> NOTE: Must specify data transmission speed in code!
-* erpabob\_realtime\_plot\_summer2021\_stripped.py: [python2] Python script that collects, saves and plots realtime shield data for shields with only current data in their transmissions. 
-    --> NOTE: Must specify data transmission speed in code!
-* parse\_erpabob\_summer2021\_delamere.ipynb: [python2] IPython notebook for parsing and plotting data files output from erpabob\_realtime\_plot\_summer2021\_delamere.py OR erpabob\_data\_collection\_summer\_2021.ipynb 
-* parse\_erpabob\_summer2021\_stripped.ipynb: [python2] IPython notebook for parsing and plotting data files output from erpabob\_realtime\_plot\_summer2021\_stripped.py OR erpabob\_data\_collection\_summer\_2021.ipynb 
-* parse\_erpabob\_fall2021\_delamere.ipynb: [python2] Same as parse\_erpabob\_summer2021\_delamere.ipynb except for cleaner plotting section. [IPython notebook for parsing and plotting data files output from erpabob\_realtime\_plot\_summer2021\_delamere.py OR erpabob\_data\_collection\_summer\_2021.ipynb] 
-* parse\_erpabob\_fall2021\_stripped.ipynb: [python2] Same as parse\_erpabob\_summer2021\_delamere.ipynb except for cleaner plotting section. [IPython notebook for parsing and plotting data files output from erpabob\_realtime\_plot\_summer2021\_stripped.py OR erpabob\_data\_collection\_summer\_2021.ipynb]
+* *delamere\_extraCode*: Another archive folder that contains code that was used and may need to be referenced in analysis of the Delamere rocket. [python2] 
+* *useful\_pyscripts*: Collection of useful (OPTIONAL) python scripts for various purposes. (See bellow)
+* *erpabob\_data\_collection\_summer\_2021.ipynb*: [python2] IPython notebook for collecting data from a shield and saving it to a file. 
+* *erpabob\_realtime\_plot\_summer2021\_delamere.py*: [python2] Python script that collects, saves and plots realtime shield data for shields with both original and 10s buffered data in their transmissions (like for Delamere).
+    --> *NOTE*: Must specify data transmission speed in code!
+* *erpabob\_realtime\_plot\_summer2021\_stripped.py*: [python2] Python script that collects, saves and plots realtime shield data for shields with only current data in their transmissions. 
+    --> *NOTE*: Must specify data transmission speed in code!
+* *parse\_erpabob\_summer2021\_delamere.ipynb*: [python2] IPython notebook for parsing and plotting data files output from erpabob\_realtime\_plot\_summer2021\_delamere.py OR erpabob\_data\_collection\_summer\_2021.ipynb 
+* *parse\_erpabob\_summer2021\_stripped.ipynb*: [python2] IPython notebook for parsing and plotting data files output from erpabob\_realtime\_plot\_summer2021\_stripped.py OR erpabob\_data\_collection\_summer\_2021.ipynb 
+* *parse\_erpabob\_fall2021\_delamere.ipynb*: [python2] Same as parse\_erpabob\_summer2021\_delamere.ipynb except for cleaner plotting section. [IPython notebook for parsing and plotting data files output from erpabob\_realtime\_plot\_summer2021\_delamere.py OR erpabob\_data\_collection\_summer\_2021.ipynb] 
+* *parse\_erpabob\_fall2021\_stripped.ipynb*: [python2] Same as parse\_erpabob\_summer2021\_delamere.ipynb except for cleaner plotting section. [IPython notebook for parsing and plotting data files output from erpabob\_realtime\_plot\_summer2021\_stripped.py OR erpabob\_data\_collection\_summer\_2021.ipynb]
 
 ------------------------------------------------------------------------------
 *Files in useful\_pyscripts Folder* 
