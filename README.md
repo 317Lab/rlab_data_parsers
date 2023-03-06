@@ -35,6 +35,8 @@
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 **Master Branch Update Log**
 ++++++++++++++++++++++++++++++++++
+* Update 2022/11/16: Magda changed notebook parser output file type from pickle to frickle (i.e. hdf5) in order to save hard drive space AND to make the datafiles much more 'portable'/sharable.
+* Update 2022/03   : Jules re-wrote realtime data parser/plotter python script and parser notebook to work in python3. As part of this, changed output realtime data files to .bin format. Also, created new python reealtime data monitor to just do quick checks of shield operation without making a file. 
 * Update 2021/10/20: Implemented new method of converting pip screen voltage to nA using pip-specific voltage offsets instead of assuming 1V for all pips. Also, added option to set cadance plots' xlims to the plotting section. 
 * Update 2021/10/11: Created parse_erpabob_fall2021_delamere.ipynb and parse_erpabob_fall2021_stripped.ipynb. These are identical to the summer2021 versions EXCEPT for the plotting section. The fall2021 plotting section has a more straightforward method of setting x and y axis limits for the plot (based on crex_gse code). 
 * Update 2021/10/07: Merged notebook parser files from zoom_GPS. This merge corrected errors in some of the parsed time arrays and have better pickle file outputs. Created "archived" folder to hold all archived codes. Added parse_erpabob_summer2021_delamere/stripped.ipynbs to archived/archived_fall21/ prior to merge. 
