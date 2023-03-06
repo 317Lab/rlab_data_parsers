@@ -21,6 +21,9 @@
     * Quick Check **Without** Saving Data: _python SHIELD_Data_Monitor.py <port>_
     * Full Realtime Monitor and Save Data: _python SHIELD_Data_Realtime.py <port>_
         * Outputs datafile in same directory run from. 
+4. To End Realtime Parser Run
+    * Close Plot Window
+    * OR go to command line and hit Ctrl-c
 
 **Parse Shield's .bin File**
 1. Open Jupyter Notebooks _jupyter notebook_
