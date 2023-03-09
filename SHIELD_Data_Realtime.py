@@ -19,19 +19,19 @@ import time
 import threading as th
 
 # parameters
-numSamples = 28 # how many samples per message
-numSWPBytes = 4 + 1 + numSamples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
-numIMUBytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
-tScale = 1.e-6; aScale = 4*9.8/2**15; mScale = 1./2**15; gScale = 2000./360/2**15; pScale = 5/2**14 # data scales
+num_samples = 28 # how many samples per message
+num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
+num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
+t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
 freq = 45 # set data frequency in Hz
-plotTime = 3 # time to plot for in seconds
-numBytesTarget = plotTime*freq*(numSWPBytes+numIMUBytes+2) # N seconds worth of bytes
+plot_time = 2 # time to plot for in seconds
+num_bytes_target = plot_time*freq*(num_swp_bytes+2+num_imu_bytes+2) # N seconds worth of bytes
 
 # opening data port/file
 port = sys.argv[1]
 baud = 230400
 initial_timeout = 4*3600
-plotting_timeout = 4*3600
+plotting_timeout = 3600
 print('Reading from port',port,'at baud rate',baud,flush=True)
 if len(sys.argv)==3: # optional suffix argument
     suffix = '_' + sys.argv[2]
@@ -40,15 +40,14 @@ else:
 ser = serial.Serial(port, baud, timeout=initial_timeout) # wait until all bytes are read or x seconds pass
 print('Initial serial port timeout =',ser.timeout,'seconds',flush=True)
 ser.reset_input_buffer() # flush serial port
-fn = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
-f = open(fn,'ab')
+filename = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
+file = open(filename,'ab')
 fig, axs = plt.subplots(6, 1, figsize=(8,6))
 
 # initialize global parameters
 plotting = True
-initial_print = True
-rawBytes = b'\x00'
-payloadID = 0
+raw_bytes = b'\x00'
+payload_id = 0
 
 # for closing on figure exit
 def on_close(event):
@@ -65,84 +64,87 @@ def conc(word):
 
 # background read + write thread
 def read_write_thread():
-    global plotting, rawBytes
+    global plotting, raw_bytes
     while plotting:
-        rawBytes = ser.read(numBytesTarget)
-        f.write(rawBytes)
+        raw_bytes = ser.read(num_bytes_target)
+        file.write(raw_bytes)
 
 # start main loop
 def main():
-    global plotting, initial_print, rawBytes, payloadID
+    global plotting, raw_bytes, payload_id
     rw_thread = th.Thread(target=read_write_thread, args=(), name='read_write_thread', daemon=False) # thread reading and writing raw bytes
     rw_thread.start()
     
     # initialize history arrays
     # history stitches poorly due to messages getting cut between frames
-    SWPTimeOld = np.zeros(0,dtype='uint32') # unsigned 4 bytes
-    pip0VoltagesOld = np.zeros(0,dtype='int16') # signed 2 bytes
-    pip1VoltagesOld = np.zeros(0,dtype='int16')
-    IMUTimeOld = np.zeros(0,dtype='uint32')
-    axOld = np.zeros(0,dtype='int16'); ayOld = np.zeros(0,dtype='int16'); azOld = np.zeros(0,dtype='int16') 
-    mxOld = np.zeros(0,dtype='int16'); myOld = np.zeros(0,dtype='int16'); mzOld = np.zeros(0,dtype='int16')
-    gxOld = np.zeros(0,dtype='int16'); gyOld = np.zeros(0,dtype='int16'); gzOld = np.zeros(0,dtype='int16')
-    IMUCadOld = np.zeros(0,dtype='uint32')
+    swp_time_old = np.zeros(0,dtype='uint32') # unsigned 4 bytes
+    p0_volts_old = np.zeros(0,dtype='int16') # signed 2 bytes
+    p1_volts_old = np.zeros(0,dtype='int16')
+    imu_time_old = np.zeros(0,dtype='uint32')
+    ax_old = np.zeros(0,dtype='int16'); ay_old = np.zeros(0,dtype='int16'); az_old = np.zeros(0,dtype='int16') 
+    mx_old = np.zeros(0,dtype='int16'); my_old = np.zeros(0,dtype='int16'); mz_old = np.zeros(0,dtype='int16')
+    gx_old = np.zeros(0,dtype='int16'); gy_old = np.zeros(0,dtype='int16'); gz_old = np.zeros(0,dtype='int16')
+    imu_cad_old = np.zeros(0,dtype='uint32')
+
+    initial_print = True
 
     while plotting:
-        numBytes = len(rawBytes)
-        if numBytes == 0: # end recording if no bytes after timeout
+        num_bytes = len(raw_bytes)
+        if num_bytes == 0: # end recording if no bytes after timeout
             print('No data after serial timeout',flush=True)
             print('Terminating at',datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
             plotting = False
-        elif numBytes == numBytesTarget:
+        elif num_bytes == num_bytes_target:
+        # else:
             ser.timeout = plotting_timeout # shorten timeout after initial message capture
-            numDataSWP = round(plotTime*freq*numSamples*2.5) # add 250% for safety
-            numDataIMU = round(plotTime*freq*2.5)
+            num_dat_swp = round(plot_time*freq*num_samples*2.5) # add 250% for safety
+            num_dat_imu = round(plot_time*freq*2.5)
 
             # pre-allocate arrays of maximum possible sizes
-            SWPTime = np.zeros(numDataSWP,dtype='uint32') # unsigned 4 bytes
-            payloadID = np.zeros(numDataSWP,dtype='uint8') # unsigned 1 byte
-            pip0Voltages = np.zeros(numDataSWP,dtype='int16') # signed 2 bytes
-            pip1Voltages = np.zeros(numDataSWP,dtype='int16')
-            IMUTime = np.zeros(numDataIMU,dtype='uint32')
-            ax = np.zeros(numDataIMU,dtype='int16'); ay = np.zeros(numDataIMU,dtype='int16'); az = np.zeros(numDataIMU,dtype='int16') 
-            mx = np.zeros(numDataIMU,dtype='int16'); my = np.zeros(numDataIMU,dtype='int16'); mz = np.zeros(numDataIMU,dtype='int16')
-            gx = np.zeros(numDataIMU,dtype='int16'); gy = np.zeros(numDataIMU,dtype='int16'); gz = np.zeros(numDataIMU,dtype='int16')
-            IMUTemp = np.zeros(numDataIMU,dtype='int16')
+            swp_time = np.zeros(num_dat_swp,dtype='uint32') # unsigned 4 bytes
+            payload_id = np.zeros(num_dat_swp,dtype='uint8') # unsigned 1 byte
+            p0_volts = np.zeros(num_dat_swp,dtype='int16') # signed 2 bytes
+            p1_volts = np.zeros(num_dat_swp,dtype='int16')
+            imu_time = np.zeros(num_dat_imu,dtype='uint32')
+            ax = np.zeros(num_dat_imu,dtype='int16'); ay = np.zeros(num_dat_imu,dtype='int16'); az = np.zeros(num_dat_imu,dtype='int16') 
+            mx = np.zeros(num_dat_imu,dtype='int16'); my = np.zeros(num_dat_imu,dtype='int16'); mz = np.zeros(num_dat_imu,dtype='int16')
+            gx = np.zeros(num_dat_imu,dtype='int16'); gy = np.zeros(num_dat_imu,dtype='int16'); gz = np.zeros(num_dat_imu,dtype='int16')
+            imu_temp = np.zeros(num_dat_imu,dtype='int16')
 
-            posSWP = 0 # position in respective arrays
-            posIMU = 0
-            for i in range(numBytes-numSWPBytes-2): # scan through rawBytes
-                if rawBytes[i] == 35: # byte is "#": start of data message
-                    if rawBytes[i+1] == 83: # byte is "S": start of sweep data
-                        if i+numSWPBytes+2 <= numBytes: # full message is available
-                            if rawBytes[i+numSWPBytes+2] == 35: # next "#" indicates correct number of sweep bytes
-                                SWPBytes = rawBytes[i+2:i+numSWPBytes+2] # collect appropriate bytes
-                                pip0Bytes = SWPBytes[5:5+2*numSamples]
-                                pip1Bytes = SWPBytes[5+2*numSamples:]
-                                for sample in range(0,2*numSamples,2): # allocate all sweep samples to arrays
-                                    SWPTime[posSWP] = conc(SWPBytes[0:4]) # copy static data for each sample
-                                    payloadID[posSWP] = SWPBytes[4]
-                                    pip0Voltages[posSWP] = conc(pip0Bytes[sample:sample+2])
-                                    pip1Voltages[posSWP] = conc(pip1Bytes[sample:sample+2])
-                                    posSWP += 1
-                    elif rawBytes[i+1] == 73: # byte is "I": start of IMU data
-                        if i+numIMUBytes+2 <= numBytes: # full message is available
-                            if rawBytes[i+numIMUBytes+2] == 35: # next "#" indicates correct number of IMU bytes
-                                IMUBytes = rawBytes[i+2:i+numIMUBytes+2] # collect appropriate bytes
-                                IMUTime[posIMU] = conc(IMUBytes[0:4])
-                                ax[posIMU] = conc(IMUBytes[4:6])
-                                ay[posIMU] = conc(IMUBytes[6:8])
-                                az[posIMU] = conc(IMUBytes[8:10])
-                                mx[posIMU] = conc(IMUBytes[10:12])
-                                my[posIMU] = conc(IMUBytes[12:14])
-                                mz[posIMU] = conc(IMUBytes[14:16])
-                                gx[posIMU] = conc(IMUBytes[16:18])
-                                gy[posIMU] = conc(IMUBytes[18:20])
-                                gz[posIMU] = conc(IMUBytes[20:22])
-                                IMUTemp[posIMU] = conc(IMUBytes[22:24])
-                                posIMU += 1
+            pos_swp = 0 # position in respective arrays
+            pos_imu = 0
+            for i in range(num_bytes-num_swp_bytes-2): # scan through raw_bytes
+                if raw_bytes[i] == 35: # byte is "#": start of data message
+                    if raw_bytes[i+1] == 83: # byte is "S": start of sweep data
+                        if i+num_swp_bytes+2 <= num_bytes: # full message is available
+                            if raw_bytes[i+num_swp_bytes+2] == 35: # next "#" indicates correct number of sweep bytes
+                                swp_bytes = raw_bytes[i+2:i+num_swp_bytes+2] # collect appropriate bytes
+                                p0_bytes = swp_bytes[5:5+2*num_samples]
+                                p1_bytes = swp_bytes[5+2*num_samples:]
+                                for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
+                                    swp_time[pos_swp] = conc(swp_bytes[0:4]) # copy static data for each sample
+                                    payload_id[pos_swp] = swp_bytes[4]
+                                    p0_volts[pos_swp] = conc(p0_bytes[sample:sample+2])
+                                    p1_volts[pos_swp] = conc(p1_bytes[sample:sample+2])
+                                    pos_swp += 1
+                    elif raw_bytes[i+1] == 73: # byte is "I": start of IMU data
+                        if i+num_imu_bytes+2 <= num_bytes: # full message is available
+                            if raw_bytes[i+num_imu_bytes+2] == 35: # next "#" indicates correct number of IMU bytes
+                                imu_bytes = raw_bytes[i+2:i+num_imu_bytes+2] # collect appropriate bytes
+                                imu_time[pos_imu] = conc(imu_bytes[0:4])
+                                ax[pos_imu] = conc(imu_bytes[4:6])
+                                ay[pos_imu] = conc(imu_bytes[6:8])
+                                az[pos_imu] = conc(imu_bytes[8:10])
+                                mx[pos_imu] = conc(imu_bytes[10:12])
+                                my[pos_imu] = conc(imu_bytes[12:14])
+                                mz[pos_imu] = conc(imu_bytes[14:16])
+                                gx[pos_imu] = conc(imu_bytes[16:18])
+                                gy[pos_imu] = conc(imu_bytes[18:20])
+                                gz[pos_imu] = conc(imu_bytes[20:22])
+                                imu_temp[pos_imu] = conc(imu_bytes[22:24])
+                                pos_imu += 1
 
-            if posSWP==0 or posIMU==0: # no full messages found indicating scrambled bytes
+            if pos_swp==0 or pos_imu==0: # no full messages found indicating scrambled bytes
                 print('DATA DROPOUT AT',datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
                 time.sleep(1) # print in 1 second intervals until end of data drop
             else:
@@ -151,23 +153,23 @@ def main():
                     print('Serial port timeout =',ser.timeout,'seconds')
                     initial_print = False
                 # Converting bytes and scaling data
-                SWPTime = SWPTime[0:posSWP]*tScale # chop off unused zeros
-                payloadID = payloadID[0]
-                pip0Voltages = pip0Voltages[0:posSWP]*pScale
-                pip1Voltages = pip1Voltages[0:posSWP]*pScale
-                IMUTime = IMUTime[0:posIMU]*tScale
-                ax = ax[0:posIMU]*aScale; ay = ay[0:posIMU]*aScale; az = az[0:posIMU]*aScale
-                mx = mx[0:posIMU]*mScale; my = my[0:posIMU]*mScale; mz = mz[0:posIMU]*mScale
-                gx = gx[0:posIMU]*gScale; gy = gy[0:posIMU]*gScale; gz = gz[0:posIMU]*gScale
-                IMUTemp = IMUTemp[0:posIMU]
+                swp_time = swp_time[0:pos_swp]*t_scale # chop off unused zeros
+                payload_id = payload_id[0]
+                p0_volts = p0_volts[0:pos_swp]*p_scale
+                p1_volts = p1_volts[0:pos_swp]*p_scale
+                imu_time = imu_time[0:pos_imu]*t_scale
+                ax = ax[0:pos_imu]*a_scale; ay = ay[0:pos_imu]*a_scale; az = az[0:pos_imu]*a_scale
+                mx = mx[0:pos_imu]*m_scale; my = my[0:pos_imu]*m_scale; mz = mz[0:pos_imu]*m_scale
+                gx = gx[0:pos_imu]*g_scale; gy = gy[0:pos_imu]*g_scale; gz = gz[0:pos_imu]*g_scale
+                imu_temp = imu_temp[0:pos_imu]
 
                 # data calculations
-                IMUCad = np.diff(IMUTime)*1e3
-                IMUCad = np.append(IMUCad,IMUCad[-1]) # make array same length
-                pip0rms = np.sqrt(np.mean(np.square(pip0Voltages-np.mean(pip0Voltages))))*1e3 # calculate rms
-                pip1rms = np.sqrt(np.mean(np.square(pip1Voltages-np.mean(pip1Voltages))))*1e3
-                pip0std = np.std(pip0Voltages)*1e3 # calculate standard deviation
-                pip1std = np.std(pip1Voltages)*1e3
+                imu_cad = np.diff(imu_time)*1e3
+                imu_cad = np.append(imu_cad,imu_cad[-1]) # make array same length
+                p0_rms = np.sqrt(np.mean(np.square(p0_volts-np.mean(p0_volts))))*1e3 # calculate rms
+                p1_rms = np.sqrt(np.mean(np.square(p1_volts-np.mean(p1_volts))))*1e3
+                p0_std = np.std(p0_volts)*1e3 # calculate standard deviation
+                p1_std = np.std(p1_volts)*1e3
 
                 # Plotting
                 fig.canvas.mpl_connect('close_event', on_close) # exit loop when closing figure
@@ -175,74 +177,74 @@ def main():
                 lw = 1
             
                 axs[0].clear() # accelerometer
-                axs[0].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((axOld,ax)),linewidth=lw)
-                axs[0].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((ayOld,ay)),linewidth=lw)
-                axs[0].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((azOld,az)),linewidth=lw)
+                axs[0].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((ax_old,ax)),linewidth=lw)
+                axs[0].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((ay_old,ay)),linewidth=lw)
+                axs[0].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((az_old,az)),linewidth=lw)
                 axs[0].set_ylabel('ACC [g]')
                 axs[0].grid()
                 axs[0].ticklabel_format(useOffset=False)
                 axs[0].set_xlabel('IMU TIME SINCE SHIELD POWER [s]')
                 axs[0].xaxis.tick_top()
                 axs[0].xaxis.set_label_position('top')
-                axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payloadID), transform=axs[0].transAxes, fontsize=15)
+                axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payload_id), transform=axs[0].transAxes, fontsize=15)
 
                 axs[1].clear() # magnetometer
-                axs[1].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((mxOld,mx)),linewidth=lw)
-                axs[1].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((myOld,my)),linewidth=lw)
-                axs[1].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((mzOld,mz)),linewidth=lw)
+                axs[1].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((mx_old,mx)),linewidth=lw)
+                axs[1].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((my_old,my)),linewidth=lw)
+                axs[1].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((mz_old,mz)),linewidth=lw)
                 axs[1].set_ylabel('MAG [G]')
                 axs[1].grid()
                 axs[1].ticklabel_format(useOffset=False)
                 axs[1].xaxis.set_ticklabels([])
 
                 axs[2].clear() # gyrometer
-                axs[2].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((gxOld,gx)),linewidth=lw)
-                axs[2].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((gyOld,gy)),linewidth=lw)
-                axs[2].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((gzOld,gz)),linewidth=lw)
+                axs[2].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((gx_old,gx)),linewidth=lw)
+                axs[2].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((gy_old,gy)),linewidth=lw)
+                axs[2].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((gz_old,gz)),linewidth=lw)
                 axs[2].set_ylabel('GYR [Hz]')
                 axs[2].grid()
                 axs[2].ticklabel_format(useOffset=False)
                 axs[2].xaxis.set_ticklabels([])
                 
                 axs[3].clear() # Cadance
-                axs[3].plot(np.concatenate((IMUTimeOld,IMUTime)),np.concatenate((IMUCadOld,IMUCad)),linewidth=lw)
+                axs[3].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((imu_cad_old,imu_cad)),linewidth=lw)
                 axs[3].set_ylabel('CAD [ms]')
                 axs[3].grid()
                 axs[3].ticklabel_format(useOffset=False)
                 axs[3].xaxis.set_ticklabels([])
                 
                 axs[4].clear() # pip0 voltage
-                axs[4].plot(np.concatenate((SWPTimeOld,SWPTime)),np.concatenate((pip0VoltagesOld,pip0Voltages)),linewidth=lw/2)
+                axs[4].plot(np.concatenate((swp_time_old,swp_time)),np.concatenate((p0_volts_old,p0_volts)),linewidth=lw/2)
                 axs[4].set_ylabel('P0 [V]')
                 axs[4].grid()
                 axs[4].ticklabel_format(useOffset=False)
                 axs[4].xaxis.set_ticklabels([])
 
                 axs[5].clear() # pip1 voltage
-                axs[5].plot(np.concatenate((SWPTimeOld,SWPTime)),np.concatenate((pip1VoltagesOld,pip1Voltages)),linewidth=lw/2)
+                axs[5].plot(np.concatenate((swp_time_old,swp_time)),np.concatenate((p1_volts_old,p1_volts)),linewidth=lw/2)
                 axs[5].set_ylabel('P1 [V]')
                 axs[5].grid()
                 axs[5].ticklabel_format(useOffset=False)
                 axs[5].set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
-                axs[5].text(-0.1, -0.6, 'P0 RMS: ' + "{0:.1f}".format(pip0rms) + ' mV', transform=axs[5].transAxes)
-                axs[5].text(-0.1, -0.8, 'P1 RMS: ' + "{0:.1f}".format(pip1rms) + ' mV', transform=axs[5].transAxes)
-                axs[5].text( 0.1, -0.6, 'P0 STD: ' + "{0:.1f}".format(pip0std) + ' mV', transform=axs[5].transAxes)
-                axs[5].text( 0.1, -0.8, 'P1 STD: ' + "{0:.1f}".format(pip1std) + ' mV', transform=axs[5].transAxes)
+                axs[5].text(-0.1, -0.6, 'P0 RMS: ' + "{0:.1f}".format(p0_rms) + ' mV', transform=axs[5].transAxes)
+                axs[5].text(-0.1, -0.8, 'P1 RMS: ' + "{0:.1f}".format(p1_rms) + ' mV', transform=axs[5].transAxes)
+                axs[5].text( 0.1, -0.6, 'P0 STD: ' + "{0:.1f}".format(p0_std) + ' mV', transform=axs[5].transAxes)
+                axs[5].text( 0.1, -0.8, 'P1 STD: ' + "{0:.1f}".format(p1_std) + ' mV', transform=axs[5].transAxes)
 
-                SWPTimeOld = SWPTime
-                pip0VoltagesOld = pip0Voltages
-                pip1VoltagesOld =pip1Voltages
-                IMUTimeOld = IMUTime
-                axOld = ax; ayOld = ay; azOld = az
-                mxOld = mx; myOld = my; mzOld = mz
-                gxOld = gx; gyOld = gy; gzOld = gz
-                IMUCadOld = IMUCad
+                swp_time_old = swp_time
+                p0_volts_old = p0_volts
+                p1_volts_old =p1_volts
+                imu_time_old = imu_time
+                ax_old = ax; ay_old = ay; az_old = az
+                mx_old = mx; my_old = my; mz_old = mz
+                gx_old = gx; gy_old = gy; gz_old = gz
+                imu_cad_old = imu_cad
 
-                plt.pause(plotTime) # needed for pyplot realtime plotting. might switch back to pyqtgraph
+                plt.pause(plot_time) # needed for pyplot realtime plotting. might switch back to pyqtgraph
     ser.close()
     if not ser.is_open:
         print('Serial port',port,'closed')
-    f.close()
-    os.rename(fn,fn[:-4]+'_'+str(payloadID)+'.bin') # add payload ID to filename
+    file.close()
+    os.rename(filename,filename[:-4]+'_'+str(payload_id)+'.bin') # add payload ID to filename
 
 main()
