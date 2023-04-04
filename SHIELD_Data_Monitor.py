@@ -24,7 +24,7 @@ numSWPBytes = 4 + 1 + numSamples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per
 numIMUBytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 tScale = 1.e-6; aScale = 4*9.8/2**15; mScale = 1./2**15; gScale = 2000./360/2**15; pScale = 5/2**14 # data scales
 freq = 45 # set data frequency in Hz
-plotTime = 3 # time to plot for in seconds
+plotTime = 1 # time to plot for in seconds
 numBytesTarget = plotTime*freq*(numSWPBytes+numIMUBytes+2) # N seconds worth of bytes
 
 # opening data port/file
