@@ -66,8 +66,11 @@ def conc(word):
 def read_write_thread():
     global plotting, raw_bytes
     while plotting:
-        raw_bytes = ser.read(num_bytes_target)
-        file.write(raw_bytes)
+        try:
+            raw_bytes = ser.read(num_bytes_target)
+            file.write(raw_bytes)
+        except:
+            print('Background thread read on closed port.')
 
 # start main loop
 def main():
