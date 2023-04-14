@@ -2,11 +2,11 @@
 # Updated version for python 3
 # Arguments:
 #   1) Portname
-#   2) (Optional) Data filename suffix
-# Writes all captured bytes to bin file in separate thread
-# 15 minute initial timeout to allow for early code execution
-# Loop terminates after a 10 minute timeout with no data after initial full frame capture
-# To stop recording close figure
+#   2) (Optional) Data file_name suffix
+# Writes all captured bytes to binary file in separate thread
+# x minute initial timeout to allow for early code execution
+# Loop terminates after a y minute timeout with no data after initial full frame capture
+# To stop recording, close figure
 # Contact: jules.van.irsel.gr@dartmouth.edu
 
 import sys
@@ -22,37 +22,46 @@ import threading as th
 num_samples = 28 # how many samples per message
 num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
+num_msg_bytes = num_swp_bytes + 2 + num_imu_bytes + 2
 t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
 freq = 45 # set data frequency in Hz
 plot_time = 2 # time to plot for in seconds
-num_bytes_target = plot_time*freq*(num_swp_bytes+2+num_imu_bytes+2) # N seconds worth of bytes
+num_bytes_target = plot_time*freq*num_msg_bytes # N seconds worth of bytes
 
 # opening data port/file
 port = sys.argv[1]
 baud = 230400
 initial_timeout = 4*3600
 plotting_timeout = 3600
+monitoring_only = False
+suffix = ''
 print('Reading from port',port,'at baud rate',baud,flush=True)
-if len(sys.argv)==3: # optional suffix argument
-    suffix = '_' + sys.argv[2]
-else:
-    suffix = ''
+if len(sys.argv) == 3: # optional argument
+    if sys.argv[2] == '-m':
+        monitoring_only = True
+        print(''.center(64,'*'))
+        print(' MONITORING ONLY '.center(64,'*'))
+        print(''.center(64,'*'))
+    else:
+        suffix = '_' + sys.argv[2]
 ser = serial.Serial(port, baud, timeout=initial_timeout) # wait until all bytes are read or x seconds pass
 print('Initial serial port timeout =',ser.timeout,'seconds',flush=True)
 ser.reset_input_buffer() # flush serial port
-filename = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
-file = open(filename,'ab')
+file_name = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
+if not(monitoring_only):
+    file = open(file_name,'ab')
 fig, axs = plt.subplots(6, 1, figsize=(8,6))
 
 # initialize global parameters
 plotting = True
 raw_bytes = b'\x00'
 payload_id = 0
+flash = True
 
 # for closing on figure exit
 def on_close(event):
     global plotting
-    print('Close event captured at',datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
+    print('Close event captured at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
     plotting = False
 
 # concatenate multiple bytes
@@ -68,13 +77,15 @@ def read_write_thread():
     while plotting:
         try:
             raw_bytes = ser.read(num_bytes_target)
-            file.write(raw_bytes)
+            if not(monitoring_only):
+                file.write(raw_bytes)
         except:
             print('Background thread read on closed port.')
+            plotting = False
 
 # start main loop
 def main():
-    global plotting, raw_bytes, payload_id
+    global plotting, raw_bytes, flash
     rw_thread = th.Thread(target=read_write_thread, args=(), name='read_write_thread', daemon=False) # thread reading and writing raw bytes
     rw_thread.start()
     
@@ -95,7 +106,7 @@ def main():
         num_bytes = len(raw_bytes)
         if num_bytes == 0: # end recording if no bytes after timeout
             print('No data after serial timeout',flush=True)
-            print('Terminating at',datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
+            print('Terminating at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
             plotting = False
         elif num_bytes == num_bytes_target:
         # else:
@@ -148,13 +159,15 @@ def main():
                                 pos_imu += 1
 
             if pos_swp==0 or pos_imu==0: # no full messages found indicating scrambled bytes
-                print('DATA DROPOUT AT',datetime.now().strftime("%Y%m%dT%H%M%S"),flush=True)
+                print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
                 time.sleep(1) # print in 1 second intervals until end of data drop
             else:
+                start_time = time.time()
                 if initial_print:
-                    print('Initial message capture at',datetime.now().strftime("%Y%m%dT%H%M%S"))
+                    print('Initial message capture at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"))
                     print('Serial port timeout =',ser.timeout,'seconds')
                     initial_print = False
+                
                 # Converting bytes and scaling data
                 swp_time = swp_time[0:pos_swp]*t_scale # chop off unused zeros
                 payload_id = payload_id[0]
@@ -190,6 +203,12 @@ def main():
                 axs[0].xaxis.tick_top()
                 axs[0].xaxis.set_label_position('top')
                 axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payload_id), transform=axs[0].transAxes, fontsize=15)
+                if monitoring_only:
+                    if flash:
+                        axs[0].text(-0.1, 1.5, 'MONITORING MODE', transform=axs[0].transAxes, color='red',fontsize=20,weight="bold")
+                        flash = False
+                    else:
+                        flash = True
 
                 axs[1].clear() # magnetometer
                 axs[1].plot(np.concatenate((imu_time_old,imu_time)),np.concatenate((mx_old,mx)),linewidth=lw)
@@ -244,10 +263,17 @@ def main():
                 imu_cad_old = imu_cad
 
                 plt.pause(plot_time) # needed for pyplot realtime plotting. might switch back to pyqtgraph
+    
     ser.close()
+    print(num_msg_bytes)
+    file_size_target = round((time.time()-start_time)*freq*num_msg_bytes*3)
     if not ser.is_open:
         print('Serial port',port,'closed')
-    file.close()
-    os.rename(filename,filename[:-4]+'_'+str(payload_id)+'.bin') # add payload ID to filename
-
+    if not(monitoring_only):
+        file.close()
+        file_size = os.path.getsize(file_name)
+        os.rename(file_name,file_name[:-4]+'_'+str(payload_id)+'.bin') # add payload ID to file_name
+        print('Data file =',file_name)
+        print('File size =',file_size,'bytes')
+        print('File size target =',file_size_target,'bytes')
 main()
