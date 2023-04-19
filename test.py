@@ -12,7 +12,7 @@ import _thread
 #     a = ser.read_all()
 #     print(a)
 
-port = 'COM4'
+port = 'COM6'
 baud = 230400
 # baud = 600
 ser = serial.Serial(port, baud)

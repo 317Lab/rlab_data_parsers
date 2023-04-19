@@ -31,8 +31,8 @@ num_bytes_target = plot_time*freq*num_msg_bytes # N seconds worth of bytes
 # opening data port/file
 port = sys.argv[1]
 baud = 230400
-initial_timeout = 4*3600
-plotting_timeout = 3600
+initial_timeout = 4*3600*0+30
+plotting_timeout = 3600*0+10
 monitoring_only = False
 suffix = ''
 print('Reading from port',port,'at baud rate',baud,flush=True)
@@ -109,10 +109,9 @@ def main():
             print('Terminating at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
             plotting = False
         elif num_bytes == num_bytes_target:
-        # else:
             ser.timeout = plotting_timeout # shorten timeout after initial message capture
-            num_dat_swp = round(plot_time*freq*num_samples*2.5) # add 250% for safety
-            num_dat_imu = round(plot_time*freq*2.5)
+            num_dat_swp = round(plot_time*freq*num_samples*1.5) # add 50% for safety
+            num_dat_imu = round(plot_time*freq*1.5)
 
             # pre-allocate arrays of maximum possible sizes
             swp_time = np.zeros(num_dat_swp,dtype='uint32') # unsigned 4 bytes
@@ -162,8 +161,8 @@ def main():
                 print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
                 time.sleep(1) # print in 1 second intervals until end of data drop
             else:
-                start_time = time.time()
                 if initial_print:
+                    start_time = time.time()
                     print('Initial message capture at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"))
                     print('Serial port timeout =',ser.timeout,'seconds')
                     initial_print = False
@@ -205,7 +204,7 @@ def main():
                 axs[0].text(0.9, 1.5, 'SHIELD ID: ' + str(payload_id), transform=axs[0].transAxes, fontsize=15)
                 if monitoring_only:
                     if flash:
-                        axs[0].text(-0.1, 1.5, 'MONITORING MODE', transform=axs[0].transAxes, color='red',fontsize=20,weight="bold")
+                        axs[0].text(-0.1, 1.5, 'MONITORING ONLY', transform=axs[0].transAxes, color='red',fontsize=20,weight="bold")
                         flash = False
                     else:
                         flash = True
@@ -262,18 +261,17 @@ def main():
                 gx_old = gx; gy_old = gy; gz_old = gz
                 imu_cad_old = imu_cad
 
-                plt.pause(plot_time) # needed for pyplot realtime plotting. might switch back to pyqtgraph
+                plt.pause(plot_time) # needed for pyplot realtime plotting.
     
     ser.close()
-    print(num_msg_bytes)
-    file_size_target = round((time.time()-start_time)*freq*num_msg_bytes*3)
+    file_size_target = round((time.time()-start_time)*freq*num_msg_bytes)
     if not ser.is_open:
         print('Serial port',port,'closed')
     if not(monitoring_only):
         file.close()
         file_size = os.path.getsize(file_name)
         os.rename(file_name,file_name[:-4]+'_'+str(payload_id)+'.bin') # add payload ID to file_name
-        print('Data file =',file_name)
+        print('File name =',file_name)
         print('File size =',file_size,'bytes')
         print('File size target =',file_size_target,'bytes')
 main()
