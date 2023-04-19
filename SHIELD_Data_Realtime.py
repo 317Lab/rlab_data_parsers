@@ -56,7 +56,6 @@ fig, axs = plt.subplots(6, 1, figsize=(8,6))
 plotting = True
 raw_bytes = b'\x00'
 payload_id = 0
-flash = True
 
 # for closing on figure exit
 def on_close(event):
@@ -85,7 +84,8 @@ def read_write_thread():
 
 # start main loop
 def main():
-    global plotting, raw_bytes, flash
+    global plotting, raw_bytes
+    flash = True
     rw_thread = th.Thread(target=read_write_thread, args=(), name='read_write_thread', daemon=False) # thread reading and writing raw bytes
     rw_thread.start()
     
@@ -264,14 +264,18 @@ def main():
                 plt.pause(plot_time) # needed for pyplot realtime plotting.
     
     ser.close()
-    file_size_target = round((time.time()-start_time)*freq*num_msg_bytes)
+    
     if not ser.is_open:
         print('Serial port',port,'closed')
     if not(monitoring_only):
         file.close()
         file_size = os.path.getsize(file_name)
         os.rename(file_name,file_name[:-4]+'_'+str(payload_id)+'.bin') # add payload ID to file_name
-        print('File name =',file_name)
-        print('File size =',file_size,'bytes')
-        print('File size target =',file_size_target,'bytes')
+        print('File name =',file_name[:-4]+'_'+str(payload_id)+'.bin')
+        try:
+            file_size_target = round((time.time()-start_time)*freq*num_msg_bytes)
+            print('File size =',file_size,'bytes')
+            print('File size target =',file_size_target,'bytes')
+        except:
+            print('File size =',file_size,'bytes')
 main()
