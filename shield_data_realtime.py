@@ -349,35 +349,35 @@ def main():
                     ax0b.xaxis.set_label_position('top')
 
                     ax1b.clear() # magnetometer
-                    ax1b.plot(imu_time_plt[1],mx_plt[1],linewidth=lw)
-                    ax1b.plot(imu_time_plt[1],my_plt[1],linewidth=lw)
-                    ax1b.plot(imu_time_plt[1],mz_plt[1],linewidth=lw)
+                    ax1b.plot(imu_time_plt[1,:pos_bimu],mx_plt[1,:pos_bimu],linewidth=lw)
+                    ax1b.plot(imu_time_plt[1,:pos_bimu],my_plt[1,:pos_bimu],linewidth=lw)
+                    ax1b.plot(imu_time_plt[1,:pos_bimu],mz_plt[1,:pos_bimu],linewidth=lw)
                     ax1b.grid()
                     ax1b.ticklabel_format(useOffset=False)
                     ax1b.xaxis.set_ticklabels([])
 
                     ax2b.clear() # gyrometer
-                    ax2b.plot(imu_time_plt[1],gx_plt[1],linewidth=lw)
-                    ax2b.plot(imu_time_plt[1],gy_plt[1],linewidth=lw)
-                    ax2b.plot(imu_time_plt[1],gz_plt[1],linewidth=lw)
+                    ax2b.plot(imu_time_plt[1,:pos_bimu],gx_plt[1,:pos_bimu],linewidth=lw)
+                    ax2b.plot(imu_time_plt[1,:pos_bimu],gy_plt[1,:pos_bimu],linewidth=lw)
+                    ax2b.plot(imu_time_plt[1,:pos_bimu],gz_plt[1,:pos_bimu],linewidth=lw)
                     ax2b.grid()
                     ax2b.ticklabel_format(useOffset=False)
                     ax2b.xaxis.set_ticklabels([])
                     
                     ax3b.clear() # Cadance
-                    ax3b.plot(imu_time_plt[1],imu_cad_plt[1],linewidth=lw)
+                    ax3b.plot(imu_time_plt[1,:pos_bimu],imu_cad_plt[1,:pos_bimu],linewidth=lw)
                     ax3b.grid()
                     ax3b.ticklabel_format(useOffset=False)
                     ax3b.xaxis.set_ticklabels([])
                     
                     ax4b.clear() # pip0 voltage
-                    ax4b.plot(swp_time_plt[1],p0_volts_plt[1],linewidth=lw/2)
+                    ax4b.plot(swp_time_plt[1,:pos_bswp],p0_volts_plt[1,:pos_bswp],linewidth=lw/2)
                     ax4b.grid()
                     ax4b.ticklabel_format(useOffset=False)
                     ax4b.xaxis.set_ticklabels([])
 
                     ax5b.clear() # pip1 voltage
-                    ax5b.plot(swp_time_plt[1],p1_volts_plt[1],linewidth=lw/2)
+                    ax5b.plot(swp_time_plt[1,:pos_bswp],p1_volts_plt[1,:pos_bswp],linewidth=lw/2)
                     ax5b.grid()
                     ax5b.ticklabel_format(useOffset=False)
                     ax5b.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
