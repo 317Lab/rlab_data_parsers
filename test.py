@@ -3,6 +3,15 @@ import serial
 import numpy as np
 import _thread
 
+# a = np.zeros([2,10])
+# c = np.ones([2,5])
+# d = np.concatenate([a,c],axis=1)
+# print(d)
+# print(d[0])
+# print(len(d[0]))
+# print(np.diff(d))
+
+
 # port = 'COM4'
 # ser = serial.Serial(port, 230400, timeout=None)
 # timeout_s = 10
