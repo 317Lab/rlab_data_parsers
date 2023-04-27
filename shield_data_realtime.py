@@ -20,10 +20,14 @@ import threading as th
 
 # user settings
 baud = 230400
+freq = 45 # set data frequency in Hz
+read_time = 1 # time to read data for in seconds
+read_multiplier = 4 # multiples of read_time seconds to plot
 initial_timeout = 4*3600*0+10
 plotting_timeout = 3600*0+5
 buffered = True
 debugging = False
+tuner = 1.2
 
 # parameters
 num_samples = 28 # how many samples per message
@@ -31,10 +35,7 @@ num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes 
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 num_msg_bytes = 2 + num_swp_bytes + 2 + num_imu_bytes
 t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
-freq = 45 # set data frequency in Hz
-read_time = 1 # time to read data for in seconds
-read_multiplier = 4 # multiples of read_time seconds to plot
-num_bytes_target = round(read_time*freq*num_msg_bytes*1.1) # N seconds worth of bytes
+num_bytes_target = round(read_time*freq*num_msg_bytes*tuner) # N seconds worth of bytes
 
 # opening data port/file
 suffix = ''
@@ -60,7 +61,7 @@ except:
 file_name = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
 if not(monitoring_only):
     file = open(file_name,'ab')
-if buffered:
+if buffered: # buffered data shown on second column of plots
     fig, axs = plt.subplots(6, 2, figsize=(8,6))
     ax0 = axs[0,0]; ax1 = axs[1,0]; ax2 = axs[2,0]
     ax3 = axs[3,0]; ax4 = axs[4,0]; ax5 = axs[5,0]
@@ -196,7 +197,7 @@ def main():
                             gz[0,pos_imu] = conc(imu_bytes[20:22])
                             # imu_temp[0,pos_imu] = conc(imu_bytes[22:24])
                             pos_imu += 1
-                elif buffered & (raw_bytes[i+1] == 84): # byte is "T": start of buffered sweep data
+                elif buffered and (raw_bytes[i+1] == 84): # byte is "T": start of buffered sweep data
                     if i+num_swp_bytes+2 <= num_bytes: # full message is available
                         if raw_bytes[i+num_swp_bytes+2] == 35: # next "#" indicates correct number of sweep bytes
                             swp_bytes = raw_bytes[i+2:i+num_swp_bytes+2] # collect appropriate bytes
@@ -208,7 +209,7 @@ def main():
                                 p0_volts[1,pos_bswp] = conc(p0_bytes[sample:sample+2])
                                 p1_volts[1,pos_bswp] = conc(p1_bytes[sample:sample+2])
                                 pos_bswp += 1
-                elif buffered & (raw_bytes[i+1] == 74): # byte is "J": start of buffer IMU data
+                elif buffered and (raw_bytes[i+1] == 74): # byte is "J": start of buffer IMU data
                     if i+num_imu_bytes+2 <= num_bytes: # full message is available
                         if raw_bytes[i+num_imu_bytes+2] == 35: # next "#" indicates correct number of IMU bytes
                             imu_bytes = raw_bytes[i+2:i+num_imu_bytes+2] # collect appropriate bytes
@@ -224,8 +225,12 @@ def main():
                             gz[1,pos_bimu] = conc(imu_bytes[20:22])
                             # imu_temp[0,pos_imu] = conc(imu_bytes[22:24])
                             pos_bimu += 1
+            pos_swp -= 1
+            pos_imu -= 1
+            pos_bswp -= 1
+            pos_bimu -= 1
 
-            if pos_swp==0 or pos_imu==0: # no full messages found indicating scrambled bytes
+            if (pos_swp==-1) or (pos_imu==-1): # no full messages found indicating scrambled bytes
                 print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
                 time.sleep(1) # print in 1 second intervals until end of data drop
             else:
@@ -339,9 +344,9 @@ def main():
 
                 if buffered:
                     ax0b.clear() # accelerometer
-                    ax0b.plot(imu_time_plt[1,:pos_bimu],ax_plt[1,:pos_bimu],linewidth=lw)
-                    ax0b.plot(imu_time_plt[1,:pos_bimu],ay_plt[1,:pos_bimu],linewidth=lw)
-                    ax0b.plot(imu_time_plt[1,:pos_bimu],az_plt[1,:pos_bimu],linewidth=lw)
+                    ax0b.plot(imu_time_plt[1],ax_plt[1],linewidth=lw)
+                    ax0b.plot(imu_time_plt[1],ay_plt[1],linewidth=lw)
+                    ax0b.plot(imu_time_plt[1],az_plt[1],linewidth=lw)
                     ax0b.grid()
                     ax0b.ticklabel_format(useOffset=False)
                     ax0b.set_xlabel('IMU TIME SINCE SHIELD POWER [s]')
@@ -349,35 +354,35 @@ def main():
                     ax0b.xaxis.set_label_position('top')
 
                     ax1b.clear() # magnetometer
-                    ax1b.plot(imu_time_plt[1,:pos_bimu],mx_plt[1,:pos_bimu],linewidth=lw)
-                    ax1b.plot(imu_time_plt[1,:pos_bimu],my_plt[1,:pos_bimu],linewidth=lw)
-                    ax1b.plot(imu_time_plt[1,:pos_bimu],mz_plt[1,:pos_bimu],linewidth=lw)
+                    ax1b.plot(imu_time_plt[1],mx_plt[1],linewidth=lw)
+                    ax1b.plot(imu_time_plt[1],my_plt[1],linewidth=lw)
+                    ax1b.plot(imu_time_plt[1],mz_plt[1],linewidth=lw)
                     ax1b.grid()
                     ax1b.ticklabel_format(useOffset=False)
                     ax1b.xaxis.set_ticklabels([])
 
                     ax2b.clear() # gyrometer
-                    ax2b.plot(imu_time_plt[1,:pos_bimu],gx_plt[1,:pos_bimu],linewidth=lw)
-                    ax2b.plot(imu_time_plt[1,:pos_bimu],gy_plt[1,:pos_bimu],linewidth=lw)
-                    ax2b.plot(imu_time_plt[1,:pos_bimu],gz_plt[1,:pos_bimu],linewidth=lw)
+                    ax2b.plot(imu_time_plt[1],gx_plt[1],linewidth=lw)
+                    ax2b.plot(imu_time_plt[1],gy_plt[1],linewidth=lw)
+                    ax2b.plot(imu_time_plt[1],gz_plt[1],linewidth=lw)
                     ax2b.grid()
                     ax2b.ticklabel_format(useOffset=False)
                     ax2b.xaxis.set_ticklabels([])
                     
                     ax3b.clear() # Cadance
-                    ax3b.plot(imu_time_plt[1,:pos_bimu],imu_cad_plt[1,:pos_bimu],linewidth=lw)
+                    ax3b.plot(imu_time_plt[1],imu_cad_plt[1],linewidth=lw)
                     ax3b.grid()
                     ax3b.ticklabel_format(useOffset=False)
                     ax3b.xaxis.set_ticklabels([])
                     
                     ax4b.clear() # pip0 voltage
-                    ax4b.plot(swp_time_plt[1,:pos_bswp],p0_volts_plt[1,:pos_bswp],linewidth=lw/2)
+                    ax4b.plot(swp_time_plt[1],p0_volts_plt[1],linewidth=lw/2)
                     ax4b.grid()
                     ax4b.ticklabel_format(useOffset=False)
                     ax4b.xaxis.set_ticklabels([])
 
                     ax5b.clear() # pip1 voltage
-                    ax5b.plot(swp_time_plt[1,:pos_bswp],p1_volts_plt[1,:pos_bswp],linewidth=lw/2)
+                    ax5b.plot(swp_time_plt[1],p1_volts_plt[1],linewidth=lw/2)
                     ax5b.grid()
                     ax5b.ticklabel_format(useOffset=False)
                     ax5b.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
