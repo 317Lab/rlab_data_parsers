@@ -238,7 +238,7 @@ def main():
                     print('Serial port timeout =',ser.timeout,'seconds')
                 
                 # Converting bytes and scaling data
-                swp_ids = swp_time[0] != 0 # chop off zeros in non-buffered times only (easier for now)
+                swp_ids = swp_time[0] != 0 # chop off zeros in non-buffered times only
                 imu_ids = imu_time[0] != 0
 
                 swp_time = swp_time[:,swp_ids]*t_scale
@@ -249,6 +249,9 @@ def main():
                 ax = ax[:,imu_ids]*a_scale; ay = ay[:,imu_ids]*a_scale; az = az[:,imu_ids]*a_scale
                 mx = mx[:,imu_ids]*m_scale; my = my[:,imu_ids]*m_scale; mz = mz[:,imu_ids]*m_scale
                 gx = gx[:,imu_ids]*g_scale; gy = gy[:,imu_ids]*g_scale; gz = gz[:,imu_ids]*g_scale
+
+                swp_time[swp_time==0] = np.nan # replace remaining zeros with nan
+                imu_time[imu_time==0] = np.nan
 
                 # stitch on history
                 swp_time_plt = np.concatenate((swp_time_old,swp_time),axis=1)[:,-len_plt_swp:]
@@ -270,7 +273,7 @@ def main():
 
                 # data calculations
                 imu_cad_plt = np.diff(imu_time_plt,prepend=np.nan)*1e3
-                imu_cad_med = np.median(np.diff(imu_time_plt))*1e3
+                imu_cad_med = np.median(np.diff(imu_time_plt[0]))*1e3
                 p0_rms = np.sqrt(np.mean(np.square(p0_volts_plt[0]-np.mean(p0_volts_plt[0]))))*1e3 # calculate rms
                 p1_rms = np.sqrt(np.mean(np.square(p1_volts_plt[0]-np.mean(p1_volts_plt[0]))))*1e3
                 p0_std = np.std(p0_volts_plt[0])*1e3 # calculate standard deviation
