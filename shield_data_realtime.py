@@ -342,9 +342,9 @@ def main():
                 ax5.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
                 ax5.text(-0.1, -0.6, 'P0 RMS: ' + "{0:.1f}".format(p0_rms) + ' mV', transform=ax5.transAxes)
                 ax5.text(-0.1, -0.8, 'P1 RMS: ' + "{0:.1f}".format(p1_rms) + ' mV', transform=ax5.transAxes)
-                ax5.text( 0.1, -0.6, 'P0 STD: ' + "{0:.1f}".format(p0_std) + ' mV', transform=ax5.transAxes)
-                ax5.text( 0.1, -0.8, 'P1 STD: ' + "{0:.1f}".format(p1_std) + ' mV', transform=ax5.transAxes)
-                ax5.text( 0.3, -0.8, 'CAD: ' + "{0:.1f}".format(imu_cad_med) + ' ms', transform=ax5.transAxes)
+                ax5.text( 0.2, -0.6, 'P0 STD: ' + "{0:.1f}".format(p0_std) + ' mV', transform=ax5.transAxes)
+                ax5.text( 0.2, -0.8, 'P1 STD: ' + "{0:.1f}".format(p1_std) + ' mV', transform=ax5.transAxes)
+                ax5.text( 0.5, -0.8, 'CAD: ' + "{0:.1f}".format(imu_cad_med) + ' ms', transform=ax5.transAxes)
 
                 if buffered:
                     ax0b.clear() # accelerometer
