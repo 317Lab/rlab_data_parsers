@@ -103,7 +103,7 @@ def read_write_thread():
             raw_bytes_tmp = ser.read(num_bytes_target)
             if not(monitoring_only):
                 file.write(raw_bytes_tmp)
-            raw_bytes_old = raw_bytes_tmp[-dim*num_msg_bytes:]
+            raw_bytes_old = raw_bytes_tmp[-num_msg_bytes:] # stitch on one full message
             raw_bytes = raw_bytes_tmp + raw_bytes_old
             if debugging:
                 print('File size = ',os.path.getsize(file_name),' bytes')
@@ -124,8 +124,8 @@ def main():
     rw_thread.start()
     
     # data lengths
-    num_dat_swp = round(read_time*freq*num_samples*1.5) # add 50% for safety
-    num_dat_imu = round(read_time*freq*1.5)
+    num_dat_swp = round(read_time*freq*num_samples*2) # add 50% for safety
+    num_dat_imu = round(read_time*freq*2)
     len_plt_swp = num_dat_swp # lengths to plot, grow while plotting
     len_plt_imu = num_dat_imu
 
@@ -145,7 +145,7 @@ def main():
             print('No data after serial timeout',flush=True)
             print('Terminating at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
             plotting = False
-        elif num_bytes == num_bytes_target+dim*num_msg_bytes:
+        elif num_bytes == num_bytes_target+num_msg_bytes:
             # pre-allocate arrays of maximum possible sizes
             swp_time = np.zeros([dim,num_dat_swp],dtype='uint32') # unsigned 4 bytes
             payload_id = np.zeros([dim,num_dat_swp],dtype='uint8') # unsigned 1 byte
@@ -225,14 +225,10 @@ def main():
                             gz[1,pos_bimu] = conc(imu_bytes[20:22])
                             # imu_temp[0,pos_imu] = conc(imu_bytes[22:24])
                             pos_bimu += 1
-            pos_swp -= 1
-            pos_imu -= 1
-            pos_bswp -= 1
-            pos_bimu -= 1
 
-            if (pos_swp==-1) or (pos_imu==-1): # no full messages found indicating scrambled bytes
+            if (pos_swp==0) or (pos_imu==0): # no full messages found indicating scrambled bytes
                 print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
-                time.sleep(1) # print in 1 second intervals until end of data drop
+                time.sleep(1) # print in 1 second intervals until end of data drop=
             else:
                 if initial_print:
                     start_time = time.time()
@@ -242,14 +238,17 @@ def main():
                     print('Serial port timeout =',ser.timeout,'seconds')
                 
                 # Converting bytes and scaling data
-                swp_time = swp_time[:,0:pos_swp]*t_scale # chop off unused zeros
+                swp_ids = swp_time[0] != 0 # chop off zeros in non-buffered times only (easier for now)
+                imu_ids = imu_time[0] != 0
+
+                swp_time = swp_time[:,swp_ids]*t_scale
                 payload_id = payload_id[0,0]
-                p0_volts = p0_volts[:,0:pos_swp]*p_scale
-                p1_volts = p1_volts[:,0:pos_swp]*p_scale
-                imu_time = imu_time[:,0:pos_imu]*t_scale
-                ax = ax[:,0:pos_imu]*a_scale; ay = ay[:,0:pos_imu]*a_scale; az = az[:,0:pos_imu]*a_scale
-                mx = mx[:,0:pos_imu]*m_scale; my = my[:,0:pos_imu]*m_scale; mz = mz[:,0:pos_imu]*m_scale
-                gx = gx[:,0:pos_imu]*g_scale; gy = gy[:,0:pos_imu]*g_scale; gz = gz[:,0:pos_imu]*g_scale
+                p0_volts = p0_volts[:,swp_ids]*p_scale
+                p1_volts = p1_volts[:,swp_ids]*p_scale
+                imu_time = imu_time[:,imu_ids]*t_scale
+                ax = ax[:,imu_ids]*a_scale; ay = ay[:,imu_ids]*a_scale; az = az[:,imu_ids]*a_scale
+                mx = mx[:,imu_ids]*m_scale; my = my[:,imu_ids]*m_scale; mz = mz[:,imu_ids]*m_scale
+                gx = gx[:,imu_ids]*g_scale; gy = gy[:,imu_ids]*g_scale; gz = gz[:,imu_ids]*g_scale
 
                 # stitch on history
                 swp_time_plt = np.concatenate((swp_time_old,swp_time),axis=1)[:,-len_plt_swp:]
@@ -271,6 +270,7 @@ def main():
 
                 # data calculations
                 imu_cad_plt = np.diff(imu_time_plt,prepend=np.nan)*1e3
+                imu_cad_med = np.median(np.diff(imu_time_plt))*1e3
                 p0_rms = np.sqrt(np.mean(np.square(p0_volts_plt[0]-np.mean(p0_volts_plt[0]))))*1e3 # calculate rms
                 p1_rms = np.sqrt(np.mean(np.square(p1_volts_plt[0]-np.mean(p1_volts_plt[0]))))*1e3
                 p0_std = np.std(p0_volts_plt[0])*1e3 # calculate standard deviation
@@ -341,6 +341,7 @@ def main():
                 ax5.text(-0.1, -0.8, 'P1 RMS: ' + "{0:.1f}".format(p1_rms) + ' mV', transform=ax5.transAxes)
                 ax5.text( 0.1, -0.6, 'P0 STD: ' + "{0:.1f}".format(p0_std) + ' mV', transform=ax5.transAxes)
                 ax5.text( 0.1, -0.8, 'P1 STD: ' + "{0:.1f}".format(p1_std) + ' mV', transform=ax5.transAxes)
+                ax5.text( 0.3, -0.8, 'CAD: ' + "{0:.1f}".format(imu_cad_med) + ' ms', transform=ax5.transAxes)
 
                 if buffered:
                     ax0b.clear() # accelerometer
