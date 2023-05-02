@@ -5,7 +5,6 @@ import time
 
 file = sys.argv[1]
 do_plot = True
-# file = 'T0000CH1.CSV'
 mov_avg_win = 100
 pos_slope_lim = 6000 # mV/ms
 neg_slope_lim = -6000 # mV/ms
@@ -69,7 +68,7 @@ print('Period = {:.2f} ms'.format(period))
 print('Frequency = {:.2f} Hz'.format(frequency))
 print('Min voltage = {:.0f} mV'.format(min_voltage))
 print('Max voltage = {:.0f} mV'.format(max_voltage))
-print('Peak-to-peak = {:.0f} mV'.format(amplitude))
+print('Amplitude = {:.0f} mV'.format(amplitude))
 print('Number of steps = {}'.format(num_steps))
 print('Step duration = {:.1f} +/- {:.1f} us'.format(step_duration,2*step_dur_sig))
 print('Step amplitude = {:.0f} +/- {:.0f} mV'.format(step_amplitude,2*step_amp_sig))
