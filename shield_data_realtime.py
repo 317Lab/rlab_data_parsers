@@ -27,7 +27,7 @@ initial_timeout = 4*3600*0+10
 plotting_timeout = 3600*0+5
 buffered = True
 debugging = False
-tuner = 1.2
+tuner = 1.0
 
 # parameters
 num_samples = 28 # how many samples per message
@@ -170,7 +170,7 @@ def main():
             for i in range(num_bytes-num_swp_bytes-2): # scan through raw_bytes
                 # if raw_bytes[i] == 35: # byte is "#": start of data message NOT NEEDED, BELOW CONDITIONS ARE ENOUGH
                 if raw_bytes[i+1] == 83: # byte is "S": start of sweep data
-                    if i+num_swp_bytes+2 <= num_bytes: # full message is available
+                    if i+num_swp_bytes+2 < num_bytes: # full message is available
                         if raw_bytes[i+num_swp_bytes+2] == 35: # next "#" indicates correct number of sweep bytes
                             swp_bytes = raw_bytes[i+2:i+num_swp_bytes+2] # collect appropriate bytes
                             p0_bytes = swp_bytes[5:5+2*num_samples]
@@ -182,7 +182,7 @@ def main():
                                 p1_volts[0,pos_swp] = conc(p1_bytes[sample:sample+2])
                                 pos_swp += 1
                 elif raw_bytes[i+1] == 73: # byte is "I": start of IMU data
-                    if i+num_imu_bytes+2 <= num_bytes: # full message is available
+                    if i+num_imu_bytes+2 < num_bytes: # full message is available
                         if raw_bytes[i+num_imu_bytes+2] == 35: # next "#" indicates correct number of IMU bytes
                             imu_bytes = raw_bytes[i+2:i+num_imu_bytes+2] # collect appropriate bytes
                             imu_time[0,pos_imu] = conc(imu_bytes[0:4])
@@ -198,7 +198,7 @@ def main():
                             # imu_temp[0,pos_imu] = conc(imu_bytes[22:24])
                             pos_imu += 1
                 elif buffered and (raw_bytes[i+1] == 84): # byte is "T": start of buffered sweep data
-                    if i+num_swp_bytes+2 <= num_bytes: # full message is available
+                    if i+num_swp_bytes+2 < num_bytes: # full message is available
                         if raw_bytes[i+num_swp_bytes+2] == 35: # next "#" indicates correct number of sweep bytes
                             swp_bytes = raw_bytes[i+2:i+num_swp_bytes+2] # collect appropriate bytes
                             p0_bytes = swp_bytes[5:5+2*num_samples]
@@ -210,7 +210,7 @@ def main():
                                 p1_volts[1,pos_bswp] = conc(p1_bytes[sample:sample+2])
                                 pos_bswp += 1
                 elif buffered and (raw_bytes[i+1] == 74): # byte is "J": start of buffer IMU data
-                    if i+num_imu_bytes+2 <= num_bytes: # full message is available
+                    if i+num_imu_bytes+2 < num_bytes: # full message is available
                         if raw_bytes[i+num_imu_bytes+2] == 35: # next "#" indicates correct number of IMU bytes
                             imu_bytes = raw_bytes[i+2:i+num_imu_bytes+2] # collect appropriate bytes
                             imu_time[1,pos_bimu] = conc(imu_bytes[0:4])
@@ -399,10 +399,9 @@ def main():
                 mx_old = mx_plt; my_old = my_plt; mz_old = mz_plt
                 gx_old = gx_plt; gy_old = gy_plt; gz_old = gz_plt
 
-                plt.pause(read_time) # needed for pyplot realtime plotting.
+                plt.pause(read_time*tuner) # needed for pyplot realtime plotting.
     
     ser.close()
-    
     if not ser.is_open:
         print('Serial port',port,'closed')
     if not(monitoring_only):
