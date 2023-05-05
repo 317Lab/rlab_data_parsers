@@ -5,7 +5,8 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 buffered = True
-read_time = 1 # seconds
+read_time = 0.2 # seconds
+read_multiplier = 4 # number of read times to plot
 max_time = 50*60 # sweep time word errors have t > 3000 s which are removed.
 freq = 45 # Hz
 
@@ -27,7 +28,7 @@ num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes 
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 num_msg_bytes = (2 + num_swp_bytes + 2 + num_imu_bytes)*dim
 t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
-num_bytes_target = read_time*freq*num_msg_bytes # N seconds worth of bytes
+num_bytes_target = round(read_time*freq*num_msg_bytes) # N seconds worth of bytes
 
 sentinels = ['0x2353','0x2349','0x2354','0x234A'] # [#S,#I,#T,#J]
 plotting = True
@@ -40,12 +41,12 @@ def on_close(event):
 
 # history data arrays
 swp_time_old = np.zeros([dim,0],dtype='single')
-payload_id_old = np.zeros([dim,0],dtype='uint8')
 volts_old = np.zeros([dim,2,0],dtype='single')
 imu_time_old = np.zeros([dim,0],dtype='single')
 acc_old = np.zeros([dim,3,0],dtype='single')
 mag_old = np.zeros([dim,3,0],dtype='single')
 gyr_old = np.zeros([dim,3,0],dtype='single')
+imu_cad_old = np.zeros([dim,0],dtype='single')
 
 while plotting:
     bytes = BitArray(sys.stdin.buffer.read(num_bytes_target))
@@ -68,7 +69,7 @@ while plotting:
     pos = 0
     for ind in ids_swp: # sweep indeces
         next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
-        if next_sentinel in sentinels:
+        if next_sentinel in sentinels: # double sentinel match insures full message available
             swp_bytes = bytes[ind+2*8:ind+(num_swp_bytes+2)*8]
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
@@ -108,8 +109,8 @@ while plotting:
                 pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
                 swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
                 payload_id_tmp = swp_bytes[4*8:5*8].uintle
-                for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
-                    swp_time[1,pos] = swp_time_tmp # copy static data for each sample
+                for sample in range(0,2*num_samples,2):
+                    swp_time[1,pos] = swp_time_tmp
                     payload_id[1,pos] = payload_id_tmp
                     volts[1,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*p_scale
                     volts[1,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*p_scale
@@ -131,13 +132,33 @@ while plotting:
                 gyr[1,1,pos] = imu_bytes[18 *8:20 *8].intle*g_scale
                 gyr[1,2,pos] = imu_bytes[20 *8:22 *8].intle*g_scale
                 pos += 1
-
+                
+    # remove invalid timestamps
     swp_time[(swp_time==0) | (swp_time>max_time)] = np.nan
     imu_time[(imu_time==0) | (imu_time>max_time)] = np.nan
 
-    imu_cad = np.diff(imu_time,append=np.nan)*1e3
+    # measured values
+    imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
+    imu_cad_avg = np.nanmean(imu_cad)
+    imu_freq = 1e3/imu_cad_avg # hz
+    pip0_rms = np.sqrt(np.mean(np.square(volts[0,0]-np.mean(volts[0,0]))))*1e3 # pip 0 rms noise
+    pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
+    pip0_std = np.std(volts[0,0])*1e3 # pip 0 standard deviation
+    pip1_std = np.std(volts[0,1])*1e3 # pip 1 standard deviation
 
-    # Plotting
+    # tune to actual frequency measured from imu
+    num_bytes_target = round(read_time*imu_freq*num_msg_bytes)
+
+    # stitch history
+    swp_time = np.concatenate((swp_time_old,swp_time),axis=1)
+    volts = np.concatenate((volts_old,volts),axis=2)
+    imu_time = np.concatenate((imu_time_old,imu_time),axis=1)
+    acc = np.concatenate((acc_old,acc),axis=2)
+    mag = np.concatenate((mag_old,mag),axis=2)
+    gyr = np.concatenate((gyr_old,gyr),axis=2)
+    imu_cad = np.concatenate((imu_cad_old,imu_cad),axis=1)
+
+    # plotting
     fig.canvas.mpl_connect('close_event', on_close) # exit loop when closing figure
     fig.subplots_adjust(hspace=0)
     lw = 1
@@ -198,11 +219,12 @@ while plotting:
     ax5.grid()
     ax5.ticklabel_format(useOffset=False)
     ax5.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
-    # # ax5.text(-0.1, -0.6, 'P0 RMS: ' + "{0:.1f}".format(p0_rms) + ' mV', transform=ax5.transAxes)
-    # # ax5.text(-0.1, -0.8, 'P1 RMS: ' + "{0:.1f}".format(p1_rms) + ' mV', transform=ax5.transAxes)
-    # # ax5.text( 0.2, -0.6, 'P0 STD: ' + "{0:.1f}".format(p0_std) + ' mV', transform=ax5.transAxes)
-    # # ax5.text( 0.2, -0.8, 'P1 STD: ' + "{0:.1f}".format(p1_std) + ' mV', transform=ax5.transAxes)
-    # # ax5.text( 0.5, -0.8, 'CAD: ' + "{0:.1f}".format(imu_cad_med) + ' ms', transform=ax5.transAxes)
+    ax5.text(-0.1, -0.6, 'P0 RMS: ' + "{0:.1f}".format(pip0_rms) + ' mV', transform=ax5.transAxes)
+    ax5.text(-0.1, -0.8, 'P1 RMS: ' + "{0:.1f}".format(pip1_rms) + ' mV', transform=ax5.transAxes)
+    ax5.text( 0.2, -0.6, 'P0 STD: ' + "{0:.1f}".format(pip0_std) + ' mV', transform=ax5.transAxes)
+    ax5.text( 0.2, -0.8, 'P1 STD: ' + "{0:.1f}".format(pip1_std) + ' mV', transform=ax5.transAxes)
+    ax5.text( 0.5, -0.6, 'CAD: ' + "{0:.1f}".format(imu_cad_avg) + ' ms', transform=ax5.transAxes)
+    ax5.text( 0.5, -0.8, 'FRQ: ' + "{0:.1f}".format(imu_freq) + ' Hz', transform=ax5.transAxes)
 
     if buffered:
         ax0b.clear() # accelerometer
@@ -231,22 +253,31 @@ while plotting:
         ax2b.ticklabel_format(useOffset=False)
         ax2b.xaxis.set_ticklabels([])
         
-        ax3b.clear() # Cadance
+        ax3b.clear() # cadance
         ax3b.plot(imu_time[1],imu_cad[1],linewidth=lw)
         ax3b.grid()
         ax3b.ticklabel_format(useOffset=False)
         ax3b.xaxis.set_ticklabels([])
         
-        ax4b.clear() # pip0 voltage
+        ax4b.clear() # pip 0 voltage
         ax4b.plot(swp_time[1],volts[1,0],linewidth=lw/2)
         ax4b.grid()
         ax4b.ticklabel_format(useOffset=False)
         ax4b.xaxis.set_ticklabels([])
 
-        ax5b.clear() # pip1 voltage
+        ax5b.clear() # pip 1 voltage
         ax5b.plot(swp_time[1],volts[1,1],linewidth=lw/2)
         ax5b.grid()
         ax5b.ticklabel_format(useOffset=False)
         ax5b.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
+    
+    # history of read_multiplier x number of data per read time
+    swp_time_old = swp_time[:,-num_dat_swp*read_multiplier:]
+    volts_old = volts[:,:,-num_dat_swp*read_multiplier:]
+    imu_time_old = imu_time[:,-num_dat_imu*read_multiplier:]
+    acc_old = acc[:,:,-num_dat_imu*read_multiplier:]
+    mag_old = mag[:,:,-num_dat_imu*read_multiplier:]
+    gyr_old = gyr[:,:,-num_dat_imu*read_multiplier:]
+    imu_cad_old = imu_cad[:,-num_dat_imu*read_multiplier:]
 
-    plt.pause(read_time) # needed for pyplot realtime plotting.
+    plt.pause(read_time) # needed for pyplot realtime plotting
