@@ -1,15 +1,18 @@
 import sys
-from bitstring import BitArray, BitStream
+from bitstring import BitArray
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
+import time
 
-buffered = True
-read_time = 0.2 # seconds
-read_multiplier = 4 # number of read times to plot
-max_time = 50*60 # sweep time word errors have t > 3000 s which are removed.
-freq = 45 # Hz
+# user settings
+buffered = True # whether to plot RAM buffered data
+read_time = 1 # approximate read time in seconds
+read_multiplier = 4 # length of history
+max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
+freq = 45 # approximate message frequency in Hz
 
+# initialize figure + axes
 if buffered: # buffered data shown on second column of plots
     fig, axs = plt.subplots(6, 2, figsize=(8,6))
     ax0 = axs[0,0]; ax1 = axs[1,0]; ax2 = axs[2,0]
@@ -23,23 +26,25 @@ else:
     ax3 = axs[3]; ax4 = axs[4]; ax5 = axs[5]
     dim = 1
 
+# parameters
 num_samples = 28 # how many samples per message
 num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 num_msg_bytes = (2 + num_swp_bytes + 2 + num_imu_bytes)*dim
-t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
 num_bytes_target = round(read_time*freq*num_msg_bytes) # N seconds worth of bytes
 
+t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
 sentinels = ['0x2353','0x2349','0x2354','0x234A'] # [#S,#I,#T,#J]
+payload_id = 0 # updated if found
 plotting = True
 
 # for closing on figure exit
 def on_close(event):
     global plotting
-    print('Close event captured at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
+    # print('Close event captured at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
     plotting = False
 
-# history data arrays
+# history data arrays, required for initial stitch
 swp_time_old = np.zeros([dim,0],dtype='single')
 volts_old = np.zeros([dim,2,0],dtype='single')
 imu_time_old = np.zeros([dim,0],dtype='single')
@@ -49,14 +54,28 @@ gyr_old = np.zeros([dim,3,0],dtype='single')
 imu_cad_old = np.zeros([dim,0],dtype='single')
 
 while plotting:
+    t0 = time.time() # used in measuring actual plotting cadence
+
     bytes = BitArray(sys.stdin.buffer.read(num_bytes_target))
+    if b'TIMEOUT\n' in bytes:
+        print('SERIAL TIMEOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"))
+        break
+
     ids_swp = list(bytes.findall(sentinels[0], bytealigned=False))
     ids_imu = list(bytes.findall(sentinels[1], bytealigned=False))
     if buffered:
         ids_swp_buf = list(bytes.findall(sentinels[2], bytealigned=False))
         ids_imu_buf = list(bytes.findall(sentinels[3], bytealigned=False))
+    else:
+        ids_swp_buf = ids_swp
+        ids_imu_buf = ids_imu
     num_dat_swp = max(len(ids_swp),len(ids_swp_buf))*num_samples
     num_dat_imu = max(len(ids_imu),len(ids_imu_buf))
+
+    if (num_dat_swp==0) | (num_dat_imu==0):
+        # print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"))
+        time.sleep(1) # print in 1 second intervals until end of data drop
+        continue
 
     swp_time = np.zeros([dim,num_dat_swp],dtype='single')
     payload_id = np.zeros([dim,num_dat_swp],dtype='uint8')
@@ -145,9 +164,6 @@ while plotting:
     pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
     pip0_std = np.std(volts[0,0])*1e3 # pip 0 standard deviation
     pip1_std = np.std(volts[0,1])*1e3 # pip 1 standard deviation
-
-    # tune to actual frequency measured from imu
-    num_bytes_target = round(read_time*imu_freq*num_msg_bytes)
 
     # stitch history
     swp_time = np.concatenate((swp_time_old,swp_time),axis=1)
@@ -281,3 +297,7 @@ while plotting:
     imu_cad_old = imu_cad[:,-num_dat_imu*read_multiplier:]
 
     plt.pause(read_time) # needed for pyplot realtime plotting
+
+    # tune to actual read time and frequency
+    read_time_actual = time.time()-t0
+    num_bytes_target = round(read_time_actual*imu_freq*num_msg_bytes)
