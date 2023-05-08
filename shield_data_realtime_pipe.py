@@ -41,7 +41,7 @@ plotting = True
 # for closing on figure exit
 def on_close(event):
     global plotting
-    # print('Close event captured at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
+    print('Close event captured at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
     plotting = False
 
 # history data arrays, required for initial stitch
@@ -58,7 +58,7 @@ while plotting:
 
     bytes = BitArray(sys.stdin.buffer.read(num_bytes_target))
     if b'TIMEOUT\n' in bytes:
-        print('SERIAL TIMEOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"))
+        print('SERIAL TIMEOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
         break
 
     ids_swp = list(bytes.findall(sentinels[0], bytealigned=False))
@@ -73,7 +73,7 @@ while plotting:
     num_dat_imu = max(len(ids_imu),len(ids_imu_buf))
 
     if (num_dat_swp==0) | (num_dat_imu==0):
-        # print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"))
+        print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
         time.sleep(1) # print in 1 second intervals until end of data drop
         continue
 
@@ -300,4 +300,6 @@ while plotting:
 
     # tune to actual read time and frequency
     read_time_actual = time.time()-t0
+    if read_time_actual > 2*read_time: # avoid excessive read time growth
+        read_time_actual = read_time
     num_bytes_target = round(read_time_actual*imu_freq*num_msg_bytes)

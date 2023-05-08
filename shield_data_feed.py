@@ -10,7 +10,7 @@ io.DEFAULT_BUFFER_SIZE = 1_048_576 # 1 MB
 
 # user settings
 baud = 230400
-timeout = 5
+timeout = 8
 num_bytes_target = 1024 # feed bytes faster than parser reads
 
 # opening data port/file
@@ -50,7 +50,7 @@ while True:
         else:
             try:
                 for _ in range(10*num_bytes_target):
-                    sys.stdout.buffer.write(b'TIMEOUT\n')
+                    sys.stdout.buffer.write(b'TIMEOUT\n') # pass-through timeout message
             except (BrokenPipeError, OSError):
                 break
             break
