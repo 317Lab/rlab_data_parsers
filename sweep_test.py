@@ -6,8 +6,8 @@ import time
 file = sys.argv[1]
 do_plot = True
 mov_avg_win = 100
-pos_slope_lim = 6000 # mV/ms
-neg_slope_lim = -6000 # mV/ms
+pos_slope_lim = 5000 # mV/ms
+neg_slope_lim = -5000 # mV/ms
 
 def moving_average(x, w):
     return np.convolve(x, np.ones(w+1), 'valid') / (w+1)
