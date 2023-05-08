@@ -6,12 +6,11 @@ from bitstring import BitArray
 import numpy as np
 import io
 
-io.DEFAULT_BUFFER_SIZE = 1_048_576 # 1 MB
-
 # user settings
 baud = 230400
 timeout = 8
 num_bytes_target = 1024 # feed bytes faster than parser reads
+io.DEFAULT_BUFFER_SIZE = 16_777_216 # 16 MB
 
 # opening data port/file
 suffix = ''
@@ -68,5 +67,4 @@ if not(monitoring_only):
             payload_ids[i] = bytes_tmp[id+(2+4)*8:id+(2+5)*8].uintle
             i+=1
         payload_id = int(np.median(payload_ids))
-    
     os.rename(file_name,file_name[:-4]+'_'+str(payload_id)+'.bin') # add payload ID to file_name
