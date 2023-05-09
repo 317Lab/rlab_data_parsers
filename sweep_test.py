@@ -81,4 +81,6 @@ if do_plot:
     plt.xlabel('time (ms)')
     plt.ylabel('signal (mV)')
     plt.legend()
+    plt.title(file)
     plt.show()
+    plt.savefig(file[:-4]+'.png')
