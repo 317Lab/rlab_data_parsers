@@ -5,6 +5,7 @@ import time
 
 file = sys.argv[1]
 do_plot = True
+show_plot = False
 mov_avg_win = 100
 pos_slope_lim = 5000 # mV/ms
 neg_slope_lim = -5000 # mV/ms
@@ -82,8 +83,9 @@ if do_plot:
     plt.xlabel('time (ms)')
     plt.ylabel('signal (mV)')
     plt.legend()
-    plt.title(file)
+    plt.title('path = ' + file + ' , Period = {:.2f} ms , V_min = {:.2f} V , V_max = {:.2f} V'.format(period,min_voltage/1e3,max_voltage/1e3))
     plt.grid()
     plt.savefig(file[:-4]+'.png',dpi=300)
-    plt.show()
+    if show_plot:
+        plt.show()
     
