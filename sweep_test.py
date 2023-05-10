@@ -74,6 +74,7 @@ print('Step duration = {:.1f} +/- {:.1f} us'.format(step_duration,2*step_dur_sig
 print('Step amplitude = {:.0f} +/- {:.0f} mV'.format(step_amplitude,2*step_amp_sig))
 
 if do_plot:
+    plt.figure(figsize=(15,15/1.618))
     plt.plot(times,volts,label='data')
     plt.plot(rise_times,rise_volts,'o',label='rise times')
     plt.plot(fall_times,fall_volts,'o',label='fall times')
@@ -82,5 +83,6 @@ if do_plot:
     plt.ylabel('signal (mV)')
     plt.legend()
     plt.title(file)
+    plt.savefig(file[:-4]+'.png',dpi=300)
     plt.show()
-    plt.savefig(file[:-4]+'.png')
+    
