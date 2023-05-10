@@ -83,6 +83,7 @@ if do_plot:
     plt.ylabel('signal (mV)')
     plt.legend()
     plt.title(file)
+    plt.grid()
     plt.savefig(file[:-4]+'.png',dpi=300)
     plt.show()
     
