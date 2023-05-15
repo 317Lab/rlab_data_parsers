@@ -7,10 +7,13 @@ import time
 
 # user settings
 buffered = True # whether to plot RAM buffered data
+debug = True
 read_time = 1 # approximate read time in seconds
 read_multiplier = 4 # length of history
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 freq = 45 # approximate message frequency in Hz
+sync_rate = 3 # percent to increase or decrease data parse rate
+sync_offset = 0.1 # max allowed parser-shield sync offset in seconds
 
 # initialize figure + axes
 if buffered: # buffered data shown on second column of plots
@@ -36,7 +39,9 @@ num_bytes_target = round(read_time*freq*num_msg_bytes) # N seconds worth of byte
 t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
 sentinels = ['0x2353','0x2349','0x2354','0x234A'] # [#S,#I,#T,#J]
 payload_id = 0 # updated if found
+read_time_actual = read_time # initialize
 plotting = True
+first_capture = True
 
 # for closing on figure exit
 def on_close(event):
@@ -54,8 +59,6 @@ gyr_old = np.zeros([dim,3,0],dtype='single')
 imu_cad_old = np.zeros([dim,0],dtype='single')
 
 while plotting:
-    t0 = time.time() # used in measuring actual plotting cadence
-
     bytes = BitArray(sys.stdin.buffer.read(num_bytes_target))
     if b'TIMEOUT\n' in bytes:
         print('SERIAL TIMEOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
@@ -156,6 +159,19 @@ while plotting:
     swp_time[(swp_time==0) | (swp_time>max_time)] = np.nan
     imu_time[(imu_time==0) | (imu_time>max_time)] = np.nan
 
+    # keep track of parser vs. shield timing
+    if first_capture:
+        t0_parser = time.time()
+        t0_shield = imu_time[0,0]
+        first_capture = False
+    t_parser = time.time() - t0_parser
+    t_shield = np.nanmax(imu_time) - t0_shield
+    sync = t_parser - t_shield
+    if sync < sync_offset: # parser too slow, grab fewer bytes per read_time
+        num_bytes_target = round(num_bytes_target*(1-sync_rate/100))
+    elif sync > sync_offset: # parser too fast, grab more bytes per read_time
+        num_bytes_target = round(num_bytes_target*(1+sync_rate/100))
+
     # measured values
     imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
     imu_cad_avg = np.nanmean(imu_cad)
@@ -241,6 +257,9 @@ while plotting:
     ax5.text( 0.2, -0.8, 'P1 STD: ' + "{0:.1f}".format(pip1_std) + ' mV', transform=ax5.transAxes)
     ax5.text( 0.5, -0.6, 'CAD: ' + "{0:.1f}".format(imu_cad_avg) + ' ms', transform=ax5.transAxes)
     ax5.text( 0.5, -0.8, 'FRQ: ' + "{0:.1f}".format(imu_freq) + ' Hz', transform=ax5.transAxes)
+    if debug:
+        ax5.text( 0.8, -0.6, 'PARSER T: ' + "{0:.1f}".format(t_parser) + ' s', transform=ax5.transAxes)
+        ax5.text( 0.8, -0.8, 'SHIELD T: ' + "{0:.1f}".format(t_shield) + ' s', transform=ax5.transAxes)
 
     if buffered:
         ax0b.clear() # accelerometer
@@ -297,9 +316,3 @@ while plotting:
     imu_cad_old = imu_cad[:,-num_dat_imu*read_multiplier:]
 
     plt.pause(read_time) # needed for pyplot realtime plotting
-
-    # tune to actual read time and frequency
-    read_time_actual = time.time()-t0
-    if read_time_actual > 2*read_time: # avoid excessive read time growth
-        read_time_actual = read_time
-    num_bytes_target = round(read_time_actual*imu_freq*num_msg_bytes)
