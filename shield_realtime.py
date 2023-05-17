@@ -76,8 +76,12 @@ while plotting:
     num_dat_imu = max(len(ids_imu),len(ids_imu_buf))
 
     if (num_dat_swp==0) | (num_dat_imu==0):
-        print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
-        time.sleep(1) # print in 1 second intervals until end of data drop
+        try:
+            print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
+            time.sleep(1) # print in 1 second intervals until end of data drop
+        except KeyboardInterrupt:
+            print('Close event captured at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
+            plotting = False
         continue
 
     swp_time = np.zeros([dim,num_dat_swp],dtype='single')
@@ -177,8 +181,8 @@ while plotting:
     imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
     imu_cad_avg = np.nanmean(imu_cad)
     imu_freq = 1e3/imu_cad_avg # hz
-    pip0_rms = np.sqrt(np.mean(np.square(volts[0,0]-np.mean(volts[0,0]))))*1e3 # pip 0 rms noise
-    pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
+    # pip0_rms = np.sqrt(np.mean(np.square(volts[0,0]-np.mean(volts[0,0]))))*1e3 # pip 0 rms noise
+    # pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
     pip0_std = np.std(volts[0,0])*1e3 # pip 0 standard deviation
     pip1_std = np.std(volts[0,1])*1e3 # pip 1 standard deviation
 
@@ -195,7 +199,8 @@ while plotting:
     fig.canvas.mpl_connect('close_event', on_close) # exit loop when closing figure
     fig.subplots_adjust(hspace=0)
     lw = 1
-    fs = 11
+    fs = 9
+    plt.rcParams.update({'font.size': fs})
 
     ax0.clear() # accelerometer
     ax0.plot(imu_time[0],acc[0,0],linewidth=lw)
@@ -207,7 +212,10 @@ while plotting:
     ax0.set_xlabel('IMU TIME SINCE SHIELD POWER [s]')
     ax0.xaxis.tick_top()
     ax0.xaxis.set_label_position('top')
-    ax0.text(0.9, 1.5, 'SHIELD ID: ' + str(payload_id[0,0]), transform=ax0.transAxes, fontsize=fs)
+    if debug:
+        ax0.text(0.0*dim,1.7, 'FRQ: ' + "{0:.1f}".format(imu_freq) + ' Hz', transform=ax0.transAxes)
+        ax0.text(0.3*dim,1.7, 'SYNC OFFSET: ' + "{0:.1f}".format(sync_offset) + ' s', transform=ax0.transAxes)
+        ax0.text(0.6*dim,1.7, 'SYNC FACTOR: ' + "{0:.2f}".format(sync_factor), transform=ax0.transAxes)
     # if monitoring_only:
     #     if flash:
     #         ax0.text(-0.1, 1.5, 'MONITORING ONLY', transform=ax0.transAxes, color='red',fontsize=20,weight="bold")
@@ -253,15 +261,10 @@ while plotting:
     ax5.grid()
     ax5.ticklabel_format(useOffset=False)
     ax5.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
-    ax5.text(-0.1, -0.6, 'P0 RMS: ' + "{0:.1f}".format(pip0_rms) + ' mV', transform=ax5.transAxes)
-    ax5.text(-0.1, -0.8, 'P1 RMS: ' + "{0:.1f}".format(pip1_rms) + ' mV', transform=ax5.transAxes)
-    ax5.text( 0.2, -0.6, 'P0 STD: ' + "{0:.1f}".format(pip0_std) + ' mV', transform=ax5.transAxes)
-    ax5.text( 0.2, -0.8, 'P1 STD: ' + "{0:.1f}".format(pip1_std) + ' mV', transform=ax5.transAxes)
-    ax5.text( 0.5, -0.6, 'CAD: ' + "{0:.1f}".format(imu_cad_avg) + ' ms', transform=ax5.transAxes)
-    ax5.text( 0.5, -0.8, 'FRQ: ' + "{0:.1f}".format(imu_freq) + ' Hz', transform=ax5.transAxes)
-    if debug:
-        ax5.text( 0.8, -0.6, 'SYNC OFF: ' + "{0:.1f}".format(sync_offset) + ' s', transform=ax5.transAxes)
-        ax5.text( 0.8, -0.8, 'SYNC FAC: ' + "{0:.1f}".format(sync_factor), transform=ax5.transAxes)
+    ax5.text(0.0*dim,-0.8, 'ID: ' + str(payload_id[0,0]), transform=ax5.transAxes)
+    ax5.text(0.1*dim,-0.8, 'STD0: {0:.1f} mV'.format(pip0_std), transform=ax5.transAxes)
+    ax5.text(0.3*dim,-0.8, 'STD1: {0:.1f} mV'.format(pip1_std), transform=ax5.transAxes)
+    ax5.text(0.5*dim,-0.8, 'CAD: {0:.1f} ms'.format(imu_cad_avg), transform=ax5.transAxes)
 
     if buffered:
         ax0b.clear() # accelerometer

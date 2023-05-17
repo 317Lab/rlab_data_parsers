@@ -125,8 +125,8 @@ imu_time[(imu_time==0) | (imu_time>max_time)] = np.nan
 imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
 imu_cad_avg = np.nanmean(imu_cad)
 imu_freq = 1e3/imu_cad_avg # hz
-pip0_rms = np.sqrt(np.mean(np.square(volts[0,0]-np.mean(volts[0,0]))))*1e3 # pip 0 rms noise
-pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
+# pip0_rms = np.sqrt(np.mean(np.square(volts[0,0]-np.mean(volts[0,0]))))*1e3 # pip 0 rms noise
+# pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
 pip0_std = np.std(volts[0,0])*1e3 # pip 0 standard deviation
 pip1_std = np.std(volts[0,1])*1e3 # pip 1 standard deviation
 
@@ -186,12 +186,10 @@ ax5.set_ylabel('P1 [V]')
 ax5.grid()
 ax5.ticklabel_format(useOffset=False)
 ax5.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
-ax5.text(-0.1, -0.6, 'P0 RMS: ' + "{0:.1f}".format(pip0_rms) + ' mV', transform=ax5.transAxes)
-ax5.text(-0.1, -0.8, 'P1 RMS: ' + "{0:.1f}".format(pip1_rms) + ' mV', transform=ax5.transAxes)
-ax5.text( 0.2, -0.6, 'P0 STD: ' + "{0:.1f}".format(pip0_std) + ' mV', transform=ax5.transAxes)
-ax5.text( 0.2, -0.8, 'P1 STD: ' + "{0:.1f}".format(pip1_std) + ' mV', transform=ax5.transAxes)
-ax5.text( 0.5, -0.6, 'CAD: ' + "{0:.1f}".format(imu_cad_avg) + ' ms', transform=ax5.transAxes)
-ax5.text( 0.5, -0.8, 'FRQ: ' + "{0:.1f}".format(imu_freq) + ' Hz', transform=ax5.transAxes)
+ax5.text(0.0*dim,-0.8, 'ID: ' + str(payload_id[0,0]), transform=ax5.transAxes)
+ax5.text(0.1*dim,-0.8, 'STD0: {0:.1f} mV'.format(pip0_std), transform=ax5.transAxes)
+ax5.text(0.3*dim,-0.8, 'STD1: {0:.1f} mV'.format(pip1_std), transform=ax5.transAxes)
+ax5.text(0.5*dim,-0.8, 'CAD: {0:.1f} ms'.format(imu_cad_avg), transform=ax5.transAxes)
 
 if buffered:
     ax0b.clear() # accelerometer
