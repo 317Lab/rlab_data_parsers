@@ -8,16 +8,17 @@ import io
 
 # user settings
 baud = 230400
-timeout = 8
-num_bytes_target = 1024 # feed bytes faster than parser reads
+initial_timeout = 30
+runtime_timeout = 10
+num_bytes_target = 2048 # feed bytes faster than parser reads
 io.DEFAULT_BUFFER_SIZE = 16_777_216 # 16 MB
 
 # opening data port/file
 suffix = ''
-bytes_tmp = BitArray()
 payload_id = 0
-reading = True
+bytes_tmp = BitArray()
 monitoring_only = False
+first_capture = True
 if len(sys.argv) == 3: # optional argument
     if sys.argv[2] == '-m':
         monitoring_only = True
@@ -25,7 +26,7 @@ if len(sys.argv) == 3: # optional argument
         suffix = '_' + sys.argv[2]
 try:
     port = sys.argv[1]
-    ser = Serial(port, baud, timeout=timeout) # wait until all bytes are read or x seconds pass
+    ser = Serial(port, baud, timeout=initial_timeout) # wait until all bytes are read or x seconds pass
     ser.reset_input_buffer() # flush serial port
 except:
     print('Serial port not found.')
@@ -38,6 +39,9 @@ if not(monitoring_only):
 while True:
     try:
         bytes = ser.read(num_bytes_target)
+        if first_capture:
+            ser.timeout = runtime_timeout
+            first_capture = False
         if not(monitoring_only):
             file.write(bytes)
         if bytes != b'':
