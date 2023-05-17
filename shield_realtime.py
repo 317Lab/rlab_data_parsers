@@ -34,13 +34,13 @@ num_samples = 28 # how many samples per message
 num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 num_msg_bytes = (2 + num_swp_bytes + 2 + num_imu_bytes)*dim
-num_bytes_target = round(read_time*freq*num_msg_bytes) # N seconds worth of bytes
+num_bytes_target_set = round(read_time*freq*num_msg_bytes) # N seconds worth of bytes
 
 t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
 sentinels = ['0x2353','0x2349','0x2354','0x234A'] # [#S,#I,#T,#J]
-read_time_actual = read_time # initialize
 plotting = True
 first_capture = True
+num_bytes_target = num_bytes_target_set
 
 # for closing on figure exit
 def on_close(event):
@@ -172,9 +172,9 @@ while plotting:
     sync_offset = t_parser - t_shield
     sync_factor = 1+sync_offset*sync_tuner # unitless factor
     if sync_offset < -sync_max_offset: # parser too slow, grab fewer bytes per read_time
-        num_bytes_target = round(num_bytes_target*sync_factor)
+        num_bytes_target = round(num_bytes_target_set*sync_factor)
     elif sync_offset > sync_max_offset: # parser too fast, grab more bytes per read_time
-        num_bytes_target = round(num_bytes_target*sync_factor)
+        num_bytes_target = round(num_bytes_target_set*sync_factor)
 
     # measured values
     imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
