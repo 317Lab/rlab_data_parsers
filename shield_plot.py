@@ -132,24 +132,25 @@ pip1_std = np.std(volts[0,1])*1e3 # pip 1 standard deviation
 
 fig.subplots_adjust(hspace=0)
 lw = 1
+fs = 8
+plt.rcParams.update({'font.size': fs})
 
 ax0.clear() # accelerometer
 ax0.plot(imu_time[0],acc[0,0],linewidth=lw)
 ax0.plot(imu_time[0],acc[0,1],linewidth=lw)
 ax0.plot(imu_time[0],acc[0,2],linewidth=lw)
-ax0.set_ylabel('ACC [g]')
+ax0.set_ylabel('ACC [g]',fontsize=fs)
 ax0.grid()
 ax0.ticklabel_format(useOffset=False)
-ax0.set_xlabel('IMU TIME SINCE SHIELD POWER [s]')
+ax0.set_xlabel('IMU TIME SINCE SHIELD POWER [s]',fontsize=fs)
 ax0.xaxis.tick_top()
 ax0.xaxis.set_label_position('top')
-ax0.text(0.9, 1.5, 'SHIELD ID: ' + str(payload_id[0,0]), transform=ax0.transAxes, fontsize=15)
 
 ax1.clear() # magnetometer
 ax1.plot(imu_time[0],mag[0,0],linewidth=lw)
 ax1.plot(imu_time[0],mag[0,1],linewidth=lw)
 ax1.plot(imu_time[0],mag[0,2],linewidth=lw)
-ax1.set_ylabel('MAG [G]')
+ax1.set_ylabel('MAG [G]',fontsize=fs)
 ax1.grid()
 ax1.ticklabel_format(useOffset=False)
 ax1.xaxis.set_ticklabels([])
@@ -158,21 +159,21 @@ ax2.clear() # gyrometer
 ax2.plot(imu_time[0],gyr[0,0],linewidth=lw)
 ax2.plot(imu_time[0],gyr[0,1],linewidth=lw)
 ax2.plot(imu_time[0],gyr[0,2],linewidth=lw)
-ax2.set_ylabel('GYR [Hz]')
+ax2.set_ylabel('GYR [Hz]',fontsize=fs)
 ax2.grid()
 ax2.ticklabel_format(useOffset=False)
 ax2.xaxis.set_ticklabels([])
 
 ax3.clear() # Cadance
 ax3.plot(imu_time[0],imu_cad[0],linewidth=lw)
-ax3.set_ylabel('CAD [ms]')
+ax3.set_ylabel('CAD [ms]',fontsize=fs)
 ax3.grid()
 ax3.ticklabel_format(useOffset=False)
 ax3.xaxis.set_ticklabels([])
 
 ax4.clear() # pip0 voltage
 ax4.plot(swp_time[0],volts[0,0],linewidth=lw/2)
-ax4.set_ylabel('P0 [V]')
+ax4.set_ylabel('P0 [V]',fontsize=fs)
 ax4.grid()
 ax4.ticklabel_format(useOffset=False)
 ax4.xaxis.set_ticklabels([])
@@ -182,10 +183,10 @@ middle = np.nanmean(volts[0,0])
 
 ax5.clear() # pip1 voltage
 ax5.plot(swp_time[0],volts[0,1],linewidth=lw/2)
-ax5.set_ylabel('P1 [V]')
+ax5.set_ylabel('P1 [V]',fontsize=fs)
 ax5.grid()
 ax5.ticklabel_format(useOffset=False)
-ax5.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
+ax5.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]',fontsize=fs)
 ax5.text(0.0*dim,-0.8, 'ID: ' + str(payload_id[0,0]), transform=ax5.transAxes)
 ax5.text(0.1*dim,-0.8, 'STD0: {0:.1f} mV'.format(pip0_std), transform=ax5.transAxes)
 ax5.text(0.3*dim,-0.8, 'STD1: {0:.1f} mV'.format(pip1_std), transform=ax5.transAxes)
@@ -198,7 +199,7 @@ if buffered:
     ax0b.plot(imu_time[1],acc[1,2],linewidth=lw)
     ax0b.grid()
     ax0b.ticklabel_format(useOffset=False)
-    ax0b.set_xlabel('IMU TIME SINCE SHIELD POWER [s]')
+    ax0b.set_xlabel('IMU TIME SINCE SHIELD POWER [s]',fontsize=fs)
     ax0b.xaxis.tick_top()
     ax0b.xaxis.set_label_position('top')
 
@@ -234,6 +235,6 @@ if buffered:
     ax5b.plot(swp_time[1],volts[1,1],linewidth=lw/2)
     ax5b.grid()
     ax5b.ticklabel_format(useOffset=False)
-    ax5b.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]')
+    ax5b.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]',fontsize=fs)
 
 plt.show()

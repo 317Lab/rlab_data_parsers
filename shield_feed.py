@@ -8,8 +8,8 @@ import io
 
 # user settings
 baud = 230400
-initial_timeout = 30 # allows user to start recording and wait for shield power on
-runtime_timeout = 10 # timeout after initial capture
+initial_timeout = 20 # allows user to start recording and wait for shield power on
+runtime_timeout = 5 # timeout after initial capture
 num_bytes_target = 2048 # feed bytes faster than parser reads
 io.DEFAULT_BUFFER_SIZE = 16_777_216 # 16 MB
 
@@ -35,6 +35,11 @@ except:
 file_name = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
 if not(monitoring_only):
     file = open(file_name,'ab')
+
+# log errors
+log = open('stderr.log', 'a')
+log.write('\n'+file_name[:-4]+'\n')
+sys.stderr = log
 
 while True:
     try:
