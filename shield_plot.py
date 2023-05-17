@@ -176,7 +176,8 @@ ax4.set_ylabel('P0 [V]')
 ax4.grid()
 ax4.ticklabel_format(useOffset=False)
 ax4.xaxis.set_ticklabels([])
-ax4.set_ylim(0.99,1.01)
+middle = np.nanmean(volts[0,0])
+# ax4.set_ylim(middle-0.01,middle+0.01)
 # ax4.set_yticks(np.arange(np.nanmean(volts[0,0])-delta,np.nanmean(volts[0,0])+delta,0.001))
 
 ax5.clear() # pip1 voltage
