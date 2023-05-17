@@ -8,8 +8,8 @@ import io
 
 # user settings
 baud = 230400
-initial_timeout = 30
-runtime_timeout = 10
+initial_timeout = 30 # allows user to start recording and wait for shield power on
+runtime_timeout = 10 # timeout after initial capture
 num_bytes_target = 2048 # feed bytes faster than parser reads
 io.DEFAULT_BUFFER_SIZE = 16_777_216 # 16 MB
 
@@ -40,14 +40,14 @@ while True:
     try:
         bytes = ser.read(num_bytes_target)
         if first_capture:
-            ser.timeout = runtime_timeout
+            ser.timeout = runtime_timeout # update timeout
             first_capture = False
         if not(monitoring_only):
             file.write(bytes)
         if bytes != b'':
             try:
                 sys.stdout.buffer.write(bytes)
-                bytes_tmp = BitArray(bytes)
+                bytes_tmp = BitArray(bytes) # for grabbing shield ID post loop
             except (BrokenPipeError, OSError):
                 pass # if pipe breaks keep writing to file until user interupt
         else:
