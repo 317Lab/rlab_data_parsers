@@ -12,8 +12,8 @@ read_time = 1 # approximate read time in seconds
 read_multiplier = 4 # length of history
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 freq = 45 # approximate message frequency in Hz
-sync_rate = 3 # percent to increase or decrease data parse rate
-sync_offset = 0.1 # max allowed parser-shield sync offset in seconds
+sync_max_offset = 0.1 # max absolute allowed parser-shield sync offset in seconds
+sync_tuner = 0.03 # tune sync aggressiveness, 0 = no sync
 
 # initialize figure + axes
 if buffered: # buffered data shown on second column of plots
@@ -166,11 +166,12 @@ while plotting:
         first_capture = False
     t_parser = time.time() - t0_parser
     t_shield = np.nanmax(imu_time) - t0_shield
-    sync = t_parser - t_shield
-    if sync < sync_offset: # parser too slow, grab fewer bytes per read_time
-        num_bytes_target = round(num_bytes_target*(1-sync_rate/100))
-    elif sync > sync_offset: # parser too fast, grab more bytes per read_time
-        num_bytes_target = round(num_bytes_target*(1+sync_rate/100))
+    sync_offset = t_parser - t_shield
+    sync_factor = 1+sync_offset*sync_tuner # unitless factor
+    if sync_offset < -sync_max_offset: # parser too slow, grab fewer bytes per read_time
+        num_bytes_target = round(num_bytes_target*sync_factor)
+    elif sync_offset > sync_max_offset: # parser too fast, grab more bytes per read_time
+        num_bytes_target = round(num_bytes_target*sync_factor)
 
     # measured values
     imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
@@ -194,6 +195,7 @@ while plotting:
     fig.canvas.mpl_connect('close_event', on_close) # exit loop when closing figure
     fig.subplots_adjust(hspace=0)
     lw = 1
+    fs = 11
 
     ax0.clear() # accelerometer
     ax0.plot(imu_time[0],acc[0,0],linewidth=lw)
@@ -205,7 +207,7 @@ while plotting:
     ax0.set_xlabel('IMU TIME SINCE SHIELD POWER [s]')
     ax0.xaxis.tick_top()
     ax0.xaxis.set_label_position('top')
-    ax0.text(0.9, 1.5, 'SHIELD ID: ' + str(payload_id[0,0]), transform=ax0.transAxes, fontsize=15)
+    ax0.text(0.9, 1.5, 'SHIELD ID: ' + str(payload_id[0,0]), transform=ax0.transAxes, fontsize=fs)
     # if monitoring_only:
     #     if flash:
     #         ax0.text(-0.1, 1.5, 'MONITORING ONLY', transform=ax0.transAxes, color='red',fontsize=20,weight="bold")
@@ -258,8 +260,8 @@ while plotting:
     ax5.text( 0.5, -0.6, 'CAD: ' + "{0:.1f}".format(imu_cad_avg) + ' ms', transform=ax5.transAxes)
     ax5.text( 0.5, -0.8, 'FRQ: ' + "{0:.1f}".format(imu_freq) + ' Hz', transform=ax5.transAxes)
     if debug:
-        ax5.text( 0.8, -0.6, 'PARSER T: ' + "{0:.1f}".format(t_parser) + ' s', transform=ax5.transAxes)
-        ax5.text( 0.8, -0.8, 'SHIELD T: ' + "{0:.1f}".format(t_shield) + ' s', transform=ax5.transAxes)
+        ax5.text( 0.8, -0.6, 'SYNC OFF: ' + "{0:.1f}".format(sync_offset) + ' s', transform=ax5.transAxes)
+        ax5.text( 0.8, -0.8, 'SYNC FAC: ' + "{0:.1f}".format(sync_factor), transform=ax5.transAxes)
 
     if buffered:
         ax0b.clear() # accelerometer
