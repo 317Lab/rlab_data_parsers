@@ -171,10 +171,13 @@ while plotting:
     t_shield = np.nanmax(imu_time) - t0_shield
     sync_offset = t_parser - t_shield
     sync_factor = 1+sync_offset*sync_tuner # unitless factor
+    sync_drift = num_bytes_target/num_bytes_target_set
     if sync_offset < -sync_max_offset: # parser too slow, grab fewer bytes per read_time
-        num_bytes_target = round(num_bytes_target_set*sync_factor)
+        num_bytes_target = round(num_bytes_target*sync_factor)
     elif sync_offset > sync_max_offset: # parser too fast, grab more bytes per read_time
-        num_bytes_target = round(num_bytes_target_set*sync_factor)
+        num_bytes_target = round(num_bytes_target*sync_factor)
+    if sync_drift > 5:
+        num_bytes_target = num_bytes_target_set
 
     # measured values
     imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
@@ -212,9 +215,10 @@ while plotting:
     ax0.xaxis.tick_top()
     ax0.xaxis.set_label_position('top')
     if debug:
-        ax0.text(0.0*dim,1.7, 'FRQ: ' + "{0:.1f}".format(imu_freq) + ' Hz', transform=ax0.transAxes)
-        ax0.text(0.3*dim,1.7, 'SYNC OFFSET: ' + "{0:.1f}".format(sync_offset) + ' s', transform=ax0.transAxes)
-        ax0.text(0.6*dim,1.7, 'SYNC FACTOR: ' + "{0:.2f}".format(sync_factor), transform=ax0.transAxes)
+        ax0.text(0.0*dim,1.7, 'FRQ: {0:.1f} Hz'.format(imu_freq), transform=ax0.transAxes)
+        ax0.text(0.3*dim,1.7, 'SYNC OFFSET: {0:.1f} s'.format(sync_offset), transform=ax0.transAxes)
+        ax0.text(0.6*dim,1.7,' SYNC FACTOR: {0:.2f}'.format(sync_factor), transform=ax0.transAxes)
+        ax0.text(0.9*dim,1.7,' SYNC DRIFT: {0:.2f}'.format(sync_drift), transform=ax0.transAxes)
     # if monitoring_only:
     #     if flash:
     #         ax0.text(-0.1, 1.5, 'MONITORING ONLY', transform=ax0.transAxes, color='red',fontsize=20,weight="bold")
