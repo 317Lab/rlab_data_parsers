@@ -9,7 +9,7 @@ import time
 buffered = True # whether to plot RAM buffered data
 debug = True
 read_time = 1 # approximate read time in seconds
-read_multiplier = 4 # length of history
+read_multiplier = 4 # multiplier length of history
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 freq = 45 # approximate message frequency in Hz
 sync_max_offset = 0.1 # max absolute allowed parser-shield sync offset in seconds
@@ -74,7 +74,7 @@ while plotting:
     num_dat_swp = max(len(ids_swp),len(ids_swp_buf))*num_samples
     num_dat_imu = max(len(ids_imu),len(ids_imu_buf))
 
-    if (num_dat_swp==0) | (num_dat_imu==0):
+    if (num_dat_swp<=num_samples) | (num_dat_imu<=1):
         try:
             print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
             time.sleep(1) # print in 1 second intervals until end of data drop
@@ -170,13 +170,13 @@ while plotting:
     t_parser = time.time() - t0_parser
     t_shield = np.nanmax(imu_time) - t0_shield
     sync_offset = t_parser - t_shield
-    sync_factor = 1+sync_offset*sync_tuner # unitless factor
+    sync_factor = 1 + np.tanh(sync_offset*sync_tuner) # unitless factor between 0 and 2, linear when close to 1
     sync_drift = num_bytes_target/num_bytes_target_set
     if sync_offset < -sync_max_offset: # parser too slow, grab fewer bytes per read_time
         num_bytes_target = round(num_bytes_target*sync_factor)
     elif sync_offset > sync_max_offset: # parser too fast, grab more bytes per read_time
         num_bytes_target = round(num_bytes_target*sync_factor)
-    if sync_drift > 5:
+    if abs(sync_drift) > 5:
         num_bytes_target = num_bytes_target_set
 
     # measured values
@@ -185,8 +185,8 @@ while plotting:
     imu_freq = 1e3/imu_cad_avg # hz
     # pip0_rms = np.sqrt(np.mean(np.square(volts[0,0]-np.mean(volts[0,0]))))*1e3 # pip 0 rms noise
     # pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
-    pip0_std = np.std(volts[0,0])*1e3 # pip 0 standard deviation
-    pip1_std = np.std(volts[0,1])*1e3 # pip 1 standard deviation
+    pip0_std = np.nanstd(volts[0,0])*1e3 # pip 0 standard deviation
+    pip1_std = np.nanstd(volts[0,1])*1e3 # pip 1 standard deviation
 
     # stitch history
     swp_time = np.concatenate((swp_time_old,swp_time),axis=1)
