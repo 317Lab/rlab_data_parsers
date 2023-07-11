@@ -1,3 +1,17 @@
+# Real-time parser and plotter of shield data piped from standard input buffer.
+# Example usages:
+#   Normal usage:  python shield_feed.py <port> <suffix (optional)> | python shield_realtime.py
+#   Monitor only:  python shield_feed.py <port> -m | python shield_realtime.py
+#   Replay a file: cat YYYYMMDDThhmmssZ_data_<port>_<baud>_<suffix>_<id>.bin | python shield_realtime.py
+# For Windows, <port> is "COM##". Check "Device Manager" under "Ports" and look for e.g. "(COM2)".
+# For iOS, <port> is under /dev/, e.g. "/dev/tty.usbserial-FT611XTT0%".
+# Known issues:
+#   - parser-shield synchronization requires fine tuning and depends on processing speed
+#   - possible false postive sentinel matches when higher order bytes for steady data are 0x23.
+#       - E.g. when pip voltage 2.7 - 2.8 V or timestamp is ~ 9 or 20 minutes.
+#       - 3-byte sentinels are needed.
+# Contact: jules.van.irsel.gr@dartmouth.edu
+
 import sys
 from bitstring import BitArray
 import numpy as np
@@ -13,7 +27,7 @@ read_multiplier = 4 # multiplier length of history
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 freq = 45 # approximate message frequency in Hz
 sync_max_offset = 0.1 # max absolute allowed parser-shield sync offset in seconds
-sync_tuner = 0.03 # tune sync aggressiveness, 0 = no sync
+sync_tuner = 0.03 # parser-shield sync aggressiveness, 0 = no sync
 
 # initialize figure + axes
 if buffered: # buffered data shown on second column of plots
@@ -30,14 +44,14 @@ else:
     dim = 1
 
 # parameters
-num_samples = 28 # how many samples per message
+num_samples = 28 # how many samples per pip per sweep message
 num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 num_msg_bytes = (2 + num_swp_bytes + 2 + num_imu_bytes)*dim
 num_bytes_target_set = round(read_time*freq*num_msg_bytes) # N seconds worth of bytes
 
-t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
-sentinels = ['0x2353','0x2349','0x2354','0x234A'] # [#S,#I,#T,#J]
+t_scale = 1.e-6; a_scale = 4./2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5./2**14 # data scales
+sentinels = ['0x2353','0x2349','0x2354','0x234A'] # ['#S','#I','#T','#J']
 plotting = True
 first_capture = True
 num_bytes_target = num_bytes_target_set
@@ -57,9 +71,10 @@ mag_old = np.zeros([dim,3,0],dtype='single')
 gyr_old = np.zeros([dim,3,0],dtype='single')
 imu_cad_old = np.zeros([dim,0],dtype='single')
 
+# main routine
 while plotting:
-    bytes = BitArray(sys.stdin.buffer.read(num_bytes_target))
-    if b'TIMEOUT\n' in bytes:
+    bytes = BitArray(sys.stdin.buffer.read(num_bytes_target)) # read bytes from standard input
+    if b'TIMEOUT\n' in bytes: # shield_feed.py sends repeated 'TIMEOUT' when serial port has timed out
         print('SERIAL TIMEOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
         break
 
@@ -71,10 +86,10 @@ while plotting:
     else:
         ids_swp_buf = ids_swp
         ids_imu_buf = ids_imu
-    num_dat_swp = max(len(ids_swp),len(ids_swp_buf))*num_samples
+    num_dat_swp = max(len(ids_swp),len(ids_swp_buf))*num_samples # sweep data is repeated per sweep sample
     num_dat_imu = max(len(ids_imu),len(ids_imu_buf))
 
-    if (num_dat_swp<=num_samples) | (num_dat_imu<=1):
+    if (num_dat_swp<=0) | (num_dat_imu<=0):
         try:
             print('DATA DROPOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
             time.sleep(1) # print in 1 second intervals until end of data drop
@@ -82,7 +97,8 @@ while plotting:
             print('Close event captured at',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
             plotting = False
         continue
-
+    
+    # initialize data arrays
     swp_time = np.zeros([dim,num_dat_swp],dtype='single')
     payload_id = np.zeros([dim,num_dat_swp],dtype='uint8')
     volts = np.zeros([dim,2,num_dat_swp],dtype='single')
@@ -91,6 +107,7 @@ while plotting:
     mag = np.zeros([dim,3,num_dat_imu],dtype='single')
     gyr = np.zeros([dim,3,num_dat_imu],dtype='single')
 
+    # parse data
     pos = 0
     for ind in ids_swp: # sweep indeces
         next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
@@ -162,7 +179,7 @@ while plotting:
     swp_time[(swp_time==0) | (swp_time>max_time)] = np.nan
     imu_time[(imu_time==0) | (imu_time>max_time)] = np.nan
 
-    # keep track of parser vs. shield timing
+    # keep track of parser vs. shield timing/synchronization
     if first_capture:
         t0_parser = time.time()
         t0_shield = imu_time[0,0]
@@ -170,7 +187,7 @@ while plotting:
     t_parser = time.time() - t0_parser
     t_shield = np.nanmax(imu_time) - t0_shield
     sync_offset = t_parser - t_shield
-    sync_factor = 1 + np.tanh(sync_offset*sync_tuner) # unitless factor between 0 and 2, linear when close to 1
+    sync_factor = 1 + np.tanh(sync_offset*sync_tuner) # unitless factor between 0 and 2, linear when offset close to 0
     sync_drift = num_bytes_target/num_bytes_target_set
     if sync_offset < -sync_max_offset: # parser too slow, grab fewer bytes per read_time
         num_bytes_target = round(num_bytes_target*sync_factor)
@@ -180,11 +197,9 @@ while plotting:
         num_bytes_target = num_bytes_target_set
 
     # measured values
-    imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
+    imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence in ms
     imu_cad_avg = np.nanmean(imu_cad)
-    imu_freq = 1e3/imu_cad_avg # hz
-    # pip0_rms = np.sqrt(np.mean(np.square(volts[0,0]-np.mean(volts[0,0]))))*1e3 # pip 0 rms noise
-    # pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
+    imu_freq = 1e3/imu_cad_avg # imu frequency in Hz
     pip0_std = np.nanstd(volts[0,0])*1e3 # pip 0 standard deviation
     pip1_std = np.nanstd(volts[0,1])*1e3 # pip 1 standard deviation
 
@@ -200,8 +215,8 @@ while plotting:
     # plotting
     fig.canvas.mpl_connect('close_event', on_close) # exit loop when closing figure
     fig.subplots_adjust(hspace=0)
-    lw = 1
-    fs = 8
+    lw = 1 # line width
+    fs = 8 # font size
     plt.rcParams.update({'font.size': fs})
 
     ax0.clear() # accelerometer
@@ -219,12 +234,6 @@ while plotting:
         ax0.text(0.3*dim,1.7, 'SYNC OFFSET: {0:.1f} s'.format(sync_offset), transform=ax0.transAxes)
         ax0.text(0.6*dim,1.7,' SYNC FACTOR: {0:.2f}'.format(sync_factor), transform=ax0.transAxes)
         ax0.text(0.9*dim,1.7,' SYNC DRIFT: {0:.2f}'.format(sync_drift), transform=ax0.transAxes)
-    # if monitoring_only:
-    #     if flash:
-    #         ax0.text(-0.1, 1.5, 'MONITORING ONLY', transform=ax0.transAxes, color='red',fontsize=20,weight="bold")
-    #         flash = False
-    #     else:
-    #         flash = True
 
     ax1.clear() # magnetometer
     ax1.plot(imu_time[0],mag[0,0],linewidth=lw)
@@ -323,4 +332,4 @@ while plotting:
     gyr_old = gyr[:,:,-num_dat_imu*read_multiplier:]
     imu_cad_old = imu_cad[:,-num_dat_imu*read_multiplier:]
 
-    plt.pause(read_time) # needed for pyplot realtime plotting
+    plt.pause(read_time)

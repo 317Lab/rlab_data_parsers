@@ -1,3 +1,10 @@
+# Shield data file plotter.
+# Example usages:
+#   cat YYYYMMDDThhmmssZ_data_<port>_<baud>_<suffix>_<id>.bin | python shield_plot.py
+# Known issues:
+#   - 
+# Contact: jules.van.irsel.gr@dartmouth.edu
+
 import sys
 from bitstring import BitArray
 import numpy as np
@@ -22,15 +29,15 @@ else:
     dim = 1
 
 # parameters
-num_samples = 28 # how many samples per message
+num_samples = 28 # how many samples per pip per sweep message
 num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 num_msg_bytes = (2 + num_swp_bytes + 2 + num_imu_bytes)*dim
 
-t_scale = 1.e-6; a_scale = 4*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5/2**14 # data scales
-sentinels = ['0x2353','0x2349','0x2354','0x234A'] # [#S,#I,#T,#J]
+t_scale = 1.e-6; a_scale = 4.*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5./2**14 # data scales
+sentinels = ['0x2353','0x2349','0x2354','0x234A'] # ['#S','#I','#T','#J']
 
-bytes = BitArray(sys.stdin.buffer.read(-1))
+bytes = BitArray(sys.stdin.buffer.read(-1)) # read bytes from standard input
 ids_swp = list(bytes.findall(sentinels[0], bytealigned=False))
 ids_imu = list(bytes.findall(sentinels[1], bytealigned=False))
 if buffered:
@@ -39,9 +46,10 @@ if buffered:
 else:
     ids_swp_buf = ids_swp
     ids_imu_buf = ids_imu
-num_dat_swp = max(len(ids_swp),len(ids_swp_buf))*num_samples
+num_dat_swp = max(len(ids_swp),len(ids_swp_buf))*num_samples # sweep data is repeated per sweep sample
 num_dat_imu = max(len(ids_imu),len(ids_imu_buf))
 
+# initialize data arrays
 swp_time = np.zeros([dim,num_dat_swp],dtype='single')
 payload_id = np.zeros([dim,num_dat_swp],dtype='uint8')
 volts = np.zeros([dim,2,num_dat_swp],dtype='single')
@@ -50,6 +58,7 @@ acc = np.zeros([dim,3,num_dat_imu],dtype='single')
 mag = np.zeros([dim,3,num_dat_imu],dtype='single')
 gyr = np.zeros([dim,3,num_dat_imu],dtype='single')
 
+# parse data
 pos = 0
 for ind in ids_swp: # sweep indeces
     next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
@@ -122,17 +131,15 @@ swp_time[(swp_time==0) | (swp_time>max_time)] = np.nan
 imu_time[(imu_time==0) | (imu_time>max_time)] = np.nan
 
 # measured values
-imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence
+imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence in ms
 imu_cad_avg = np.nanmean(imu_cad)
-imu_freq = 1e3/imu_cad_avg # hz
-# pip0_rms = np.sqrt(np.mean(np.square(volts[0,0]-np.mean(volts[0,0]))))*1e3 # pip 0 rms noise
-# pip1_rms = np.sqrt(np.mean(np.square(volts[0,1]-np.mean(volts[0,1]))))*1e3 # pip 1 rms noise
+imu_freq = 1e3/imu_cad_avg # imu frequency in Hz
 pip0_std = np.std(volts[0,0])*1e3 # pip 0 standard deviation
 pip1_std = np.std(volts[0,1])*1e3 # pip 1 standard deviation
 
 fig.subplots_adjust(hspace=0)
-lw = 1
-fs = 8
+lw = 1 # line width
+fs = 8 # font size
 plt.rcParams.update({'font.size': fs})
 
 ax0.clear() # accelerometer
@@ -178,8 +185,6 @@ ax4.grid()
 ax4.ticklabel_format(useOffset=False)
 ax4.xaxis.set_ticklabels([])
 middle = np.nanmean(volts[0,0])
-# ax4.set_ylim(middle-0.01,middle+0.01)
-# ax4.set_yticks(np.arange(np.nanmean(volts[0,0])-delta,np.nanmean(volts[0,0])+delta,0.001))
 
 ax5.clear() # pip1 voltage
 ax5.plot(swp_time[0],volts[0,1],linewidth=lw/2)
