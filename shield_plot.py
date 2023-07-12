@@ -2,7 +2,9 @@
 # Example usages:
 #   cat YYYYMMDDThhmmssZ_data_<port>_<baud>_<suffix>_<id>.bin | python shield_plot.py
 # Known issues:
-#   - 
+#   - possible false postive sentinel matches when higher order bytes for steady data are 0x23.
+#       - E.g. when pip voltage 2.7 - 2.8 V or timestamp is ~ 9 or 20 minutes.
+#       - 3-byte sentinels are needed.
 # Contact: jules.van.irsel.gr@dartmouth.edu
 
 import sys
@@ -62,7 +64,10 @@ gyr = np.zeros([dim,3,num_dat_imu],dtype='single')
 pos = 0
 for ind in ids_swp: # sweep indeces
     next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
-    if next_sentinel in sentinels: # double sentinel match insures full message available
+    ### TEMP FIX UNTIL 3-BYTE SENTINELS ARE USED
+    next_next_sentinel = bytes[ind+(num_swp_bytes+num_imu_bytes+4)*8:ind+(num_swp_bytes+num_imu_bytes+4+2)*8] # TEMP FIX
+    # if next_sentinel in sentinels: # double sentinel match insures full message available
+    if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # triple sentinel match insures full message available TEMP FIX
         swp_bytes = bytes[ind+2*8:ind+(num_swp_bytes+2)*8]
         pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
         pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
@@ -78,7 +83,9 @@ for ind in ids_swp: # sweep indeces
 pos = 0
 for ind in ids_imu: # imu indices
     next_sentinel = bytes[ind+(num_imu_bytes+2)*8:ind+(num_imu_bytes+2+2)*8]
-    if next_sentinel in sentinels:
+    next_next_sentinel = bytes[ind+(2*num_imu_bytes+4)*8:ind+(2*num_imu_bytes+4+2)*8] # TEMP FIX
+    # if next_sentinel in sentinels:
+    if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # TEMP FIX
         imu_bytes = bytes[ind+2*8:ind+(num_imu_bytes+2)*8]
         imu_time[0,pos] = imu_bytes[0:4*8].uintle*t_scale
         acc[0,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale
@@ -96,7 +103,9 @@ if buffered:
     pos = 0
     for ind in ids_swp_buf: # buffered sweep indeces
         next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
-        if next_sentinel in sentinels:
+        next_next_sentinel = bytes[ind+(2*num_swp_bytes+4)*8:ind+(2*num_swp_bytes+4+2)*8] # TEMP FIX
+        # if next_sentinel in sentinels:
+        if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # TEMP FIX
             swp_bytes = bytes[ind+2*8:ind+(num_swp_bytes+2)*8]
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
@@ -112,7 +121,9 @@ if buffered:
     pos = 0
     for ind in ids_imu_buf: # buffered imu indeces
         next_sentinel = bytes[ind+(num_imu_bytes+2)*8:ind+(num_imu_bytes+2+2)*8]
-        if next_sentinel in sentinels:
+        next_next_sentinel = bytes[ind+(num_imu_bytes+num_swp_bytes+4)*8:ind+(num_imu_bytes+num_swp_bytes+4+2)*8] # TEMP FIX
+        # if next_sentinel in sentinels:
+        if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # TEMP FIX
             imu_bytes = bytes[ind+2*8:ind+(num_imu_bytes+2)*8]
             imu_time[1,pos] = imu_bytes[0:4*8].uintle*t_scale
             acc[1,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale

@@ -9,8 +9,8 @@
 # For iOS, <port> is under /dev/, e.g. "/dev/tty.usbserial-FT611XTT0%".
 # Known issues:
 #   - sometimes payload id fails and returns 0 in filename
-#   - for iOS, broken pipe error is sent to standard error and writen to log, even though it's handled
-#       - poor form... be sure to check shield_feed_stderr.log if their are any problems
+#   - for iOS, broken pipe error is sent to standard error and written to log, even though it's handled
+#       - poor form... be sure to check shield_feed_stderr.log if there are any problems
 # Contact: jules.van.irsel.gr@dartmouth.edu
 
 import sys
