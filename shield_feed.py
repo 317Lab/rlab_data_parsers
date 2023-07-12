@@ -23,8 +23,8 @@ import io
 
 # user settings
 baud = 230400 # baud rate
-initial_timeout = 20 # seconds before initial serial timeout, allows user to start recording and wait for shield power on
-runtime_timeout = 5 # seconds before timeout after initial capture
+initial_timeout = 120 # seconds before initial serial timeout, allows user to start recording and wait for shield power on
+runtime_timeout = 10 # seconds before timeout after initial capture
 num_bytes_target = 2048 # number of feed bytes, should be much less than parser reads
 io.DEFAULT_BUFFER_SIZE = 16_777_216 # 16 MB, might be overkill TBD
 

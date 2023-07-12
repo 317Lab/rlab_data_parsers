@@ -134,8 +134,8 @@ imu_time[(imu_time==0) | (imu_time>max_time)] = np.nan
 imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence in ms
 imu_cad_avg = np.nanmean(imu_cad)
 imu_freq = 1e3/imu_cad_avg # imu frequency in Hz
-pip0_std = np.std(volts[0,0])*1e3 # pip 0 standard deviation
-pip1_std = np.std(volts[0,1])*1e3 # pip 1 standard deviation
+pip0_std = np.nanstd(volts[0,0])*1e3 # pip 0 standard deviation
+pip1_std = np.nanstd(volts[0,1])*1e3 # pip 1 standard deviation
 
 fig.subplots_adjust(hspace=0)
 lw = 1 # line width

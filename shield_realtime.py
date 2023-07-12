@@ -27,7 +27,7 @@ read_multiplier = 4 # multiplier length of history
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 freq = 45 # approximate message frequency in Hz
 sync_max_offset = 0.1 # max absolute allowed parser-shield sync offset in seconds
-sync_tuner = 0.03 # parser-shield sync aggressiveness, 0 = no sync
+sync_tuner = 0.05 # parser-shield sync aggressiveness, 0 = no sync
 
 # initialize figure + axes
 if buffered: # buffered data shown on second column of plots
