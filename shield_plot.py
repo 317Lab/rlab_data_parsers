@@ -34,7 +34,7 @@ num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes 
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
 num_msg_bytes = (2 + num_swp_bytes + 2 + num_imu_bytes)*dim
 
-t_scale = 1.e-6; a_scale = 4.*9.8/2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5./2**14 # data scales
+t_scale = 1.e-6; a_scale = 4./2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5./2**14 # data scales
 sentinels = ['0x2353','0x2349','0x2354','0x234A'] # ['#S','#I','#T','#J']
 
 bytes = BitArray(sys.stdin.buffer.read(-1)) # read bytes from standard input
