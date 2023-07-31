@@ -14,18 +14,20 @@ import matplotlib.pyplot as plt
 
 # user settings
 buffered = True # whether to plot RAM buffered data
+lock_axes = True # whether to lock all x axes
+freq = 45 # approximate message frequency in Hz
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 
 # initialize figure + axes
 if buffered: # buffered data shown on second column of plots
-    fig, axs = plt.subplots(6, 2, figsize=(8,6))
+    fig, axs = plt.subplots(6, 2, figsize=(8,6), sharex=lock_axes)
     ax0 = axs[0,0]; ax1 = axs[1,0]; ax2 = axs[2,0]
     ax3 = axs[3,0]; ax4 = axs[4,0]; ax5 = axs[5,0]
     ax0b = axs[0,1]; ax1b = axs[1,1]; ax2b = axs[2,1]
     ax3b = axs[3,1]; ax4b = axs[4,1]; ax5b = axs[5,1]
     dim = 2
 else:
-    fig, axs = plt.subplots(6, 1, figsize=(8,6))
+    fig, axs = plt.subplots(6, 1, figsize=(8,6), sharex=lock_axes)
     ax0 = axs[0]; ax1 = axs[1]; ax2 = axs[2]
     ax3 = axs[3]; ax4 = axs[4]; ax5 = axs[5]
     dim = 1
@@ -74,7 +76,7 @@ for ind in ids_swp: # sweep indeces
         swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
         payload_id_tmp = swp_bytes[4*8:5*8].uintle
         for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
-            swp_time[0,pos] = swp_time_tmp # copy static data for each sample
+            swp_time[0,pos] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample
             payload_id[0,pos] = payload_id_tmp
             volts[0,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*p_scale
             volts[0,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*p_scale
@@ -112,7 +114,7 @@ if buffered:
             swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
             payload_id_tmp = swp_bytes[4*8:5*8].uintle
             for sample in range(0,2*num_samples,2):
-                swp_time[1,pos] = swp_time_tmp
+                swp_time[1,pos] = swp_time_tmp + sample/num_samples/freq/2
                 payload_id[1,pos] = payload_id_tmp
                 volts[1,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*p_scale
                 volts[1,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*p_scale
