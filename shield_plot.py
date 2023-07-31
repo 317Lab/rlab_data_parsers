@@ -14,7 +14,8 @@ import matplotlib.pyplot as plt
 
 # user settings
 buffered = True # whether to plot RAM buffered data
-lock_axes = True # whether to lock all x axes
+lock_axes = True # whether to lock all horizontal axes
+index_plot = True # plot against index instead of time
 freq = 45 # approximate message frequency in Hz
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 
@@ -139,9 +140,9 @@ if buffered:
             gyr[1,2,pos] = imu_bytes[20 *8:22 *8].intle*g_scale
             pos += 1
             
-# remove invalid timestamps
-swp_time[(swp_time==0) | (swp_time>max_time)] = np.nan
-imu_time[(imu_time==0) | (imu_time>max_time)] = np.nan
+# find invalid timestamps
+inv_ids_swp = (swp_time==0) | (swp_time>max_time)
+inv_ids_imu = (imu_time==0) | (imu_time>max_time)
 
 # measured values
 imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence in ms
@@ -155,6 +156,22 @@ lw = 1 # line width
 fs = 8 # font size
 plt.rcParams.update({'font.size': fs})
 
+if index_plot:
+    lbl_swp = 'SWEEP INDEX'
+    lbl_imu = 'IMU INDEX x NUM_SAMPLES'
+    swp_time[0] = np.arange(len(swp_time[0]))
+    imu_time[0] = np.arange(len(imu_time[0]))*num_samples
+    if buffered:
+        swp_time[1] = np.arange(len(swp_time[1]))
+        imu_time[1] = np.arange(len(imu_time[1]))*num_samples
+else:
+    lbl_swp = 'SWEEP TIME SINCE SHIELD POWER [s]'
+    lbl_imu = 'IMU TIME SINCE SHIELD POWER [s]'
+
+# remove invalid timestamps
+swp_time[inv_ids_swp] = np.nan
+imu_time[inv_ids_imu] = np.nan
+
 ax0.clear() # accelerometer
 ax0.plot(imu_time[0],acc[0,0],linewidth=lw)
 ax0.plot(imu_time[0],acc[0,1],linewidth=lw)
@@ -162,7 +179,7 @@ ax0.plot(imu_time[0],acc[0,2],linewidth=lw)
 ax0.set_ylabel('ACC [g]',fontsize=fs)
 ax0.grid()
 ax0.ticklabel_format(useOffset=False)
-ax0.set_xlabel('IMU TIME SINCE SHIELD POWER [s]',fontsize=fs)
+ax0.set_xlabel(lbl_imu,fontsize=fs)
 ax0.xaxis.tick_top()
 ax0.xaxis.set_label_position('top')
 
@@ -184,8 +201,10 @@ ax2.grid()
 ax2.ticklabel_format(useOffset=False)
 ax2.xaxis.set_ticklabels([])
 
+
 ax3.clear() # Cadance
-ax3.plot(imu_time[0],imu_cad[0],linewidth=lw)
+if not index_plot:
+    ax3.plot(imu_time[0],imu_cad[0],linewidth=lw)
 ax3.set_ylabel('CAD [ms]',fontsize=fs)
 ax3.grid()
 ax3.ticklabel_format(useOffset=False)
@@ -204,7 +223,7 @@ ax5.plot(swp_time[0],volts[0,1],linewidth=lw/2)
 ax5.set_ylabel('P1 [V]',fontsize=fs)
 ax5.grid()
 ax5.ticklabel_format(useOffset=False)
-ax5.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]',fontsize=fs)
+ax5.set_xlabel(lbl_swp,fontsize=fs)
 ax5.text(0.0*dim,-0.8, 'ID: ' + str(payload_id[0,0]), transform=ax5.transAxes)
 ax5.text(0.1*dim,-0.8, 'STD0: {0:.1f} mV'.format(pip0_std), transform=ax5.transAxes)
 ax5.text(0.3*dim,-0.8, 'STD1: {0:.1f} mV'.format(pip1_std), transform=ax5.transAxes)
@@ -217,7 +236,7 @@ if buffered:
     ax0b.plot(imu_time[1],acc[1,2],linewidth=lw)
     ax0b.grid()
     ax0b.ticklabel_format(useOffset=False)
-    ax0b.set_xlabel('IMU TIME SINCE SHIELD POWER [s]',fontsize=fs)
+    ax0b.set_xlabel(lbl_imu,fontsize=fs)
     ax0b.xaxis.tick_top()
     ax0b.xaxis.set_label_position('top')
 
@@ -238,7 +257,8 @@ if buffered:
     ax2b.xaxis.set_ticklabels([])
     
     ax3b.clear() # cadance
-    ax3b.plot(imu_time[1],imu_cad[1],linewidth=lw)
+    if not index_plot:
+        ax3b.plot(imu_time[1],imu_cad[1],linewidth=lw)
     ax3b.grid()
     ax3b.ticklabel_format(useOffset=False)
     ax3b.xaxis.set_ticklabels([])
@@ -253,6 +273,6 @@ if buffered:
     ax5b.plot(swp_time[1],volts[1,1],linewidth=lw/2)
     ax5b.grid()
     ax5b.ticklabel_format(useOffset=False)
-    ax5b.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]',fontsize=fs)
+    ax5b.set_xlabel(lbl_swp,fontsize=fs)
 
 plt.show()
