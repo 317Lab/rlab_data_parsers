@@ -64,81 +64,58 @@ mag = np.zeros([dim,3,num_dat_imu],dtype='single')
 gyr = np.zeros([dim,3,num_dat_imu],dtype='single')
 
 # parse data
-pos = 0
-for ind in ids_swp: # sweep indeces
-    next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
-    ### TEMP FIX UNTIL 3-BYTE SENTINELS ARE USED
-    next_next_sentinel = bytes[ind+(num_swp_bytes+num_imu_bytes+4)*8:ind+(num_swp_bytes+num_imu_bytes+4+2)*8] # TEMP FIX
-    # if next_sentinel in sentinels: # double sentinel match insures full message available
-    if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # triple sentinel match insures full message available TEMP FIX
-        swp_bytes = bytes[ind+2*8:ind+(num_swp_bytes+2)*8]
-        pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
-        pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
-        swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
-        payload_id_tmp = swp_bytes[4*8:5*8].uintle
-        for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
-            swp_time[0,pos] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample
-            payload_id[0,pos] = payload_id_tmp
-            volts[0,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*p_scale
-            volts[0,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*p_scale
-            pos += 1
-
-pos = 0
-for ind in ids_imu: # imu indices
-    next_sentinel = bytes[ind+(num_imu_bytes+2)*8:ind+(num_imu_bytes+2+2)*8]
-    next_next_sentinel = bytes[ind+(2*num_imu_bytes+4)*8:ind+(2*num_imu_bytes+4+2)*8] # TEMP FIX
-    # if next_sentinel in sentinels:
-    if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # TEMP FIX
-        imu_bytes = bytes[ind+2*8:ind+(num_imu_bytes+2)*8]
-        imu_time[0,pos] = imu_bytes[0:4*8].uintle*t_scale
-        acc[0,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale
-        acc[0,1,pos] = imu_bytes[6  *8:8  *8].intle*a_scale
-        acc[0,2,pos] = imu_bytes[8  *8:10 *8].intle*a_scale
-        mag[0,0,pos] = imu_bytes[10 *8:12 *8].intle*m_scale
-        mag[0,1,pos] = imu_bytes[12 *8:14 *8].intle*m_scale
-        mag[0,2,pos] = imu_bytes[14 *8:16 *8].intle*m_scale
-        gyr[0,0,pos] = imu_bytes[16 *8:18 *8].intle*g_scale
-        gyr[0,1,pos] = imu_bytes[18 *8:20 *8].intle*g_scale
-        gyr[0,2,pos] = imu_bytes[20 *8:22 *8].intle*g_scale
-        pos += 1
-
-if buffered:
+def parse_swp(byte_ids,is_buffer_data):
     pos = 0
-    for ind in ids_swp_buf: # buffered sweep indeces
+    id = int(is_buffer_data)
+    for ind in byte_ids: # sweep indeces
         next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
-        next_next_sentinel = bytes[ind+(2*num_swp_bytes+4)*8:ind+(2*num_swp_bytes+4+2)*8] # TEMP FIX
-        # if next_sentinel in sentinels:
-        if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # TEMP FIX
+        ### TEMP FIX UNTIL 3-BYTE SENTINELS ARE USED
+        if is_buffer_data:
+            next_next_sentinel = bytes[ind+(2*num_swp_bytes+4)*8:ind+(2*num_swp_bytes+4+2)*8] # TEMP FIX
+        else:
+            next_next_sentinel = bytes[ind+(num_swp_bytes+num_imu_bytes+4)*8:ind+(num_swp_bytes+num_imu_bytes+4+2)*8] # TEMP FIX
+        # if next_sentinel in sentinels: # double sentinel match insures full message available
+        if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # triple sentinel match insures full message available TEMP FIX
             swp_bytes = bytes[ind+2*8:ind+(num_swp_bytes+2)*8]
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
             swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
             payload_id_tmp = swp_bytes[4*8:5*8].uintle
-            for sample in range(0,2*num_samples,2):
-                swp_time[1,pos] = swp_time_tmp + sample/num_samples/freq/2
-                payload_id[1,pos] = payload_id_tmp
-                volts[1,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*p_scale
-                volts[1,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*p_scale
+            for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
+                swp_time[id,pos] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample
+                payload_id[id,pos] = payload_id_tmp
+                volts[id,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*p_scale
+                volts[id,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*p_scale
                 pos += 1
-
+def parse_imu(byte_ids,is_buffered_data):
     pos = 0
-    for ind in ids_imu_buf: # buffered imu indeces
+    id = int(is_buffered_data)
+    for ind in byte_ids: # imu indices
         next_sentinel = bytes[ind+(num_imu_bytes+2)*8:ind+(num_imu_bytes+2+2)*8]
-        next_next_sentinel = bytes[ind+(num_imu_bytes+num_swp_bytes+4)*8:ind+(num_imu_bytes+num_swp_bytes+4+2)*8] # TEMP FIX
+        if is_buffered_data: # TEMP FIX
+            next_next_sentinel = bytes[ind+(num_imu_bytes+num_swp_bytes+4)*8:ind+(num_imu_bytes+num_swp_bytes+4+2)*8] # TEMP FIX
+        else: # TEMP FIX
+            next_next_sentinel = bytes[ind+(2*num_imu_bytes+4)*8:ind+(2*num_imu_bytes+4+2)*8] # TEMP FIX
         # if next_sentinel in sentinels:
         if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # TEMP FIX
             imu_bytes = bytes[ind+2*8:ind+(num_imu_bytes+2)*8]
-            imu_time[1,pos] = imu_bytes[0:4*8].uintle*t_scale
-            acc[1,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale
-            acc[1,1,pos] = imu_bytes[6  *8:8  *8].intle*a_scale
-            acc[1,2,pos] = imu_bytes[8  *8:10 *8].intle*a_scale
-            mag[1,0,pos] = imu_bytes[10 *8:12 *8].intle*m_scale
-            mag[1,1,pos] = imu_bytes[12 *8:14 *8].intle*m_scale
-            mag[1,2,pos] = imu_bytes[14 *8:16 *8].intle*m_scale
-            gyr[1,0,pos] = imu_bytes[16 *8:18 *8].intle*g_scale
-            gyr[1,1,pos] = imu_bytes[18 *8:20 *8].intle*g_scale
-            gyr[1,2,pos] = imu_bytes[20 *8:22 *8].intle*g_scale
+            imu_time[id,pos] = imu_bytes[0:4*8].uintle*t_scale
+            acc[id,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale
+            acc[id,1,pos] = imu_bytes[6  *8:8  *8].intle*a_scale
+            acc[id,2,pos] = imu_bytes[8  *8:10 *8].intle*a_scale
+            mag[id,0,pos] = imu_bytes[10 *8:12 *8].intle*m_scale
+            mag[id,1,pos] = imu_bytes[12 *8:14 *8].intle*m_scale
+            mag[id,2,pos] = imu_bytes[14 *8:16 *8].intle*m_scale
+            gyr[id,0,pos] = imu_bytes[16 *8:18 *8].intle*g_scale
+            gyr[id,1,pos] = imu_bytes[18 *8:20 *8].intle*g_scale
+            gyr[id,2,pos] = imu_bytes[20 *8:22 *8].intle*g_scale
             pos += 1
+
+parse_swp(ids_swp,False)
+parse_imu(ids_imu,False)
+if buffered:
+    parse_swp(ids_swp_buf,True)
+    parse_imu(ids_imu_buf,True)
             
 # find invalid timestamps
 inv_ids_swp = (swp_time==0) | (swp_time>max_time)
@@ -201,7 +178,6 @@ ax2.grid()
 ax2.ticklabel_format(useOffset=False)
 ax2.xaxis.set_ticklabels([])
 
-
 ax3.clear() # Cadance
 if not index_plot:
     ax3.plot(imu_time[0],imu_cad[0],linewidth=lw)
@@ -216,7 +192,6 @@ ax4.set_ylabel('P0 [V]',fontsize=fs)
 ax4.grid()
 ax4.ticklabel_format(useOffset=False)
 ax4.xaxis.set_ticklabels([])
-middle = np.nanmean(volts[0,0])
 
 ax5.clear() # pip1 voltage
 ax5.plot(swp_time[0],volts[0,1],linewidth=lw/2)
