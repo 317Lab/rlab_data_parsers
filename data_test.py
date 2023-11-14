@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 file_name = sys.argv[1]
 bytes = BitArray(filename=file_name)
 
-ids = list(bytes.findall('0x2353', bytealigned=False))
+ids = list(bytes.findall('0x232353', bytealigned=False))
 msg_sizes = np.diff(ids)/8
 sizes,counts = np.unique(msg_sizes,return_counts=True)
 max_count = max(counts)

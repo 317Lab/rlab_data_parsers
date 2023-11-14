@@ -44,16 +44,17 @@ else:
     dim = 1
 
 # parameters
+t_scale = 1.e-6; a_scale = 4./2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5./2**14 # data scales
+sentinels = ['0x232353','0x232349','0x232354','0x23234A'] # ['##S','##I','##T','##J']
+sentinel_size = 3
+plotting = True
+first_capture = True
+
 num_samples = 28 # how many samples per pip per sweep message
 num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
-num_msg_bytes = (2 + num_swp_bytes + 2 + num_imu_bytes)*dim
+num_msg_bytes = (2*sentinel_size + num_swp_bytes + num_imu_bytes)*dim
 num_bytes_target_set = round(read_time*freq*num_msg_bytes) # N seconds worth of bytes
-
-t_scale = 1.e-6; a_scale = 4./2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5./2**14 # data scales
-sentinels = ['0x2353','0x2349','0x2354','0x234A'] # ['#S','#I','#T','#J']
-plotting = True
-first_capture = True
 num_bytes_target = num_bytes_target_set
 
 # for closing on figure exit
@@ -63,23 +64,24 @@ def on_close(event):
     plotting = False
 
 # parsers
-# parse data
 def parse_swp(byte_ids,is_buffer_data):
     pos = 0
     id = int(is_buffer_data)
     for ind in byte_ids: # sweep indeces
-        next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
+        next_sentinel = bytes[ind+(num_swp_bytes+sentinel_size)*8:ind+(num_swp_bytes+2*sentinel_size)*8]
         ### TEMP FIX UNTIL 3-BYTE SENTINELS ARE USED
-        if is_buffer_data:
-            next_next_sentinel = bytes[ind+(2*num_swp_bytes+4)*8:ind+(2*num_swp_bytes+4+2)*8] # TEMP FIX
-        else:
-            next_next_sentinel = bytes[ind+(num_swp_bytes+num_imu_bytes+4)*8:ind+(num_swp_bytes+num_imu_bytes+4+2)*8] # TEMP FIX
-        # if next_sentinel in sentinels: # double sentinel match insures full message available
-        if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # triple sentinel match insures full message available TEMP FIX
-            swp_bytes = bytes[ind+2*8:ind+(num_swp_bytes+2)*8]
+        # if is_buffer_data:
+        #     next_next_sentinel = bytes[ind+(2*num_swp_bytes+2*sentinel_size)*8:ind+(2*num_swp_bytes+3*sentinel_size)*8] # TEMP FIX
+        # else:
+        #     next_next_sentinel = bytes[ind+(num_swp_bytes+num_imu_bytes+2*sentinel_size)*8:ind+(num_swp_bytes+num_imu_bytes+3*sentinel_size)*8] # TEMP FIX
+        # print(next_next_sentinel)
+        if next_sentinel in sentinels: # double sentinel match insures full message available
+        # if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # triple sentinel match insures full message available TEMP FIX
+            swp_bytes = bytes[ind+sentinel_size*8:ind+(num_swp_bytes+sentinel_size)*8]
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
             swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
+            print(swp_bytes[4*8:5*8])
             payload_id_tmp = swp_bytes[4*8:5*8].uintle
             for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
                 swp_time[id,pos] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample
@@ -87,18 +89,14 @@ def parse_swp(byte_ids,is_buffer_data):
                 volts[id,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*p_scale
                 volts[id,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*p_scale
                 pos += 1
-def parse_imu(byte_ids,is_buffered_data):
+
+def parse_imu(byte_ids,is_buffer_data):
     pos = 0
-    id = int(is_buffered_data)
+    id = int(is_buffer_data)
     for ind in byte_ids: # imu indices
-        next_sentinel = bytes[ind+(num_imu_bytes+2)*8:ind+(num_imu_bytes+2+2)*8]
-        if is_buffered_data: # TEMP FIX
-            next_next_sentinel = bytes[ind+(num_imu_bytes+num_swp_bytes+4)*8:ind+(num_imu_bytes+num_swp_bytes+4+2)*8] # TEMP FIX
-        else: # TEMP FIX
-            next_next_sentinel = bytes[ind+(2*num_imu_bytes+4)*8:ind+(2*num_imu_bytes+4+2)*8] # TEMP FIX
-        # if next_sentinel in sentinels:
-        if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # TEMP FIX
-            imu_bytes = bytes[ind+2*8:ind+(num_imu_bytes+2)*8]
+        next_sentinel = bytes[ind+(num_imu_bytes+sentinel_size)*8:ind+(num_imu_bytes+2*sentinel_size)*8]
+        if next_sentinel in sentinels:
+            imu_bytes = bytes[ind+sentinel_size*8:ind+(num_imu_bytes+sentinel_size)*8]
             imu_time[id,pos] = imu_bytes[0:4*8].uintle*t_scale
             acc[id,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale
             acc[id,1,pos] = imu_bytes[6  *8:8  *8].intle*a_scale
@@ -126,7 +124,7 @@ while plotting:
     if b'TIMEOUT\n' in bytes: # shield_feed.py sends repeated 'TIMEOUT' when serial port has timed out
         print('SERIAL TIMEOUT AT',datetime.now().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)
         break
-
+    
     ids_swp = list(bytes.findall(sentinels[0], bytealigned=False))
     ids_imu = list(bytes.findall(sentinels[1], bytealigned=False))
     if buffered:
@@ -300,13 +298,13 @@ while plotting:
         ax3b.xaxis.set_ticklabels([])
         
         ax4b.clear() # pip 0 voltage
-        ax4b.plot(swp_time[1],volts[1,0],linewidth=lw/2)
+        # ax4b.plot(swp_time[1],volts[1,0],linewidth=lw/2)
         ax4b.grid()
         ax4b.ticklabel_format(useOffset=False)
         ax4b.xaxis.set_ticklabels([])
 
         ax5b.clear() # pip 1 voltage
-        ax5b.plot(swp_time[1],volts[1,1],linewidth=lw/2)
+        # ax5b.plot(swp_time[1],volts[1,1],linewidth=lw/2)
         ax5b.grid()
         ax5b.ticklabel_format(useOffset=False)
         ax5b.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]',fontsize=fs)
