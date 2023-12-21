@@ -81,7 +81,7 @@ def parse_swp(byte_ids,is_buffer_data):
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
             swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
-            print(swp_bytes[4*8:5*8])
+            # print(swp_bytes[4*8:5*8])
             payload_id_tmp = swp_bytes[4*8:5*8].uintle
             for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
                 swp_time[id,pos] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample
@@ -186,8 +186,12 @@ while plotting:
     imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence in ms
     imu_cad_avg = np.nanmean(imu_cad)
     imu_freq = 1e3/imu_cad_avg # imu frequency in Hz
-    pip0_std = np.nanstd(volts[0,0])*1e3 # pip 0 standard deviation
-    pip1_std = np.nanstd(volts[0,1])*1e3 # pip 1 standard deviation
+    pip0_std = np.nanstd(volts[0,0,:-100])*1e3 # pip 0 standard deviation
+    pip1_std = np.nanstd(volts[0,1,:-100])*1e3 # pip 1 standard deviation
+
+    # pip0_std = (np.nanquantile(volts[0,0],0.9)-np.nanquantile(volts[0,0],0.1))*1e3
+    # pip1_std = (np.nanquantile(volts[0,1],0.9)-np.nanquantile(volts[0,1],0.1))*1e3
+    # print(len(volts[0,0,-101:-1]))
 
     # stitch history
     swp_time = np.concatenate((swp_time_old,swp_time),axis=1)
@@ -260,8 +264,8 @@ while plotting:
     ax5.ticklabel_format(useOffset=False)
     ax5.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]',fontsize=fs)
     ax5.text(0.0*dim,-0.8, 'ID: ' + str(payload_id[0,0]), transform=ax5.transAxes)
-    ax5.text(0.1*dim,-0.8, 'STD0: {0:.1f} mV'.format(pip0_std), transform=ax5.transAxes)
-    ax5.text(0.3*dim,-0.8, 'STD1: {0:.1f} mV'.format(pip1_std), transform=ax5.transAxes)
+    ax5.text(0.1*dim,-0.8, '$2\sigma_0$: {0:.1f} mV'.format(2*pip0_std), transform=ax5.transAxes)
+    ax5.text(0.3*dim,-0.8, '$2\sigma_1$: {0:.1f} mV'.format(2*pip1_std), transform=ax5.transAxes)
     ax5.text(0.5*dim,-0.8, 'CAD: {0:.1f} ms'.format(imu_cad_avg), transform=ax5.transAxes)
 
     if buffered:
@@ -298,13 +302,19 @@ while plotting:
         ax3b.xaxis.set_ticklabels([])
         
         ax4b.clear() # pip 0 voltage
-        # ax4b.plot(swp_time[1],volts[1,0],linewidth=lw/2)
+        try:
+            ax4b.plot(swp_time[1],volts[1,0],linewidth=lw/2)
+        except ValueError: # ignore initial empty buffer swp_time plotting
+            pass
         ax4b.grid()
         ax4b.ticklabel_format(useOffset=False)
         ax4b.xaxis.set_ticklabels([])
 
         ax5b.clear() # pip 1 voltage
-        # ax5b.plot(swp_time[1],volts[1,1],linewidth=lw/2)
+        try:
+            ax5b.plot(swp_time[1],volts[1,1],linewidth=lw/2)
+        except ValueError: # ignore initial empty buffer swp_time plotting
+            pass
         ax5b.grid()
         ax5b.ticklabel_format(useOffset=False)
         ax5b.set_xlabel('SWEEP TIME SINCE SHIELD POWER [s]',fontsize=fs)
