@@ -74,14 +74,12 @@ def parse_swp(byte_ids,is_buffer_data):
         #     next_next_sentinel = bytes[ind+(2*num_swp_bytes+2*sentinel_size)*8:ind+(2*num_swp_bytes+3*sentinel_size)*8] # TEMP FIX
         # else:
         #     next_next_sentinel = bytes[ind+(num_swp_bytes+num_imu_bytes+2*sentinel_size)*8:ind+(num_swp_bytes+num_imu_bytes+3*sentinel_size)*8] # TEMP FIX
-        # print(next_next_sentinel)
         if next_sentinel in sentinels: # double sentinel match insures full message available
         # if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # triple sentinel match insures full message available TEMP FIX
             swp_bytes = bytes[ind+sentinel_size*8:ind+(num_swp_bytes+sentinel_size)*8]
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
             swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
-            # print(swp_bytes[4*8:5*8])
             payload_id_tmp = swp_bytes[4*8:5*8].uintle
             for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
                 swp_time[id,pos] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample

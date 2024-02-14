@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 # user settings
 buffered = True # whether to plot RAM buffered data
 lock_axes = True # whether to lock all horizontal axes
-index_plot = True # plot against index instead of time
+index_plot = False # plot against index instead of time
+scatter_plot = True # whether to do a scatter or line plot
 freq = 45 # approximate message frequency in Hz
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 
@@ -34,13 +35,14 @@ else:
     dim = 1
 
 # parameters
+t_scale = 1.e-6; a_scale = 4./2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5./2**14 # data scales
+sentinels = ['0x232353','0x232349','0x232354','0x23234A'] # ['##S','##I','##T','##J']
+sentinel_size = 3
+
 num_samples = 28 # how many samples per pip per sweep message
 num_swp_bytes = 4 + 1 + num_samples * 2 * 2 # 4 times bytes, 1 id byte, 2 bytes per sample per 2 pips
 num_imu_bytes = 4 + (3 + 3 + 3 + 1) * 2 # 4 time bytes, xyz for agm each 2 bytes, 2 temp bytes
-num_msg_bytes = (2 + num_swp_bytes + 2 + num_imu_bytes)*dim
-
-t_scale = 1.e-6; a_scale = 4./2**15; m_scale = 1./2**15; g_scale = 2000./360/2**15; p_scale = 5./2**14 # data scales
-sentinels = ['0x2353','0x2349','0x2354','0x234A'] # ['#S','#I','#T','#J']
+num_msg_bytes = (2*sentinel_size + num_swp_bytes + num_imu_bytes)*dim
 
 bytes = BitArray(sys.stdin.buffer.read(-1)) # read bytes from standard input
 ids_swp = list(bytes.findall(sentinels[0], bytealigned=False))
@@ -68,15 +70,9 @@ def parse_swp(byte_ids,is_buffer_data):
     pos = 0
     id = int(is_buffer_data)
     for ind in byte_ids: # sweep indeces
-        next_sentinel = bytes[ind+(num_swp_bytes+2)*8:ind+(num_swp_bytes+2+2)*8]
-        ### TEMP FIX UNTIL 3-BYTE SENTINELS ARE USED
-        if is_buffer_data:
-            next_next_sentinel = bytes[ind+(2*num_swp_bytes+4)*8:ind+(2*num_swp_bytes+4+2)*8] # TEMP FIX
-        else:
-            next_next_sentinel = bytes[ind+(num_swp_bytes+num_imu_bytes+4)*8:ind+(num_swp_bytes+num_imu_bytes+4+2)*8] # TEMP FIX
-        # if next_sentinel in sentinels: # double sentinel match insures full message available
-        if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # triple sentinel match insures full message available TEMP FIX
-            swp_bytes = bytes[ind+2*8:ind+(num_swp_bytes+2)*8]
+        next_sentinel = bytes[ind+(num_swp_bytes+sentinel_size)*8:ind+(num_swp_bytes+2*sentinel_size)*8]
+        if next_sentinel in sentinels: # double sentinel match insures full message available
+            swp_bytes = bytes[ind+sentinel_size*8:ind+(num_swp_bytes+sentinel_size)*8]
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
             swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
@@ -87,18 +83,14 @@ def parse_swp(byte_ids,is_buffer_data):
                 volts[id,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*p_scale
                 volts[id,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*p_scale
                 pos += 1
-def parse_imu(byte_ids,is_buffered_data):
+
+def parse_imu(byte_ids,is_buffer_data):
     pos = 0
-    id = int(is_buffered_data)
+    id = int(is_buffer_data)
     for ind in byte_ids: # imu indices
-        next_sentinel = bytes[ind+(num_imu_bytes+2)*8:ind+(num_imu_bytes+2+2)*8]
-        if is_buffered_data: # TEMP FIX
-            next_next_sentinel = bytes[ind+(num_imu_bytes+num_swp_bytes+4)*8:ind+(num_imu_bytes+num_swp_bytes+4+2)*8] # TEMP FIX
-        else: # TEMP FIX
-            next_next_sentinel = bytes[ind+(2*num_imu_bytes+4)*8:ind+(2*num_imu_bytes+4+2)*8] # TEMP FIX
-        # if next_sentinel in sentinels:
-        if (next_sentinel in sentinels) and (next_next_sentinel in sentinels): # TEMP FIX
-            imu_bytes = bytes[ind+2*8:ind+(num_imu_bytes+2)*8]
+        next_sentinel = bytes[ind+(num_imu_bytes+sentinel_size)*8:ind+(num_imu_bytes+2*sentinel_size)*8]
+        if next_sentinel in sentinels:
+            imu_bytes = bytes[ind+sentinel_size*8:ind+(num_imu_bytes+sentinel_size)*8]
             imu_time[id,pos] = imu_bytes[0:4*8].uintle*t_scale
             acc[id,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale
             acc[id,1,pos] = imu_bytes[6  *8:8  *8].intle*a_scale
@@ -123,24 +115,29 @@ inv_ids_imu = (imu_time==0) | (imu_time>max_time)
 
 # measured values
 imu_cad = np.diff(imu_time,append=np.nan)*1e3 # imu cadence in ms
-imu_cad_avg = np.nanmean(imu_cad)
+imu_cad_avg = np.nanmedian(imu_cad)
 imu_freq = 1e3/imu_cad_avg # imu frequency in Hz
-pip0_std = np.nanstd(volts[0,0])*1e3 # pip 0 standard deviation
-pip1_std = np.nanstd(volts[0,1])*1e3 # pip 1 standard deviation
+pip0_std = np.nanstd(volts[0,0,:-100])*1e3 # pip 0 standard deviation
+pip1_std = np.nanstd(volts[0,1,:-100])*1e3 # pip 1 standard deviation
 
 fig.subplots_adjust(hspace=0)
 lw = 1 # line width
 fs = 8 # font size
 plt.rcParams.update({'font.size': fs})
+lbl_swp = 'SWEEP TIME SINCE SHIELD POWER [s]'
+lbl_imu = 'IMU TIME SINCE SHIELD POWER [s]'
 
 if index_plot:
     lbl_swp = 'SWEEP INDEX'
-    lbl_imu = 'IMU INDEX x NUM_SAMPLES'
+    lbl_imu = 'IMU INDEX'
     swp_time[0] = np.arange(len(swp_time[0]))
-    imu_time[0] = np.arange(len(imu_time[0]))*num_samples
+    imu_time[0] = np.arange(len(imu_time[0]))
     if buffered:
         swp_time[1] = np.arange(len(swp_time[1]))
-        imu_time[1] = np.arange(len(imu_time[1]))*num_samples
+        imu_time[1] = np.arange(len(imu_time[1]))
+    if lock_axes:
+        lbl_imu = 'IMU INDEX x NUM_SAMPLES'
+        imu_time = imu_time*num_samples
 else:
     lbl_swp = 'SWEEP TIME SINCE SHIELD POWER [s]'
     lbl_imu = 'IMU TIME SINCE SHIELD POWER [s]'
@@ -149,105 +146,53 @@ else:
 swp_time[inv_ids_swp] = np.nan
 imu_time[inv_ids_imu] = np.nan
 
-ax0.clear() # accelerometer
-ax0.plot(imu_time[0],acc[0,0],linewidth=lw)
-ax0.plot(imu_time[0],acc[0,1],linewidth=lw)
-ax0.plot(imu_time[0],acc[0,2],linewidth=lw)
-ax0.set_ylabel('ACC [g]',fontsize=fs)
-ax0.grid()
-ax0.ticklabel_format(useOffset=False)
-ax0.set_xlabel(lbl_imu,fontsize=fs)
+# plot
+def plot_data(ax,x,y,lw,xlabel,ylabel,xticks_off):
+    ylim0 = np.nanquantile(y.flatten(),0.1)
+    ylim1 = np.nanquantile(y.flatten(),0.9)
+    ylim_offset = 2*(ylim1-ylim0)
+    # ylim_avg = np.nanmedian(y.flatten())
+    # ylim_rng = 0.5*np.nanstd(y.flatten())
+    ax.clear()
+    if np.shape(y)[0] != 3:
+        if scatter_plot:
+            ax.scatter(x,y,s=lw)
+        else:
+            ax.plot(x,y,linewidth=lw)
+    else:
+        for yy in y:
+            if scatter_plot:
+                ax.scatter(x,yy,s=lw)
+            else:
+                ax.plot(x,yy,linewidth=lw)
+    ax.set_xlabel(xlabel,fontsize=fs)
+    ax.set_ylabel(ylabel,fontsize=fs)
+    ax.grid()
+    ax.ticklabel_format(useOffset=False)
+    ax.set_ylim(ylim0-ylim_offset,ylim1+ylim_offset)
+    if xticks_off:
+        ax.xaxis.set_ticklabels([])
+
+plot_data(ax0,imu_time[0],acc[0],lw,lbl_imu,'ACC [g]',0)
 ax0.xaxis.tick_top()
 ax0.xaxis.set_label_position('top')
-
-ax1.clear() # magnetometer
-ax1.plot(imu_time[0],mag[0,0],linewidth=lw)
-ax1.plot(imu_time[0],mag[0,1],linewidth=lw)
-ax1.plot(imu_time[0],mag[0,2],linewidth=lw)
-ax1.set_ylabel('MAG [G]',fontsize=fs)
-ax1.grid()
-ax1.ticklabel_format(useOffset=False)
-ax1.xaxis.set_ticklabels([])
-
-ax2.clear() # gyrometer
-ax2.plot(imu_time[0],gyr[0,0],linewidth=lw)
-ax2.plot(imu_time[0],gyr[0,1],linewidth=lw)
-ax2.plot(imu_time[0],gyr[0,2],linewidth=lw)
-ax2.set_ylabel('GYR [Hz]',fontsize=fs)
-ax2.grid()
-ax2.ticklabel_format(useOffset=False)
-ax2.xaxis.set_ticklabels([])
-
-ax3.clear() # Cadance
-if not index_plot:
-    ax3.plot(imu_time[0],imu_cad[0],linewidth=lw)
-ax3.set_ylabel('CAD [ms]',fontsize=fs)
-ax3.grid()
-ax3.ticklabel_format(useOffset=False)
-ax3.xaxis.set_ticklabels([])
-
-ax4.clear() # pip0 voltage
-ax4.plot(swp_time[0],volts[0,0],linewidth=lw/2)
-ax4.set_ylabel('P0 [V]',fontsize=fs)
-ax4.grid()
-ax4.ticklabel_format(useOffset=False)
-ax4.xaxis.set_ticklabels([])
-
-ax5.clear() # pip1 voltage
-ax5.plot(swp_time[0],volts[0,1],linewidth=lw/2)
-ax5.set_ylabel('P1 [V]',fontsize=fs)
-ax5.grid()
-ax5.ticklabel_format(useOffset=False)
-ax5.set_xlabel(lbl_swp,fontsize=fs)
+plot_data(ax1,imu_time[0],mag[0],lw,'','MAG [G]',1)
+plot_data(ax2,imu_time[0],gyr[0],lw,'','GYR [Hz]',1)
+plot_data(ax3,imu_time[0,:-2],imu_cad[0,:-2],lw,'','CAD [ms]',1)
+plot_data(ax4,swp_time[0],volts[0,0],lw/2,'','P0 [V]',1)
+plot_data(ax5,swp_time[0],volts[0,1],lw/2,lbl_swp,'P1 [V]',0)
 ax5.text(0.0*dim,-0.8, 'ID: ' + str(payload_id[0,0]), transform=ax5.transAxes)
-ax5.text(0.1*dim,-0.8, 'STD0: {0:.1f} mV'.format(pip0_std), transform=ax5.transAxes)
-ax5.text(0.3*dim,-0.8, 'STD1: {0:.1f} mV'.format(pip1_std), transform=ax5.transAxes)
+ax5.text(0.1*dim,-0.8, '$2\sigma_0$: {0:.1f} mV'.format(2*pip0_std), transform=ax5.transAxes)
+ax5.text(0.3*dim,-0.8, '$2\sigma_1$: {0:.1f} mV'.format(2*pip1_std), transform=ax5.transAxes)
 ax5.text(0.5*dim,-0.8, 'CAD: {0:.1f} ms'.format(imu_cad_avg), transform=ax5.transAxes)
 
 if buffered:
-    ax0b.clear() # accelerometer
-    ax0b.plot(imu_time[1],acc[1,0],linewidth=lw)
-    ax0b.plot(imu_time[1],acc[1,1],linewidth=lw)
-    ax0b.plot(imu_time[1],acc[1,2],linewidth=lw)
-    ax0b.grid()
-    ax0b.ticklabel_format(useOffset=False)
-    ax0b.set_xlabel(lbl_imu,fontsize=fs)
+    plot_data(ax0b,imu_time[1],acc[0],lw,lbl_imu,'',0)
     ax0b.xaxis.tick_top()
     ax0b.xaxis.set_label_position('top')
-
-    ax1b.clear() # magnetometer
-    ax1b.plot(imu_time[1],mag[1,0],linewidth=lw)
-    ax1b.plot(imu_time[1],mag[1,1],linewidth=lw)
-    ax1b.plot(imu_time[1],mag[1,2],linewidth=lw)
-    ax1b.grid()
-    ax1b.ticklabel_format(useOffset=False)
-    ax1b.xaxis.set_ticklabels([])
-
-    ax2b.clear() # gyrometer
-    ax2b.plot(imu_time[1],gyr[1,0],linewidth=lw)
-    ax2b.plot(imu_time[1],gyr[1,1],linewidth=lw)
-    ax2b.plot(imu_time[1],gyr[1,2],linewidth=lw)
-    ax2b.grid()
-    ax2b.ticklabel_format(useOffset=False)
-    ax2b.xaxis.set_ticklabels([])
-    
-    ax3b.clear() # cadance
-    if not index_plot:
-        ax3b.plot(imu_time[1],imu_cad[1],linewidth=lw)
-    ax3b.grid()
-    ax3b.ticklabel_format(useOffset=False)
-    ax3b.xaxis.set_ticklabels([])
-    
-    ax4b.clear() # pip 0 voltage
-    ax4b.plot(swp_time[1],volts[1,0],linewidth=lw/2)
-    ax4b.grid()
-    ax4b.ticklabel_format(useOffset=False)
-    ax4b.xaxis.set_ticklabels([])
-
-    ax5b.clear() # pip 1 voltage
-    ax5b.plot(swp_time[1],volts[1,1],linewidth=lw/2)
-    ax5b.grid()
-    ax5b.ticklabel_format(useOffset=False)
-    ax5b.set_xlabel(lbl_swp,fontsize=fs)
-
+    plot_data(ax1b,imu_time[1],mag[1],lw,'','',1)
+    plot_data(ax2b,imu_time[1],gyr[1],lw,'','',1)
+    plot_data(ax3b,imu_time[1,:-2],imu_cad[0,:-2],lw,'','',1)
+    plot_data(ax4b,swp_time[1],volts[1,0],lw/2,'','',1)
+    plot_data(ax5b,swp_time[1],volts[1,1],lw/2,lbl_swp,'',0)
 plt.show()
