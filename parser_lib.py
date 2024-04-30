@@ -4,7 +4,7 @@
 import numpy as np 
 
 def parse_swp(bytes_data, byte_ids, is_buffer_data, sentinels, num_swp_bytes, num_dat_swp, num_samples=28, freq=45, \
-        scale_dct={'time': 1e-6, 'acc': 4./2**15, 'mag': 1./2**15, 'gyr': 2000./360/2**15, 'pip': 5./2**14}):
+        scale_dct={'time': 1e-6, 'acc': 4./2**15, 'mag': 1./2**15, 'gyr': 2000./360/2**15, 'pip': 5./2**14}, returnFlatOnly=False):
     if 1<len(np.unique([len(bytes.fromhex(sentinalStr.split('x')[-1])) for sentinalStr in sentinels])): print('Warning: sentinel_size inconsistent')
     sentinel_size = np.unique([len(bytes.fromhex(sentinalStr.split('x')[-1])) for sentinalStr in sentinels])[0]
     pos = 0
@@ -13,7 +13,10 @@ def parse_swp(bytes_data, byte_ids, is_buffer_data, sentinels, num_swp_bytes, nu
     #if dim==1 and is_buffer_data: dim = 2
     swp_time = np.zeros([dim,num_dat_swp],dtype='single')
     payload_id = np.zeros([dim,num_dat_swp],dtype='uint8')
-    volts = np.zeros([dim,2,num_dat_swp],dtype='single')
+    volts = np.zeros([dim,2,num_dat_swp, num_samples],dtype='single')
+    swp_timeLn = np.zeros([dim,num_dat_swp*num_samples],dtype='single') # In original code, this was swp_time
+    voltsLn = np.zeros([dim,2,num_dat_swp*num_samples],dtype='single') # In original code, this was volts
+    if returnFlatOnly: payload_id = np.zeros([dim,num_dat_swp*num_samples],dtype='uint8')
 
     for ind in byte_ids: # sweep indeces
         next_sentinel = bytes_data[ind+(num_swp_bytes+sentinel_size)*8:ind+(num_swp_bytes+2*sentinel_size)*8]
@@ -23,14 +26,39 @@ def parse_swp(bytes_data, byte_ids, is_buffer_data, sentinels, num_swp_bytes, nu
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
             swp_time_tmp = swp_bytes[0:4*8].uintle*scale_dct['time']
             payload_id_tmp = swp_bytes[4*8:5*8].uintle
+            swp_time[ID,pos] = swp_time_tmp 
+            if not returnFlatOnly: payload_id[ID,pos] = payload_id_tmp
             for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
-                swp_time[ID,pos] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample
-                payload_id[ID,pos] = payload_id_tmp
-                volts[ID,0,pos] = pip0_bytes[sample*8:(sample+2)*8].uintle*scale_dct['pip']
-                volts[ID,1,pos] = pip1_bytes[sample*8:(sample+2)*8].uintle*scale_dct['pip']
-                pos += 1
-                
-    return swp_time, payload_id, volts
+#                print((sample, pos*num_samples+sample/2))
+                swp_timeLn[ID,int(pos*num_samples+sample/2)] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample
+                if returnFlatOnly: payload_id[ID,int(pos*num_samples+sample/2)] = payload_id_tmp
+#                payload_id[ID,pos] = payload_id_tmp
+#                print(sample/2)
+                volts[ID,0,pos,int(sample/2)] = pip0_bytes[sample*8:(sample+2)*8].uintle*scale_dct['pip']
+                volts[ID,1,pos,int(sample/2)] = pip1_bytes[sample*8:(sample+2)*8].uintle*scale_dct['pip']
+                voltsLn[ID, 0, int(pos*num_samples+sample/2)] = pip0_bytes[sample*8:(sample+2)*8].uintle*scale_dct['pip']
+                voltsLn[ID, 1, int(pos*num_samples+sample/2)] = pip1_bytes[sample*8:(sample+2)*8].uintle*scale_dct['pip']
+
+#                pos += 1
+            pos += 1
+    if not returnFlatOnly:  
+        ## Complete Data Return
+        return swp_time, payload_id, volts, swp_timeLn, voltsLn
+    else: 
+        ## Original format for return in the shield_plot.py code
+        return swp_timeLn, payload_id, voltsLn
+#
+#def make_sweeps_1D(volts_pips, sweep_time, payloadID=None, num_samples=28, freq=45): 
+#    ## Note inputs are volts_pips = volts[ID], sweep_time=swp_time[ID] and payloadID=payload_id[ID]
+#    swpTime_arr = np.zeros([sweep_time.shape[1]*num_samples],dtype='single')
+#    volts_arr = np.zeros([2, volts_pips.shape[2]*num_samples],dtype='single') 
+#    volts_arr[0] = volts_pips[0].reshape((1, volts_pips.shape[2]*num_samples))
+#    volts_arr[1] = volts_pips[1].reshape((1, volts_pips.shape[2]*num_samples))
+#    for pos in sweep_time.shape[0]
+#    for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
+#        swp_time[ID,pos] = swp_time_tmp + sample/num_samples/freq/2# copy static data for each sample
+##                payload_id[ID,pos] = payload_id_tmp
+#
 
 def parse_imu(bytes_data, byte_ids, is_buffer_data, sentinels, num_imu_bytes, num_dat_imu, \
         scale_dct={'time': 1e-6, 'acc': 4./2**15, 'mag': 1./2**15, 'gyr': 2000./360/2**15, 'pip': 5./2**14}):
