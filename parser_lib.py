@@ -32,7 +32,7 @@ def parse_swp(bytes_data, byte_ids, is_buffer_data, sentinels, num_swp_bytes, nu
                 
     return swp_time, payload_id, volts
 
-def parse_imu(byte_ids, bytes_data, is_buffer_data, sentinels, num_imu_bytes, num_dat_imu, freq=45, \
+def parse_imu(bytes_data, byte_ids, is_buffer_data, sentinels, num_imu_bytes, num_dat_imu, \
         scale_dct={'time': 1e-6, 'acc': 4./2**15, 'mag': 1./2**15, 'gyr': 2000./360/2**15, 'pip': 5./2**14}):
     if 1<len(np.unique([len(bytes.fromhex(sentinalStr.split('x')[-1])) for sentinalStr in sentinels])): print('Warning: sentinel_size inconsistent')
     sentinel_size = np.unique([len(bytes.fromhex(sentinalStr.split('x')[-1])) for sentinalStr in sentinels])[0]
