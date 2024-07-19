@@ -47,6 +47,7 @@ num_msg_bytes = (2*sentinel_size + num_swp_bytes + num_imu_bytes)*dim
 bytes = BitArray(sys.stdin.buffer.read(-1)) # read bytes from standard input
 ids_swp = list(bytes.findall(sentinels[0], bytealigned=False))
 ids_imu = list(bytes.findall(sentinels[1], bytealigned=False))
+
 if buffered:
     ids_swp_buf = list(bytes.findall(sentinels[2], bytealigned=False))
     ids_imu_buf = list(bytes.findall(sentinels[3], bytealigned=False))
@@ -71,10 +72,15 @@ def parse_swp(byte_ids,is_buffer_data):
     id = int(is_buffer_data)
     for ind in byte_ids: # sweep indeces
         next_sentinel = bytes[ind+(num_swp_bytes+sentinel_size)*8:ind+(num_swp_bytes+2*sentinel_size)*8]
+        #print(next_sentinel)
         if next_sentinel in sentinels: # double sentinel match insures full message available
+       #print("found sentinel")
             swp_bytes = bytes[ind+sentinel_size*8:ind+(num_swp_bytes+sentinel_size)*8]
+            #print(swp_bytes)
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
+            #print(pip0_bytes)
+            #print(pip1_bytes)
             swp_time_tmp = swp_bytes[0:4*8].uintle*t_scale
             payload_id_tmp = swp_bytes[4*8:5*8].uintle
             for sample in range(0,2*num_samples,2): # allocate all sweep samples to arrays
@@ -102,7 +108,17 @@ def parse_imu(byte_ids,is_buffer_data):
             gyr[id,1,pos] = imu_bytes[18 *8:20 *8].intle*g_scale
             gyr[id,2,pos] = imu_bytes[20 *8:22 *8].intle*g_scale
             pos += 1
-
+swp_difs = []
+for i in range(0,len(ids_swp)-1):
+    swp_difs.append(ids_swp[i+1]-ids_swp[i])
+swp_difs_vals = []
+for i in range(0,len(swp_difs)):
+    if not swp_difs[i] in swp_difs_vals:
+        swp_difs_vals.append(swp_difs[i])
+dif_dict = {}
+for val in swp_difs_vals:
+    dif_dict[val] = swp_difs.count(val)
+print(dif_dict)
 parse_swp(ids_swp,False)
 parse_imu(ids_imu,False)
 if buffered:

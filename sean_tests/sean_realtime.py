@@ -13,6 +13,7 @@
 # Contact: jules.van.irsel.gr@dartmouth.edu
 
 import sys
+import os
 from bitstring import BitArray
 import numpy as np
 from datetime import datetime
@@ -106,6 +107,11 @@ def parse_imu(byte_ids,is_buffer_data):
             gyr[id,1,pos] = imu_bytes[18 *8:20 *8].intle*g_scale
             gyr[id,2,pos] = imu_bytes[20 *8:22 *8].intle*g_scale
             pos += 1
+def read_file():
+	file_path = os.path.join("20240709T150326Z_data_COM13_230400.bin")
+	with open(file_path, "rb") as file:
+		data = file.read()
+	return data
 
 # history data arrays, required for initial stitch
 swp_time_old = np.zeros([dim,0],dtype='single')
@@ -118,7 +124,7 @@ imu_cad_old = np.zeros([dim,0],dtype='single')
 
 # main routine
 while plotting:
-    bytes = BitArray(sys.stdin.buffer.read(num_bytes_target)) # read bytes from standard input
+    bytes = BitArray(read_file()) # read bytes from standard input
     print(bytes)
     if b'TIMEOUT\n' in bytes: # shield_feed.py sends repeated 'TIMEOUT' when serial port has timed out
         print('SERIAL TIMEOUT AT',datetime.now().astimezone().strftime("%Y/%m/%d, %H:%M:%S LT"),flush=True)

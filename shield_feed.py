@@ -16,7 +16,7 @@
 import sys
 import os
 from serial import Serial
-from datetime import datetime
+from datetime import datetime, timezone
 from bitstring import BitArray
 import numpy as np
 import io
@@ -35,11 +35,15 @@ bytes_tmp = BitArray()
 monitoring_only = False
 first_capture = True
 if len(sys.argv) == 3: # optional argument
+    print(1)
     if sys.argv[2] == '-m':
+        print(2)
         monitoring_only = True
     else:
+        print(3)
         suffix = '_' + sys.argv[2]
 try:
+    print(4)
     port = sys.argv[1]
     ser = Serial(port, baud, timeout=initial_timeout)
     ser.reset_input_buffer() # flush serial port
@@ -47,7 +51,7 @@ except:
     print('Serial port not found.')
     exit()
 
-file_name = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
+file_name = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
 if not monitoring_only:
     file = open(file_name,'ab')
 
