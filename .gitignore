@@ -1,2 +1,6 @@
 .*
 *.bin
+*.png
+__pycache__
+binary_files
+25S_data_testing/plots
