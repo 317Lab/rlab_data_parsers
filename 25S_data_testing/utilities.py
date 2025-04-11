@@ -2,6 +2,7 @@
 # Should see one line for pip, three for IMU
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import FormatStrFormatter
 
 ############################### Checking Buffered Data ###############################
 def check_buffers(start_time, end_time, swp_time, volts, imu_time, acc, mag, gyr):
@@ -115,4 +116,39 @@ def plot_adc_noise(volts):
 	plt.title("ADC reading distribution at each step of sweep")
 	plt.show()
 
-        
+    
+# Mutable struct for storing data from DC voltage noise tests on the ADC
+from recordclass import recordclass, RecordClass
+class DCTest(RecordClass):
+    test_id: int
+    voltages: np.ndarray
+    resistor_reading: float
+    supply_voltage: float
+    start: float = 0.0
+    end: float = 5
+    counts : np.ndarray = None
+    bins : np.ndarray = None
+    std : float = None
+      
+# takes a list of DCTest objects and shows the histogram of voltages for each test
+def show_dc_noise(tests):
+    if not all(isinstance(i, DCTest) for i in tests):
+        raise TypeError("All elements in tests must be of type DCTest")
+    for i in tests:
+        i.std = np.std(i.voltages)
+        i.start = np.mean(i.voltages)-0.015
+        i.end = np.mean(i.voltages)+0.015
+        i.counts, i.bins = np.histogram(i.voltages, range=(i.start,i.end), bins=100)
+    fig, axs = plt.subplots(len(tests))
+    fig.suptitle("DC Noise Tests")
+    for i, test in enumerate(tests):
+        axs[i].stairs(test.counts, test.bins)
+        axs[i].set_title(f"Supply Voltage {test.supply_voltage} V, Resistor Voltage {test.resistor_reading} V")
+        axs[i].set_xlim(test.start, test.end)
+        axs[i].set_xlabel("ADC Reading (V)")
+        axs[i].set_ylabel("# of Samples")
+        axs[i].set_xticks(np.arange(test.start, test.end, 0.002))
+        axs[i].xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+        axs[i].text(0.02,0.8, f"Std: {test.std:.3f}", fontsize=10, transform=axs[i].transAxes)
+    plt.subplots_adjust(hspace=0.7)
+    plt.show()
