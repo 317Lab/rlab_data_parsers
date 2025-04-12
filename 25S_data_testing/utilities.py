@@ -3,6 +3,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
+from recordclass import recordclass, RecordClass
+
 
 ############################### Checking Buffered Data ###############################
 def check_buffers(start_time, end_time, swp_time, volts, imu_time, acc, mag, gyr):
@@ -88,21 +90,21 @@ def get_sweep_steps(volts):
 	return steps
 
 # return an array of the standard deviation at every step
-def get_adc_std(steps):
+def get_step_std(steps):
 	stds = np.zeros(steps.shape[1])
 	for i in range(steps.shape[1]):
 		stds[i] = np.std(steps[:, i])
 	return stds
 
 # generate scatter plot of adc readings at every sweep step. includes average std and index of max std
-def plot_adc_noise(volts):
+def show_step_noise(volts):
 	first_max = np.where(volts[0,0,:]==np.max(volts[0,0,:]))[0][0]
 	first_min = np.where(volts[0,0,:]==np.min(volts[0,0,:]))[0][0]
 	length = first_max - first_min + 1
 	print(length)
 	fig, ax = plt.subplots()
 	steps = get_sweep_steps(volts)
-	stds = get_adc_std(steps=steps)
+	stds = get_step_std(steps=steps)
 	ax.text(0.15, 0.9, f"Avg Std: {np.round(np.mean(stds),5)}", fontsize=10, ha='center', va='center', transform=ax.transAxes)
 	ax.text(0.15, 0.8, f"Max Std: Step {np.where(np.max(stds)==stds)[0][0]+1}", fontsize=10, ha='center', va='center', transform=ax.transAxes)
 	for i in range(length):
@@ -118,7 +120,6 @@ def plot_adc_noise(volts):
 
     
 # Mutable struct for storing data from DC voltage noise tests on the ADC
-from recordclass import recordclass, RecordClass
 class DCTest(RecordClass):
     test_id: int
     voltages: np.ndarray
