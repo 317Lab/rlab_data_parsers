@@ -17,7 +17,8 @@ binary_file = "binary_files/3_volts_raw.bin"
 # steps = util.get_sweep_steps(volts=volts)
 # print(steps.shape)
 volts_list = []
-for i in range(1,6):
+numtests = 5
+for i in range(1,numtests+1):
 	binary_file = f"binary_files/DC_test_{i}.bin"
 	_, _, volts, _, _, _, _ = pb.parse_all(binary_file)
 	volts_list.append(volts)
