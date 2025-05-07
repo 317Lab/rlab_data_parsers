@@ -33,7 +33,11 @@ def good_slices(time, is_sweep=True):
         buf_slice = np.intersect1d(np.where(start_time <= time_buf)[0], np.where(time_buf <= end_time)[0])
         if len(buf_slice)==len(nonbuf_slice):
             return nonbuf_slice, buf_slice, start_time, end_time
-    return None, None
+        else:
+            min_len = min(len(nonbuf_slice), len(buf_slice))
+            nonbuf_slice = nonbuf_slice[:min_len]
+            buf_slice = buf_slice[:min_len]
+    return None, None, None, None
 
 def check_buffers(swp_time, volts, imu_time, acc, mag, gyr, save=False, save_path=None):
     fig, axs = plt.subplots(5, 1, figsize=(10, 12), sharex=True)
