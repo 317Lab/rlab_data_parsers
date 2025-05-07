@@ -1,3 +1,8 @@
+"""
+Stripped down version of Jules' shield_plot.py for shield testing.
+Author: Sean Wallace
+Date: April 2025
+"""
 import sys
 from bitstring import BitArray
 import numpy as np

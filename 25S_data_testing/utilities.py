@@ -1,5 +1,9 @@
-# plots time-corresponding buffered and non buffered data.
-# Should see one line for pip, three for IMU
+"""
+Module for analyzing and plotting data for the 25S GNEISS shield tests.
+Author: Sean Wallace
+Contact: sean.k.wallace.27@dartmouth.edu
+Date: May 2025
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
@@ -7,6 +11,7 @@ from recordclass import recordclass, RecordClass
 
 
 ############################### Checking Buffered Data ###############################
+# find the first consecutive block of a given length in a list of indices
 def find_consecutive_block(indices, length):
     for i in range(len(indices) - length + 1):
         window = indices[i:i+length]
@@ -14,6 +19,7 @@ def find_consecutive_block(indices, length):
             return window
     return None  
 
+# find the longest possible block of sweeps/imu data without significant gaps
 def good_slices(time, is_sweep=True):
     if is_sweep:
         num_steps = 28
@@ -21,8 +27,6 @@ def good_slices(time, is_sweep=True):
         num_steps = 1
     for i in range(10,1,-1):
         time_buf = time[1, :]
-        time_nonbuf = time[0, :]
-        #nonzeros = time_nonbuf[np.where(time_nonbuf != 0)[0]]
         time_step = np.median(np.diff(time[0,:]))
 
         mask = (np.abs(np.diff(time[0,:])) <= 2*time_step) & (np.abs(np.diff(time[1,:])) <= 2*time_step)
@@ -39,6 +43,7 @@ def good_slices(time, is_sweep=True):
             buf_slice = buf_slice[:min_len]
     return None, None, None, None
 
+# plot buffered and non-buffered data on top of each other
 def check_buffers(swp_time, volts, imu_time, acc, mag, gyr, save=False, save_path=None):
     fig, axs = plt.subplots(5, 1, figsize=(10, 12), sharex=True)
     buf_slice, nonbuf_slice, start_time, end_time = good_slices(swp_time)
@@ -103,46 +108,31 @@ def get_nth(arr, n, x):
     reshaped = arr.reshape(-1, x)
     return reshaped[:, n]
 
-# put each nth sweep step from every sweep into a column of a 2D array
+# reshape voltage data into 28 columns with the data from each sweep step, for each pip
 def get_sweep_steps(volts):
     pip0 = volts[0, 0, :]
     pip1 = volts[0, 1, :]
-    #trim trailing zeros
+    # trim trailing zeros
     pip0 = np.trim_zeros(pip0, 'b')
     pip1 = np.trim_zeros(pip1, 'b')
+    # ceiling to avoid cutting off data
     pip0_num_sweeps = int(np.ceil(len(pip0) / 28))
     pip1_num_sweeps = int(np.ceil(len(pip1) / 28))
+    # initialize and populate step arrays
     pip0_steps = np.zeros((pip0_num_sweeps, 28))
     pip1_steps = np.zeros((pip1_num_sweeps, 28))
     for i, volt in enumerate(pip0):
         pip0_steps[i // 28, i % 28] = volt
     for i, volt in enumerate(pip1):
         pip1_steps[i // 28, i % 28] = volt
-    # drop trailing zero row
+    # drop trailing zero row if padding occurred
     if np.all(pip0_steps[-1, :] == 0.0):
         pip0_steps = np.delete(pip0_steps, -1, axis=0)
     if np.all(pip1_steps[-1, :] == 0.0):
         pip1_steps = np.delete(pip1_steps, -1, axis=0)
     return pip0_steps, pip1_steps
 
-    
-	# first_max = np.where(volts[0,0,:]==np.max(volts[0,0,:]))[0][0]
-	# first_min = np.where(volts[0,0,:]==np.min(volts[0,0,:]))[0][0]
-	# length = first_max - first_min + 1
-	# # ceiling to account for padding
-	# new_height = int(np.ceil(len(volts[0, 0, :]) / length))
-	# steps = np.zeros((new_height, length))
-
-	# # fill each column with every nth sample
-	# for i in range(length):
-	# 	steps[:, i] = get_nth(volts[0, 0, :], i, length)
-
-	# # drop trailing zero row
-	# if steps[-1, -1] == 0.0:
-	# 	steps = np.delete(steps, -1, axis=0)
-	# return steps
-
-# return an array of the standard deviation at every step
+# return an array of the voltage standard deviation at every step
 def get_step_std(steps):
 	stds = np.zeros(steps.shape[1])
 	for i in range(steps.shape[1]):

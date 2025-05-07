@@ -1,3 +1,8 @@
+"""
+Module for automatically detecting serial port that is receiving data for GNEISS shield. Supports Linux and MacOS.
+Author: Sean Wallace
+Date: May 2025
+"""
 import serial
 import subprocess
 import platform
