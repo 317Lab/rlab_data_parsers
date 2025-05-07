@@ -139,11 +139,11 @@ if start_test == 'go':
     }
     df = pd.DataFrame(data=d)
     df.to_csv(results_path + "/test_results.csv", index=False)
-    util.check_buffers(swp_time=swp_time, volts=volts, imu_time=imu_time, acc=acc, mag=mag, gyr=gyr, save=True, save_path=f"{results_path}/test_buffers_{now}.png")
+    util.check_buffers(swp_time=swp_time, volts=volts, imu_time=imu_time, acc=acc, mag=mag, gyr=gyr, save=True, save_path=f"{results_path}/test_buffers.png")
     # suppress ylim transformation warnings
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        plot.save_plots(swp_time=swp_time, volts=volts, imu_time=imu_time, acc=acc, mag=mag, gyr=gyr, save_path=f"{results_path}/shield_plot_{now}.png")
+        plot.save_plots(swp_time=swp_time, volts=volts, imu_time=imu_time, acc=acc, mag=mag, gyr=gyr, save_path=f"{results_path}/shield_plot.png")
     steps_0, steps_1 = util.get_sweep_steps(volts=volts)
     noise_levels_0, noise_levels_1 = util.get_step_std(steps=steps_0), util.get_step_std(steps=steps_1)
     med_noise_mv_0, med_noise_mv_1 = np.median(noise_levels_0)*1e3, np.median(noise_levels_1)*1e3

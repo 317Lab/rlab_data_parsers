@@ -103,19 +103,9 @@ def get_nth(arr, n, x):
 def get_sweep_steps(volts):
     pip0 = volts[0, 0, :]
     pip1 = volts[0, 1, :]
-    pip0_start = np.where(pip0 == np.min(pip0))[0][0]
-    pip1_start = np.where(pip1 == np.min(pip1))[0][0]
-    # trim to first sweep start
-    pip0 = pip0[pip0_start:]
-    pip1 = pip1[pip1_start:]
-    pip0_trail = len(pip0) % 28
-    pip1_trail = len(pip1) % 28
-    # trim to full sweeps
-    if pip0_trail != 0:
-        pip0 = pip0[:len(pip0) - pip0_trail]
-    if pip1_trail != 0:
-        pip1 = pip1[:len(pip1) - pip1_trail]
-    
+    #trim trailing zeros
+    pip0 = np.trim_zeros(pip0, 'b')
+    pip1 = np.trim_zeros(pip1, 'b')
     pip0_num_sweeps = int(np.ceil(len(pip0) / 28))
     pip1_num_sweeps = int(np.ceil(len(pip1) / 28))
     pip0_steps = np.zeros((pip0_num_sweeps, 28))
