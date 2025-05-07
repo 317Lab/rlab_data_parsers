@@ -12,17 +12,20 @@ freq = 45 # approximate message frequency in Hz
 #binary_file = "test_files/test_results_20250507T105716Z/shield_test.bin"
 #binary_file = "test_files/test_results_20250507T135319Z/shield_test.bin"
 #binary_file = "test_files/shield_test_20250506T143827Z.bin"
-binary_file = "binary_files/20250402T191624Z_data_COM13_230400_60.bin"
-
+#binary_file = "binary_files/20250402T191624Z_data_COM13_230400_60.bin"
+binary_file = "test_files/test_results_20250507T152702Z/shield_test.bin"
 swp_time, payload_id, volts, imu_time, acc, mag, gyr = pb.parse_all(binary_file)
-nominal_volts = np.linspace(0, 5, 28)
+nominal_volts = np.linspace(5, 0, 28)
 steps_0, steps_1 = util.get_sweep_steps(volts=volts)
 steps_0_med = np.zeros(28)
+steps_1_med = np.zeros(28)
+print(steps_1[:,3])
 for i in range(28):
     steps_0_med[i] = np.median(steps_0[:,i])
-offset_0 = nominal_volts- steps_0_med
-print(offset_0)
-
+    steps_1_med[i] = np.median(steps_1[:,i])
+offset_0 = nominal_volts - steps_0_med
+offset_1 = nominal_volts - steps_1_med
+print(offset_1*1e3)
 
 
 # stds = util.get_step_std(steps=steps)

@@ -153,7 +153,7 @@ if start_test == 'go':
     noise_mv = pd.DataFrame(data=noise_mv, columns=['Pip 0 STD (mV)', 'Pip 1 STD (mV)'])
     noise_mv.to_csv(results_path + "/step_std_mV.csv", index=False)
     #np.savetxt(results_path + "/step_std_mV.csv", noise_mv, delimiter=",")
-    nominal_volts = np.linspace(0, 5, 28)
+    nominal_volts = np.linspace(5, 0, 28)
     steps_0_med = np.zeros(28)
     steps_1_med = np.zeros(28)
     for i in range(28):
