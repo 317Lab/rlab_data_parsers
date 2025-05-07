@@ -51,6 +51,9 @@ acc_benchmark = (0,0.5)
 mag_benchmark = (-0.5, 0)
 gyr_benchmark = (-0.05, 0.05)
 cad_benchmark = (21,23)
+acc_motion = 0.01
+mag_motion = 0.05
+gyr_motion = 0.1
 
 start_test = input("Enter 'go' when ready to collect data. Wiggle IMU during entire collection. \n")
 if start_test == 'go':
@@ -73,9 +76,9 @@ if start_test == 'go':
     acc_mean = np.array([np.mean(acc[0,0,:]), np.mean(acc[0,1,:]), np.mean(acc[0,2,:])])
     mag_mean = np.array([np.mean(mag[0,0,:]), np.mean(mag[0,1,:]), np.mean(mag[0,2,:])])
     gyr_mean = np.array([np.mean(gyr[0,0,:]), np.mean(gyr[0,1,:]), np.mean(gyr[0,2,:])])
-    acc_fails = np.where(acc_std < 0.01)[0]
-    mag_fails = np.where(mag_std < 0.05)[0]
-    gyr_fails = np.where(gyr_std < 0.1)[0]
+    acc_fails = np.where(acc_std < acc_motion)[0]
+    mag_fails = np.where(mag_std < mag_motion)[0]
+    gyr_fails = np.where(gyr_std < gyr_motion)[0]
     motion_flag = (len(acc_fails) == 0) and (len(mag_fails) == 0) and (len(gyr_fails) == 0)
     if motion_flag:
         print("IMU motion test PASSED.")
@@ -141,6 +144,12 @@ if start_test == 'go':
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         plot.save_plots(swp_time=swp_time, volts=volts, imu_time=imu_time, acc=acc, mag=mag, gyr=gyr, save_path=f"{results_path}/shield_plot_{now}.png")
+    steps = util.get_sweep_steps(volts=volts)
+    noise_levels = util.get_step_std(steps=steps)
+    med_noise_mv = np.median(noise_levels)*1e3
+
+    print(f"Median swep STD: {med_noise_mv:.3f} mV")
+    np.savetxt(results_path + "/step_std_mV.csv", noise_levels*1000, delimiter=",")
     print("Data saved to " + results_path)
     print("Test complete. That's GNEISS!")
 

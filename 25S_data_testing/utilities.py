@@ -125,26 +125,29 @@ def get_step_std(steps):
 	return stds
 
 # generate scatter plot of adc readings at every sweep step. includes average std and index of max std
-def show_step_noise(volts):
-	first_max = np.where(volts[0,0,:]==np.max(volts[0,0,:]))[0][0]
-	first_min = np.where(volts[0,0,:]==np.min(volts[0,0,:]))[0][0]
-	length = first_max - first_min + 1
-	print(length)
-	fig, ax = plt.subplots()
-	steps = get_sweep_steps(volts)
-	stds = get_step_std(steps=steps)
-	ax.text(0.15, 0.9, f"Avg Std: {np.round(np.mean(stds),5)}", fontsize=10, ha='center', va='center', transform=ax.transAxes)
-	ax.text(0.15, 0.8, f"Max Std: Step {np.where(np.max(stds)==stds)[0][0]+1}", fontsize=10, ha='center', va='center', transform=ax.transAxes)
-	for i in range(length):
-		plt.scatter([i+1] * steps.shape[0], steps[:, i], alpha=0.5, s=5, label=f"Step {i+1}" if i < 10 else None)
-	ax.set_xlim(ax.get_xlim())
-	ax.autoscale(enable=True, axis='y')
-	ticks = np.unique(np.concatenate(([1], np.arange(4, length + 1, 4))))
-	ax.set_xticks(ticks)
-	plt.xlabel("Sweep step")
-	plt.ylabel("Volts (V)")
-	plt.title("ADC reading distribution at each step of sweep")
-	plt.show()
+def show_step_noise(volts, save=False, save_path=None):
+    first_max = np.where(volts[0,0,:]==np.max(volts[0,0,:]))[0][0]
+    first_min = np.where(volts[0,0,:]==np.min(volts[0,0,:]))[0][0]
+    length = first_max - first_min + 1
+    print(length)
+    fig, ax = plt.subplots()
+    steps = get_sweep_steps(volts)
+    stds = get_step_std(steps=steps)
+    ax.text(0.15, 0.9, f"Avg Std: {np.round(np.mean(stds),5)}", fontsize=10, ha='center', va='center', transform=ax.transAxes)
+    ax.text(0.15, 0.8, f"Max Std: Step {np.where(np.max(stds)==stds)[0][0]+1}", fontsize=10, ha='center', va='center', transform=ax.transAxes)
+    for i in range(length):
+        plt.scatter([i+1] * steps.shape[0], steps[:, i], alpha=0.5, s=5, label=f"Step {i+1}" if i < 10 else None)
+    ax.set_xlim(ax.get_xlim())
+    ax.autoscale(enable=True, axis='y')
+    ticks = np.unique(np.concatenate(([1], np.arange(4, length + 1, 4))))
+    ax.set_xticks(ticks)
+    plt.xlabel("Sweep step")
+    plt.ylabel("Volts (V)")
+    plt.title("ADC reading distribution at each step of sweep")
+    if save:
+        plt.savefig(save_path)
+    else:
+	    plt.show()
 
     
 # Mutable struct for storing data from DC voltage noise tests on the ADC
