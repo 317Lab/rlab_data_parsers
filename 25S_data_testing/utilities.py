@@ -7,15 +7,38 @@ from recordclass import recordclass, RecordClass
 
 
 ############################### Checking Buffered Data ###############################
-def check_buffers(start_time, end_time, swp_time, volts, imu_time, acc, mag, gyr):
-    fig, axs = plt.subplots(5, 1, figsize=(10, 12), sharex=True)
+def find_consecutive_block(indices, length):
+    for i in range(len(indices) - length + 1):
+        window = indices[i:i+length]
+        if window[-1] - window[0] == length - 1:
+            return window
+    return None  
 
-    # Pip 0 plot
-    time_nonbuf = swp_time[0, :]
-    time_buf = swp_time[1, :]
-    nonbuf_slice = np.intersect1d(np.where(start_time <= time_nonbuf)[0], np.where(time_nonbuf <= end_time)[0])
-    buf_slice = np.intersect1d(np.where(start_time <= time_buf)[0], np.where(time_buf <= end_time)[0])
-    time_slice = swp_time[0, nonbuf_slice]
+def good_slices(time, is_sweep=True):
+    if is_sweep:
+        num_steps = 28
+    else:
+        num_steps = 1
+    for i in range(10,1,-1):
+        time_buf = time[1, :]
+        time_nonbuf = time[0, :]
+        #nonzeros = time_nonbuf[np.where(time_nonbuf != 0)[0]]
+        time_step = np.median(np.diff(time[0,:]))
+
+        mask = (np.abs(np.diff(time[0,:])) <= 2*time_step) & (np.abs(np.diff(time[1,:])) <= 2*time_step)
+        good_idx = np.where(mask)[0]
+        nonbuf_slice = find_consecutive_block(good_idx, i*num_steps)
+        start_time = time[0, nonbuf_slice[0]]
+        end_time = time[0, nonbuf_slice[-1]]
+        buf_slice = np.intersect1d(np.where(start_time <= time_buf)[0], np.where(time_buf <= end_time)[0])
+        if len(buf_slice)==len(nonbuf_slice):
+            return nonbuf_slice, buf_slice, start_time, end_time
+    return None, None
+
+def check_buffers(swp_time, volts, imu_time, acc, mag, gyr, save=False, save_path=None):
+    fig, axs = plt.subplots(5, 1, figsize=(10, 12), sharex=True)
+    buf_slice, nonbuf_slice, start_time, end_time = good_slices(swp_time)
+    time_slice = swp_time[0,nonbuf_slice]
     axs[0].plot(time_slice, volts[0, 0, nonbuf_slice], label="not buffered")
     axs[0].plot(time_slice, volts[1, 0, buf_slice], label="buffered")
     axs[0].legend()
@@ -28,14 +51,15 @@ def check_buffers(start_time, end_time, swp_time, volts, imu_time, acc, mag, gyr
     axs[1].legend()
     axs[1].set_title(f"Sweep Data, Pip 1")
     axs[1].set_ylabel("Volts (V)")
-
-
+    nonbuf_slice = np.where((imu_time[0,:]>=start_time)&(imu_time[0,:]<=end_time))[0]
+    buf_slice = np.where((imu_time[1,:]>=start_time)&(imu_time[1,:]<=end_time))[0]
+    if len(nonbuf_slice)!=len(buf_slice):
+        min_len = min(len(nonbuf_slice), len(buf_slice))
+        nonbuf_slice = nonbuf_slice[:min_len]
+        buf_slice = buf_slice[:min_len]
+    time_slice=imu_time[0,nonbuf_slice]
+    time_slice=imu_time[0,buf_slice]
     # Accelerometer plot
-    time_nonbuf = imu_time[0, :]
-    time_buf = imu_time[1, :]
-    nonbuf_slice = np.intersect1d(np.where(start_time <= time_nonbuf)[0], np.where(time_nonbuf <= end_time)[0])
-    buf_slice = np.intersect1d(np.where(start_time <= time_buf)[0], np.where(time_buf <= end_time)[0])
-    time_slice = imu_time[0, nonbuf_slice]
     for axis in range(3):
         axs[4].plot(time_slice, acc[0, axis, nonbuf_slice], label=f"{['x','y','z'][axis]}, non-buf")
         axs[4].plot(time_slice, acc[1, axis, buf_slice], label=f"{['x','y','z'][axis]}, buf")
@@ -61,7 +85,11 @@ def check_buffers(start_time, end_time, swp_time, volts, imu_time, acc, mag, gyr
     axs[3].set_ylabel("GYR (Hz)")
 
     plt.tight_layout()
-    plt.show()
+    if save:
+        plt.savefig(save_path)
+    else:
+        plt.show()
+
     
 ############################### Checking Noise ###############################
 
