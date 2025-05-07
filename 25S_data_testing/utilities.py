@@ -101,21 +101,52 @@ def get_nth(arr, n, x):
 
 # put each nth sweep step from every sweep into a column of a 2D array
 def get_sweep_steps(volts):
-	first_max = np.where(volts[0,0,:]==np.max(volts[0,0,:]))[0][0]
-	first_min = np.where(volts[0,0,:]==np.min(volts[0,0,:]))[0][0]
-	length = first_max - first_min + 1
-	# ceiling to account for padding
-	new_height = int(np.ceil(len(volts[0, 0, :]) / length))
-	steps = np.zeros((new_height, length))
+    pip0 = volts[0, 0, :]
+    pip1 = volts[0, 1, :]
+    pip0_start = np.where(pip0 == np.min(pip0))[0][0]
+    pip1_start = np.where(pip1 == np.min(pip1))[0][0]
+    # trim to first sweep start
+    pip0 = pip0[pip0_start:]
+    pip1 = pip1[pip1_start:]
+    pip0_trail = len(pip0) % 28
+    pip1_trail = len(pip1) % 28
+    # trim to full sweeps
+    if pip0_trail != 0:
+        pip0 = pip0[:len(pip0) - pip0_trail]
+    if pip1_trail != 0:
+        pip1 = pip1[:len(pip1) - pip1_trail]
+    
+    pip0_num_sweeps = int(np.ceil(len(pip0) / 28))
+    pip1_num_sweeps = int(np.ceil(len(pip1) / 28))
+    pip0_steps = np.zeros((pip0_num_sweeps, 28))
+    pip1_steps = np.zeros((pip1_num_sweeps, 28))
+    for i, volt in enumerate(pip0):
+        pip0_steps[i // 28, i % 28] = volt
+    for i, volt in enumerate(pip1):
+        pip1_steps[i // 28, i % 28] = volt
+    # drop trailing zero row
+    if np.all(pip0_steps[-1, :] == 0.0):
+        pip0_steps = np.delete(pip0_steps, -1, axis=0)
+    if np.all(pip1_steps[-1, :] == 0.0):
+        pip1_steps = np.delete(pip1_steps, -1, axis=0)
+    return pip0_steps, pip1_steps
 
-	# fill each column with every nth sample
-	for i in range(length):
-		steps[:, i] = get_nth(volts[0, 0, :], i, length)
+    
+	# first_max = np.where(volts[0,0,:]==np.max(volts[0,0,:]))[0][0]
+	# first_min = np.where(volts[0,0,:]==np.min(volts[0,0,:]))[0][0]
+	# length = first_max - first_min + 1
+	# # ceiling to account for padding
+	# new_height = int(np.ceil(len(volts[0, 0, :]) / length))
+	# steps = np.zeros((new_height, length))
 
-	# drop trailing zero row
-	if steps[-1, -1] == 0.0:
-		steps = np.delete(steps, -1, axis=0)
-	return steps
+	# # fill each column with every nth sample
+	# for i in range(length):
+	# 	steps[:, i] = get_nth(volts[0, 0, :], i, length)
+
+	# # drop trailing zero row
+	# if steps[-1, -1] == 0.0:
+	# 	steps = np.delete(steps, -1, axis=0)
+	# return steps
 
 # return an array of the standard deviation at every step
 def get_step_std(steps):

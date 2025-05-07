@@ -15,10 +15,12 @@ binary_file = "binary_files/20250402T190425Z_data_COM13_230400_60.bin"
 
 
 swp_time, payload_id, volts, imu_time, acc, mag, gyr = pb.parse_all(binary_file)
-steps = util.get_sweep_steps(volts=volts)
-stds = util.get_step_std(steps=steps)
-stds_mv = stds * 1000
-np.savetxt("noise.csv", stds_mv, delimiter=",")
+steps_0, steps_1 = util.get_sweep_steps(volts=volts)
+print(util.get_step_std(steps=steps_0))
+print(util.get_step_std(steps=steps_1))
+# stds = util.get_step_std(steps=steps)
+# stds_mv = stds * 1000
+# np.savetxt("noise.csv", stds_mv, delimiter=",")
 # print(np.std(acc[0,0,:]), np.std(acc[0,1,:]), np.std(acc[0,2,:]))
 # print(np.std(mag[0,0,:]), np.std(mag[0,1,:]), np.std(mag[0,2,:]))
 # print(np.std(gyr[0,0,:]), np.std(gyr[0,1,:]), np.std(gyr[0,2,:]))

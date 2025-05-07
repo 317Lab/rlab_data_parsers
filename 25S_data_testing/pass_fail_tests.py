@@ -144,12 +144,12 @@ if start_test == 'go':
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         plot.save_plots(swp_time=swp_time, volts=volts, imu_time=imu_time, acc=acc, mag=mag, gyr=gyr, save_path=f"{results_path}/shield_plot_{now}.png")
-    steps = util.get_sweep_steps(volts=volts)
-    noise_levels = util.get_step_std(steps=steps)
-    med_noise_mv = np.median(noise_levels)*1e3
-
-    print(f"Median swep STD: {med_noise_mv:.3f} mV")
-    np.savetxt(results_path + "/step_std_mV.csv", noise_levels*1000, delimiter=",")
+    steps_0, steps_1 = util.get_sweep_steps(volts=volts)
+    noise_levels_0, noise_levels_1 = util.get_step_std(steps=steps_0), util.get_step_std(steps=steps_1)
+    med_noise_mv_0, med_noise_mv_1 = np.median(noise_levels_0)*1e3, np.median(noise_levels_1)*1e3
+    noise_mv = np.column_stack((noise_levels_0, noise_levels_1))*1e3
+    print(f"PIP 0 STD: {med_noise_mv_0:.3f} mV, PIP 1 STD: {med_noise_mv_1:.3f} mV")
+    np.savetxt(results_path + "/step_std_mV.csv", noise_mv, delimiter=",")
     print("Data saved to " + results_path)
     print("Test complete. That's GNEISS!")
 
