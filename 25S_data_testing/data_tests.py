@@ -10,19 +10,18 @@ freq = 45 # approximate message frequency in Hz
 #binary_file = "test_files/test_results_20250507T104141Z/shield_test.bin"
 #binary_file = "test_files/test_results_20250507T103714Z/shield_test.bin"
 #binary_file = "test_files/test_results_20250507T105716Z/shield_test.bin"
-binary_file = "test_files/test_results_20250507T135319Z/shield_test.bin"
+#binary_file = "test_files/test_results_20250507T135319Z/shield_test.bin"
 #binary_file = "test_files/shield_test_20250506T143827Z.bin"
-
+binary_file = "binary_files/20250402T191624Z_data_COM13_230400_60.bin"
 
 swp_time, payload_id, volts, imu_time, acc, mag, gyr = pb.parse_all(binary_file)
+nominal_volts = np.linspace(0, 5, 28)
 steps_0, steps_1 = util.get_sweep_steps(volts=volts)
-noise_levels_0, noise_levels_1 = util.get_step_std(steps=steps_0), util.get_step_std(steps=steps_1)
-med_noise_mv_0, med_noise_mv_1 = np.median(noise_levels_0)*1e3, np.median(noise_levels_1)*1e3
-noise_mv = np.column_stack((noise_levels_0, noise_levels_1))*1e3
-print(f"PIP 0 STD: {med_noise_mv_0:.3f} mV, PIP 1 STD: {med_noise_mv_1:.3f} mV")
-
-
-
+steps_0_med = np.zeros(28)
+for i in range(28):
+    steps_0_med[i] = np.median(steps_0[:,i])
+offset_0 = nominal_volts- steps_0_med
+print(offset_0)
 
 
 

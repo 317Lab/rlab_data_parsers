@@ -1,4 +1,4 @@
-# TODO: write data to CSV, calculate offset
+# TODO: add automatic port detection.
 import serial
 import time
 import shield_test_feed as feed
@@ -128,6 +128,7 @@ if start_test == 'go':
     else:
         print(f"Cadence test FAILED. Cadence: {imu_cad_avg:.3f} ms") 
     # saving data
+    print("Saving data...")
     n = volts.shape[2]
     d = {
         'Pip 0 Voltage': volts[0,0,:],
@@ -149,9 +150,26 @@ if start_test == 'go':
     med_noise_mv_0, med_noise_mv_1 = np.median(noise_levels_0)*1e3, np.median(noise_levels_1)*1e3
     noise_mv = np.column_stack((noise_levels_0, noise_levels_1))*1e3
     print(f"PIP 0 STD: {med_noise_mv_0:.3f} mV, PIP 1 STD: {med_noise_mv_1:.3f} mV")
-    np.savetxt(results_path + "/step_std_mV.csv", noise_mv, delimiter=",")
+    noise_mv = pd.DataFrame(data=noise_mv, columns=['Pip 0 STD (mV)', 'Pip 1 STD (mV)'])
+    noise_mv.to_csv(results_path + "/step_std_mV.csv", index=False)
+    #np.savetxt(results_path + "/step_std_mV.csv", noise_mv, delimiter=",")
+    nominal_volts = np.linspace(0, 5, 28)
+    steps_0_med = np.zeros(28)
+    steps_1_med = np.zeros(28)
+    for i in range(28):
+        steps_0_med[i] = np.median(steps_0[:,i])
+        steps_1_med[i] = np.median(steps_1[:,i])
+    offset_0 = nominal_volts- steps_0_med
+    offset_1 = nominal_volts- steps_1_med
+    offset_mv = np.column_stack((offset_0, offset_1))*1e3
+    #np.savetxt(results_path + "/step_offset_mV.csv", offset_mv, delimiter=",")
+    offset_mv = pd.DataFrame(data=offset_mv, columns=['Pip 0 Offset (mV)', 'Pip 1 Offset (mV)'])
+    offset_mv.to_csv(results_path + "/step_offset_mV.csv", index=False)
     print("Data saved to " + results_path)
     print("Test complete. That's GNEISS!")
+else:
+    print("Test cancelled. Not GNEISS :(")
+    exit()
 
     
 
