@@ -10,6 +10,7 @@ import os
 import utilities as util
 import shield_test_plot as plot
 import warnings
+import detect_port as detect
 baud = 230400
 initial_timeout = 120  # seconds before initial serial timeout, allows user to start recording and wait for shield power on
 test_file_directory = 'test_files'
@@ -30,22 +31,10 @@ def within_nominal(mean, benchmark_range):
         return True
 
 
-port = input("input port\n")
-print("connecting...\n")
-
-try:
-    ser = serial.Serial(port, baudrate=baud, timeout=1)
-    #ser.reset_input_buffer()  # flush serial port
-    time.sleep(1)
-    if ser.in_waiting>0:
-        print("Connected!")
-        ser.reset_input_buffer() 
-    else:
-        print("No data available. Please check the connection.")
-        exit()
-except serial.SerialException as e:
-    print(f"Serial port error: {e}")
-    exit()
+#port = input("input port\n")
+#print("connecting...\n")
+port = detect.detect_port()
+print(f"Connected to {port}")
 
 acc_benchmark = (0,0.5)
 mag_benchmark = (-0.5, 0)
