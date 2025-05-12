@@ -12,35 +12,13 @@ freq = 45 # approximate message frequency in Hz
 #binary_file = "test_files/test_results_20250507T105716Z/shield_test.bin"
 #binary_file = "test_files/test_results_20250507T135319Z/shield_test.bin"
 #binary_file = "test_files/shield_test_20250506T143827Z.bin"
-#binary_file = "binary_files/20250402T191624Z_data_COM13_230400_60.bin"
-binary_file = "test_files/test_results_20250507T152702Z/shield_test.bin"
+binary_file = "binary_files/20250402T191624Z_data_COM13_230400_60.bin"
+#binary_file = "binary_files/20250402T190425Z_data_COM13_230400_60.bin"
+#binary_file = "binary_files/20250402T185337Z_data_COM13_230400_60.bin"
+#binary_file = "test_files/test_results_20250507T152702Z/shield_test.bin"
 swp_time, payload_id, volts, imu_time, acc, mag, gyr = pb.parse_all(binary_file)
-nominal_volts = np.linspace(5, 0, 28)
-steps_0, steps_1 = util.get_sweep_steps(volts=volts)
-steps_0_med = np.zeros(28)
-steps_1_med = np.zeros(28)
-print(steps_1[:,3])
-for i in range(28):
-    steps_0_med[i] = np.median(steps_0[:,i])
-    steps_1_med[i] = np.median(steps_1[:,i])
-offset_0 = nominal_volts - steps_0_med
-offset_1 = nominal_volts - steps_1_med
-print(offset_1*1e3)
+util.check_buffers(swp_time, volts, imu_time, acc, mag, gyr)
 
-
-# stds = util.get_step_std(steps=steps)
-# stds_mv = stds * 1000
-# np.savetxt("noise.csv", stds_mv, delimiter=",")
-# print(np.std(acc[0,0,:]), np.std(acc[0,1,:]), np.std(acc[0,2,:]))
-# print(np.std(mag[0,0,:]), np.std(mag[0,1,:]), np.std(mag[0,2,:]))
-# print(np.std(gyr[0,0,:]), np.std(gyr[0,1,:]), np.std(gyr[0,2,:]))
-# acc_std = np.array([np.std(acc[0,0,:]), np.std(acc[0,1,:]), np.std(acc[0,2,:])])
-# print(np.any(acc_std < 0.01))
-# print(swp_time[0,0], swp_time[0,nonzer[-1]])
-# print(imu_time[0,0], imu_time[0,-1])
-#util.check_buffers(swp_time, volts, imu_time, acc, mag, gyr)
-# steps = util.get_sweep_steps(volts=volts)
-# print(steps.shape)
 # volts_list = []
 # numtests = 5
 # for i in range(1,numtests+1):

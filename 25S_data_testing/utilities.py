@@ -36,27 +36,32 @@ def good_slices(time, is_sweep=True):
         end_time = time[0, nonbuf_slice[-1]]
         buf_slice = np.intersect1d(np.where(start_time <= time_buf)[0], np.where(time_buf <= end_time)[0])
         if len(buf_slice)==len(nonbuf_slice):
-            return nonbuf_slice, buf_slice, start_time, end_time
+            return nonbuf_slice, buf_slice
+            #return nonbuf_slice, buf_slice, start_time, end_time
         else:
             min_len = min(len(nonbuf_slice), len(buf_slice))
             nonbuf_slice = nonbuf_slice[:min_len]
             buf_slice = buf_slice[:min_len]
-    return None, None, None, None
+    return None, None
 
 # plot buffered and non-buffered data on top of each other
 def check_buffers(swp_time, volts, imu_time, acc, mag, gyr, save=False, save_path=None):
     fig, axs = plt.subplots(5, 1, figsize=(10, 12), sharex=True)
-    buf_slice, nonbuf_slice, start_time, end_time = good_slices(swp_time)
+    #buf_slice, nonbuf_slice, start_time, end_time = good_slices(swp_time)
+    buf_slice, nonbuf_slice = good_slices(swp_time)
+    start_time, end_time = swp_time[0, nonbuf_slice[0]], swp_time[0, nonbuf_slice[-1]]
     time_slice = swp_time[0,nonbuf_slice]
+    buf_time_idx = np.where((swp_time[1,:] >= start_time) & (swp_time[1,:]<=end_time))[0]
+    buf_time_slice = swp_time[1,buf_time_idx]
     axs[0].plot(time_slice, volts[0, 0, nonbuf_slice], label="not buffered")
-    axs[0].plot(time_slice, volts[1, 0, buf_slice], label="buffered")
+    axs[0].plot(buf_time_slice, volts[1, 0, buf_slice], label="buffered")
     axs[0].legend()
     axs[0].set_title(f"Sweep Data, Pip 0")
     axs[0].set_ylabel("Volts (V)")
 
     # pip 1 plot 
     axs[1].plot(time_slice, volts[0, 1, nonbuf_slice], label="not buffered")
-    axs[1].plot(time_slice, volts[1, 1, buf_slice], label="buffered")
+    axs[1].plot(buf_time_slice, volts[1, 1, buf_slice], label="buffered")
     axs[1].legend()
     axs[1].set_title(f"Sweep Data, Pip 1")
     axs[1].set_ylabel("Volts (V)")
@@ -67,11 +72,14 @@ def check_buffers(swp_time, volts, imu_time, acc, mag, gyr, save=False, save_pat
         nonbuf_slice = nonbuf_slice[:min_len]
         buf_slice = buf_slice[:min_len]
     time_slice=imu_time[0,nonbuf_slice]
-    time_slice=imu_time[0,buf_slice]
+    start_time, end_time = imu_time[0, nonbuf_slice[0]], imu_time[0, nonbuf_slice[-1]]
+    buf_time_idx = np.where((imu_time[1,:] >= start_time) & (imu_time[1,:]<=end_time))[0]
+    buf_time_slice = imu_time[1,buf_time_idx]
+
     # Accelerometer plot
     for axis in range(3):
         axs[4].plot(time_slice, acc[0, axis, nonbuf_slice], label=f"{['x','y','z'][axis]}, non-buf")
-        axs[4].plot(time_slice, acc[1, axis, buf_slice], label=f"{['x','y','z'][axis]}, buf")
+        axs[4].plot(buf_time_slice, acc[1, axis, buf_slice], label=f"{['x','y','z'][axis]}, buf")
     axs[4].legend()
     axs[4].set_title("Acceleration")
     axs[4].set_ylabel("g")
@@ -80,7 +88,7 @@ def check_buffers(swp_time, volts, imu_time, acc, mag, gyr, save=False, save_pat
     # Magnetometer plot
     for axis in range(3):
         axs[2].plot(time_slice, mag[0, axis, nonbuf_slice], label=f"{['x','y','z'][axis]}, non-buf")
-        axs[2].plot(time_slice, mag[1, axis, buf_slice], label=f"{['x','y','z'][axis]}, buf")
+        axs[2].plot(buf_time_slice, mag[1, axis, buf_slice], label=f"{['x','y','z'][axis]}, buf")
     axs[2].legend()
     axs[2].set_title("Magnetic Field")
     axs[2].set_ylabel("MAG (G)")
@@ -88,7 +96,7 @@ def check_buffers(swp_time, volts, imu_time, acc, mag, gyr, save=False, save_pat
     # Gyroscope plot
     for axis in range(3):
         axs[3].plot(time_slice, gyr[0, axis, nonbuf_slice], label=f"{['x','y','z'][axis]}, non-buf")
-        axs[3].plot(time_slice, gyr[1, axis, buf_slice], label=f"{['x','y','z'][axis]}, buf")
+        axs[3].plot(buf_time_slice, gyr[1, axis, buf_slice], label=f"{['x','y','z'][axis]}, buf")
     axs[3].legend()
     axs[3].set_title("Gyroscope")
     axs[3].set_ylabel("GYR (Hz)")
