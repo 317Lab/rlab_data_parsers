@@ -34,7 +34,7 @@ def within_nominal(mean, benchmark_range):\
 # global variables
 baud = 230400
 test_file_directory = 'test_files'
-read_time = 10
+read_time = 15
 coord_axes = {0: 'X', 1: 'Y', 2: 'Z'}
 acc_benchmark = (0,0.5)
 mag_benchmark = (-0.5, 0)
@@ -51,7 +51,7 @@ port = detect.detect_port()
 print(f"Connected to {port}")
 
 
-start_test = input("Enter 'go' when ready to collect data. Wiggle IMU during entire collection. \n")
+start_test = input("Enter 'go' when ready to collect data. Wiggle IMU for first five seconds. \n")
 if start_test == 'go':
     now = datetime.datetime.now()
     now = now.strftime("%Y%m%dT%H%M%SZ")
@@ -68,17 +68,22 @@ if start_test == 'go':
 
     # parse binary file
     swp_time, payload_id, volts, imu_time, acc, mag, gyr = pb.parse_all(filename)
+    start = imu_time[0,0]
+    end = start + 5
+    measure_idx = np.where((imu_time[0,:]>= start) & (imu_time[0,:] <= end))[0]
+
 
     # collect relevant data for pass/fail tests
-    acc_std = np.array([np.std(acc[0,0,:]), np.std(acc[0,1,:]), np.std(acc[0,2,:])])
-    mag_std = np.array([np.std(mag[0,0,:]), np.std(mag[0,1,:]), np.std(mag[0,2,:])])
-    gyr_std = np.array([np.std(gyr[0,0,:]), np.std(gyr[0,1,:]), np.std(gyr[0,2,:])])
-    acc_mean = np.array([np.mean(acc[0,0,:]), np.mean(acc[0,1,:]), np.mean(acc[0,2,:])])
-    mag_mean = np.array([np.mean(mag[0,0,:]), np.mean(mag[0,1,:]), np.mean(mag[0,2,:])])
-    gyr_mean = np.array([np.mean(gyr[0,0,:]), np.mean(gyr[0,1,:]), np.mean(gyr[0,2,:])])
+    acc_std = np.array([np.std(acc[0,0,measure_idx]), np.std(acc[0,1,measure_idx]), np.std(acc[0,2,measure_idx])])
+    mag_std = np.array([np.std(mag[0,0,measure_idx]), np.std(mag[0,1,measure_idx]), np.std(mag[0,2,measure_idx])])
+    gyr_std = np.array([np.std(gyr[0,0,measure_idx]), np.std(gyr[0,1,measure_idx]), np.std(gyr[0,2,measure_idx])])
+    acc_mean = np.array([np.mean(acc[0,0,measure_idx]), np.mean(acc[0,1,measure_idx]), np.mean(acc[0,2,measure_idx])])
+    mag_mean = np.array([np.mean(mag[0,0,measure_idx]), np.mean(mag[0,1,measure_idx]), np.mean(mag[0,2,measure_idx])])
+    gyr_mean = np.array([np.mean(gyr[0,0,measure_idx]), np.mean(gyr[0,1,measure_idx]), np.mean(gyr[0,2,measure_idx])])
     acc_fails = np.where(acc_std < acc_motion)[0]
     mag_fails = np.where(mag_std < mag_motion)[0]
     gyr_fails = np.where(gyr_std < gyr_motion)[0]
+
 
     # IMU motion test
     motion_flag = (len(acc_fails) == 0) and (len(mag_fails) == 0) and (len(gyr_fails) == 0)
