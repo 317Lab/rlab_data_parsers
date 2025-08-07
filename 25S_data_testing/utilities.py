@@ -4,6 +4,7 @@ Author: Sean Wallace
 Contact: sean.k.wallace.27@dartmouth.edu
 Date: May 2025
 """
+#TODO: use buffered time range for buffered data plot, see if fixes small variations in small y axis range
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import FormatStrFormatter
@@ -55,8 +56,11 @@ def check_buffers(swp_time, volts, imu_time, acc, mag, gyr, save=False, save_pat
     axs[0].set_ylabel("Volts (V)")
 
     # pip 1 plot 
+    print("plotting p1")
     axs[1].plot(time_slice, volts[0, 1, nonbuf_slice], label="not buffered")
+    print("plotting p1 buffered")
     axs[1].plot(time_slice, volts[1, 1, buf_slice], label="buffered")
+    print("making legend")
     axs[1].legend()
     axs[1].set_title(f"Sweep Data, Pip 1")
     axs[1].set_ylabel("Volts (V)")

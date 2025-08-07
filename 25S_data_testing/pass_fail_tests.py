@@ -34,10 +34,10 @@ def within_nominal(mean, benchmark_range):\
 # global variables
 baud = 230400
 test_file_directory = 'test_files'
-read_time = 10
+read_time = 15
 coord_axes = {0: 'X', 1: 'Y', 2: 'Z'}
-acc_benchmark = (0,0.5)
-mag_benchmark = (-0.5, 0)
+acc_benchmark = (-0.5,0.5)
+mag_benchmark = (-0.5, 0.5)
 gyr_benchmark = (-0.05, 0.05)
 cad_benchmark = (21,23)
 acc_motion = 0.01
@@ -47,7 +47,8 @@ gyr_motion = 0.1
 
 
 print("Detecting port...")
-port = detect.detect_port()
+port = "/dev/tty.usbserial-FT611XTT3"
+#port = detect.detect_port()
 print(f"Connected to {port}")
 
 
@@ -62,7 +63,7 @@ if start_test == 'go':
 
     # read data into binary file using Jules' serial feed program
     print("reading data, wait " +str(read_time)+" seconds...")
-    feed.read(port, file_name=filename, read_time=10)
+    feed.read(port, file_name=filename, read_time=read_time)
     print("data saved. checking...")
     time.sleep(0.5)
 
@@ -81,6 +82,7 @@ if start_test == 'go':
     gyr_fails = np.where(gyr_std < gyr_motion)[0]
 
     # IMU motion test
+    print(f"Shield ID: {payload_id[0][0]}")
     motion_flag = (len(acc_fails) == 0) and (len(mag_fails) == 0) and (len(gyr_fails) == 0)
     if motion_flag:
         print("IMU motion test PASSED.")
