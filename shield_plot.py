@@ -188,7 +188,7 @@ ax5.text(0.3*dim,-0.8, '$2\sigma_1$: {0:.1f} mV'.format(2*pip1_std), transform=a
 ax5.text(0.5*dim,-0.8, 'CAD: {0:.1f} ms'.format(imu_cad_avg), transform=ax5.transAxes)
 
 if buffered:
-    plot_data(ax0b,imu_time[1],acc[0],lw,lbl_imu,'',0)
+    plot_data(ax0b,imu_time[1],acc[1],lw,lbl_imu,'',0)
     ax0b.xaxis.tick_top()
     ax0b.xaxis.set_label_position('top')
     plot_data(ax1b,imu_time[1],mag[1],lw,'','',1)
