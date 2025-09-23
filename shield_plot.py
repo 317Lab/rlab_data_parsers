@@ -71,7 +71,8 @@ def parse_swp(byte_ids,is_buffer_data):
     id = int(is_buffer_data)
     for ind in byte_ids: # sweep indeces
         next_sentinel = bytes[ind+(num_swp_bytes+sentinel_size)*8:ind+(num_swp_bytes+2*sentinel_size)*8]
-        if next_sentinel in sentinels: # double sentinel match insures full message available
+        next_sentinel1 = bytes[ind+(num_imu_bytes+sentinel_size)*8-8:ind+(num_imu_bytes+2*sentinel_size)*8-8]
+        if next_sentinel in sentinels or next_sentinel1 in sentinels:
             swp_bytes = bytes[ind+sentinel_size*8:ind+(num_swp_bytes+sentinel_size)*8]
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]

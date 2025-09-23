@@ -93,7 +93,8 @@ def parse_imu(byte_ids,is_buffer_data):
     id = int(is_buffer_data)
     for ind in byte_ids: # imu indices
         next_sentinel = bytes[ind+(num_imu_bytes+sentinel_size)*8:ind+(num_imu_bytes+2*sentinel_size)*8]
-        if next_sentinel in sentinels:
+        next_sentinel1 = bytes[ind+(num_imu_bytes+sentinel_size)*8-8:ind+(num_imu_bytes+2*sentinel_size)*8-8]
+        if next_sentinel in sentinels or next_sentinel1 in sentinels:
             imu_bytes = bytes[ind+sentinel_size*8:ind+(num_imu_bytes+sentinel_size)*8]
             imu_time[id,pos] = imu_bytes[0:4*8].uintle*t_scale
             acc[id,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale
