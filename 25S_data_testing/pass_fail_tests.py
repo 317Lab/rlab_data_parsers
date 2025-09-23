@@ -47,7 +47,7 @@ gyr_motion = 0.1
 
 
 print("Detecting port...")
-port = "/dev/tty.usbserial-FT611XTT3"
+port = "/dev/ttyUSB3"
 #port = detect.detect_port()
 print(f"Connected to {port}")
 

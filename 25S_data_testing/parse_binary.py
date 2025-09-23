@@ -23,7 +23,8 @@ def parse_all(filename):
     ids_imu = list(bytes.findall(sentinels[1], bytealigned=False))
     ids_swp_buf = list(bytes.findall(sentinels[2], bytealigned=False)) if buffered else ids_swp
     ids_imu_buf = list(bytes.findall(sentinels[3], bytealigned=False)) if buffered else ids_imu
-
+    # print(ids_swp_buf[0:10])
+    # print(ids_imu_buf[0:10])
     num_dat_swp = max(len(ids_swp), len(ids_swp_buf)) * num_samples
     num_dat_imu = max(len(ids_imu), len(ids_imu_buf))
 
@@ -56,7 +57,8 @@ def parse_all(filename):
         pos = 0
         for ind in byte_ids:
             next_sentinel = bytes[ind+(num_imu_bytes+sentinel_size)*8:ind+(num_imu_bytes+2*sentinel_size)*8]
-            if next_sentinel in sentinels:
+            next_sentinel1 = bytes[ind+(num_imu_bytes+sentinel_size)*8-8:ind+(num_imu_bytes+2*sentinel_size)*8-8]
+            if next_sentinel in sentinels or next_sentinel1 in sentinels:
                 imu_bytes = bytes[ind+sentinel_size*8:ind+(num_imu_bytes+sentinel_size)*8]
                 imu_time[id,pos] = imu_bytes[0:4*8].uintle*t_scale
                 acc[id,0,pos] = imu_bytes[4*8:6*8].intle*a_scale

@@ -1,0 +1,112 @@
+
+20250617T182019Z_data_ttyUSB0_230400
+
+20250617T182730Z_data_ttyUSB0_230400
+
+20250625T194453Z_data_ttyUSB0_230400
+
+20250723T180643Z_data_ttyUSB0_230400
+
+20250723T180651Z_data_ttyUSB0_230400
+Traceback (most recent call last):
+  File "/home/sean-wallace/Documents/rlab_data_parsers/shield_feed.py", line 68, in <module>
+    bytes = ser.read(num_bytes_target)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/serial/serialposix.py", line 595, in read
+    raise SerialException(
+serial.serialutil.SerialException: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250724T164918Z_data_ttyUSB0_230400
+
+20250724T170458Z_data_ttyUSB0_230400
+
+20250724T170505Z_data_ttyUSB0_230400
+
+20250724T170511Z_data_ttyUSB0_230400
+
+20250724T170525Z_data_ttyUSB0_230400
+Traceback (most recent call last):
+  File "/home/sean-wallace/Documents/rlab_data_parsers/shield_feed.py", line 98, in <module>
+    payload_ids[i] = bytes_tmp[id+(2+4)*8:id+(2+5)*8].uintle
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/bitstring/dtypes.py", line 286, in allowed_length_checked_get_fn
+    return get_fn(bs)
+           ^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/bitstring/bits.py", line 714, in _getuintle
+    return bs.slice_to_uint()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/bitstring/bitstore.py", line 85, in slice_to_uint
+    return bitarray.util.ba2int(self.getslice(start, end)._bitarray, signed=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/bitarray/util.py", line 165, in ba2int
+    raise ValueError("non-empty bitarray expected")
+ValueError: non-empty bitarray expected
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250724T170608Z_data_ttyUSB0_230400
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250815T144100Z_data_ttyUSB3_230400
+
+20250815T144111Z_data_ttyUSB0_230400
+
+20250815T150430Z_data_ttyUSB3_230400
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250820T172914Z_data_ttyUSB3_230400
+
+20250820T173309Z_data_ttyUSB3_230400
+
+20250820T174313Z_data_ttyUSB3_230400
+Traceback (most recent call last):
+  File "/home/sean-wallace/Documents/rlab_data_parsers/shield_feed.py", line 98, in <module>
+    payload_ids[i] = bytes_tmp[id+(2+4)*8:id+(2+5)*8].uintle
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/bitstring/dtypes.py", line 286, in allowed_length_checked_get_fn
+    return get_fn(bs)
+           ^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/bitstring/bits.py", line 714, in _getuintle
+    return bs.slice_to_uint()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/bitstring/bitstore.py", line 85, in slice_to_uint
+    return bitarray.util.ba2int(self.getslice(start, end)._bitarray, signed=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/bitarray/util.py", line 165, in ba2int
+    raise ValueError("non-empty bitarray expected")
+ValueError: non-empty bitarray expected
+
+20250821T171659Z_data_ttyUSB3_230400
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250918T200400Z_data_10_230400
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250918T200604Z_data_10_230400
+Traceback (most recent call last):
+  File "/home/sean-wallace/Documents/rlab_data_parsers/shield_feed.py", line 68, in <module>
+    bytes = ser.read(num_bytes_target)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sean-wallace/Documents/rlab_data_parsers/.venv/lib/python3.12/site-packages/serial/serialposix.py", line 595, in read
+    raise SerialException(
+serial.serialutil.SerialException: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250918T200812Z_data_10_230400
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250918T201118Z_data_10_230400
+Exception ignored in: <_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'>
+BrokenPipeError: [Errno 32] Broken pipe
+
+20250918T201327Z_data_10_230400
+
+20250918T202441Z_data_10_230400
