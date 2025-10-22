@@ -11,6 +11,7 @@ import sys
 from bitstring import BitArray
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import SpanSelector
 
 # user settings
 buffered = True # whether to plot RAM buffered data
@@ -19,10 +20,12 @@ index_plot = False # plot against index instead of time
 scatter_plot = True # whether to do a scatter or line plot
 freq = 45 # approximate message frequency in Hz
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
+filename = sys.argv[1]
 
 # initialize figure + axes
 if buffered: # buffered data shown on second column of plots
     fig, axs = plt.subplots(6, 2, figsize=(8,6), sharex=lock_axes)
+    fig.suptitle(filename,fontsize=14)
     ax0 = axs[0,0]; ax1 = axs[1,0]; ax2 = axs[2,0]
     ax3 = axs[3,0]; ax4 = axs[4,0]; ax5 = axs[5,0]
     ax0b = axs[0,1]; ax1b = axs[1,1]; ax2b = axs[2,1]
@@ -196,4 +199,22 @@ if buffered:
     plot_data(ax3b,imu_time[1,:-2],imu_cad[0,:-2],lw,'','',1)
     plot_data(ax4b,swp_time[1],volts[1,0],lw/2,'','',1)
     plot_data(ax5b,swp_time[1],volts[1,1],lw/2,lbl_swp,'',0)
+
+def onselect(xmin,xmax):
+    for tt in ax5.texts:
+        tt.remove()
+    indmin,indmax = np.searchsorted(swp_time[0], (xmin,xmax))
+    indmax = min(len(swp_time[0])-1,indmax)
+    thisx = (swp_time[0])[indmin:indmax]
+    thisy = (volts[0,0])[indmin:indmax]
+    this_std0 = np.nanstd(volts[0,0,indmin:indmax])*1e3
+    this_std1 = np.nanstd(volts[0,1,indmin:indmax])*1e3
+    ax5.text(0.0*dim,-0.8, 'ID: ' + str(payload_id[0,0]), transform=ax5.transAxes)
+    ax5.text(0.1*dim,-0.8, '$2\sigma_0$: {0:.1f} mv'.format(2*this_std0), transform=ax5.transAxes)
+    ax5.text(0.3*dim,-0.8, '$2\sigma_1$: {0:.1f} mv'.format(2*this_std1), transform=ax5.transAxes)
+    ax5.text(0.5*dim,-0.8, '$CAD: {0:.1f} ms'.format(imu_cad_avg), transform=ax5.transAxes)
+    fig.canvas.draw_idle()
+ 
+span = SpanSelector(ax5,onselect,'horizontal',useblit=True)
+
 plt.show()
