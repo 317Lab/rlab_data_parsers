@@ -5,6 +5,7 @@ def parse_all(filename):
     buffered = True
     freq = 45
     dim = 2 if buffered else 1
+    max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
 
     # constants...
     t_scale = 1.e-6; a_scale = 4./2**15; m_scale = 1./2**15
@@ -77,5 +78,11 @@ def parse_all(filename):
     if buffered:
         parse_swp(ids_swp_buf, 1)
         parse_imu(ids_imu_buf, 1)
+    inv_ids_swp = (swp_time==0) | (swp_time>max_time)
+    inv_ids_imu = (imu_time==0) | (imu_time>max_time)
+    swp_time[inv_ids_swp] = np.nan
+    imu_time[inv_ids_imu] = np.nan
+
+
 
     return swp_time, payload_id, volts, imu_time, acc, mag, gyr
