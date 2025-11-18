@@ -20,15 +20,17 @@ from datetime import datetime
 from bitstring import BitArray
 import numpy as np
 import io
+import platform
 
 # user settings
 baud = 230400 # baud rate
 initial_timeout = 120 # seconds before initial serial timeout, allows user to start recording and wait for shield power on
 runtime_timeout = 10 # seconds before timeout after initial capture
-num_bytes_target = 2048 # number of feed bytes, should be much less than parser reads
+num_bytes_target = 296 # number of feed bytes, should be much less than parser reads
 io.DEFAULT_BUFFER_SIZE = 16_777_216 # 16 MB, might be overkill TBD
 
 # opening data port/file
+operating_system = platform.system()
 suffix = ''
 payload_id = 0
 bytes_tmp = BitArray()
@@ -46,8 +48,14 @@ try:
 except:
     print('Serial port not found.')
     exit()
+if "pts" in port:
+    file_name = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + os.path.basename(port) + '_' + str(baud) + suffix + '.bin'
+elif operating_system == 'Darwin' or operating_system == 'Windows':
+        file_name = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
+elif operating_system == 'Linux':
+    port_basename = os.path.basename(port)  # safely gets port
+    file_name = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port_basename + '_' + str(baud) + suffix + '.bin'
 
-file_name = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ") + '_data_' + port.split('.')[-1] + '_' + str(baud) + suffix + '.bin'
 if not monitoring_only:
     file = open(file_name,'ab')
 

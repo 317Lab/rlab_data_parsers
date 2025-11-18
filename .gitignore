@@ -1,1 +1,8 @@
 .*
+__pycache__
+*.log
+calibration/*.bin
+*swarm_deploy*
+*_MAG_CAL_*
+calibration/*.npz
+*.zip
