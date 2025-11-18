@@ -4,3 +4,5 @@ __pycache__
 calibration/*.bin
 *swarm_deploy*
 *_MAG_CAL_*
+calibration/*.npz
+*.zip

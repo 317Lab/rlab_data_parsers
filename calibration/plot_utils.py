@@ -30,17 +30,18 @@ def plot_data(ax,x,y,lw,xlabel,ylabel,xticks_off, fs, legend = False, plot_mag =
         else:
             ax.plot(x,y,linewidth=lw)
     else:
+        if plot_mag:
+            mag = np.sqrt(y[0]**2+y[1]**2+y[2]**2)
+            if scatter_plot:
+                ax.scatter(x,mag,s=lw*4,label=r"$\|\cdot\|$", color="black")
+            else:
+                ax.plot(x,mag,linewidth=lw*4, label=r"$\|\cdot\|$", color="black")
+
         for i, yy in enumerate(y):
             if scatter_plot:
                 ax.scatter(x,yy,s=lw, label=ax_labels[i])
             else:
                 ax.plot(x,yy,linewidth=lw, label=ax_labels[i])
-        if plot_mag:
-            mag = np.sqrt(y[0]**2+y[1]**2+y[2]**2)
-            if scatter_plot:
-                ax.scatter(x,mag,s=lw*4,label=r"$\|\cdot\|$")
-            else:
-                ax.plot(x,mag,linewidth=lw*4, label=r"$\|\cdot\|$")
         if legend:
             ax.legend()
 

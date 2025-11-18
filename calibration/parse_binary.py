@@ -62,12 +62,12 @@ def parse_all(filename):
             if next_sentinel in sentinels or next_sentinel1 in sentinels:
                 imu_bytes = bytes[ind+sentinel_size*8:ind+(num_imu_bytes+sentinel_size)*8]
                 imu_time[id,pos] = imu_bytes[0:4*8].uintle*t_scale
-                mag[id,0,pos] = imu_bytes[4*8:6*8].intle*a_scale
-                mag[id,1,pos] = imu_bytes[6*8:8*8].intle*a_scale
-                mag[id,2,pos] = imu_bytes[8*8:10*8].intle*a_scale
-                acc[id,0,pos] = imu_bytes[10*8:12*8].intle*m_scale
-                acc[id,1,pos] = imu_bytes[12*8:14*8].intle*m_scale
-                acc[id,2,pos] = imu_bytes[14*8:16*8].intle*m_scale
+                mag[id,0,pos] = imu_bytes[4*8:6*8].intle*m_scale
+                mag[id,1,pos] = imu_bytes[6*8:8*8].intle*m_scale
+                mag[id,2,pos] = imu_bytes[8*8:10*8].intle*m_scale
+                acc[id,0,pos] = imu_bytes[10*8:12*8].intle*a_scale
+                acc[id,1,pos] = imu_bytes[12*8:14*8].intle*a_scale
+                acc[id,2,pos] = imu_bytes[14*8:16*8].intle*a_scale
                 gyr[id,0,pos] = imu_bytes[16*8:18*8].intle*g_scale
                 gyr[id,1,pos] = imu_bytes[18*8:20*8].intle*g_scale
                 gyr[id,2,pos] = imu_bytes[20*8:22*8].intle*g_scale
