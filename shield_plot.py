@@ -11,6 +11,14 @@ import sys
 from bitstring import BitArray
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.widgets import SpanSelector
+import argparse
+
+parser = argparse.ArgumentParser(description="317 Lab PIP Plots.")
+parser.add_argument("--expand", type=bool, default=0, help="Set to 1 for expanded plot axes")
+
+args = parser.parse_args()
+is_expanded = args.expand
 
 # user settings
 buffered = True # whether to plot RAM buffered data
@@ -19,10 +27,12 @@ index_plot = False # plot against index instead of time
 scatter_plot = True # whether to do a scatter or line plot
 freq = 45 # approximate message frequency in Hz
 max_time = 10*50*60 # sweep time word errors have t > 3000 s which are removed. MIGHT BE FIXED TBD
+filename = sys.argv[1]
 
 # initialize figure + axes
 if buffered: # buffered data shown on second column of plots
     fig, axs = plt.subplots(6, 2, figsize=(8,6), sharex=lock_axes)
+    fig.suptitle(filename,fontsize=14)
     ax0 = axs[0,0]; ax1 = axs[1,0]; ax2 = axs[2,0]
     ax3 = axs[3,0]; ax4 = axs[4,0]; ax5 = axs[5,0]
     ax0b = axs[0,1]; ax1b = axs[1,1]; ax2b = axs[2,1]
@@ -71,7 +81,8 @@ def parse_swp(byte_ids,is_buffer_data):
     id = int(is_buffer_data)
     for ind in byte_ids: # sweep indeces
         next_sentinel = bytes[ind+(num_swp_bytes+sentinel_size)*8:ind+(num_swp_bytes+2*sentinel_size)*8]
-        if next_sentinel in sentinels: # double sentinel match insures full message available
+        next_sentinel1 = bytes[ind+(num_imu_bytes+sentinel_size)*8-8:ind+(num_imu_bytes+2*sentinel_size)*8-8]
+        if next_sentinel in sentinels or next_sentinel1 in sentinels:
             swp_bytes = bytes[ind+sentinel_size*8:ind+(num_swp_bytes+sentinel_size)*8]
             pip0_bytes = swp_bytes[5*8:(5+2*num_samples)*8]
             pip1_bytes = swp_bytes[(5+2*num_samples)*8:]
@@ -92,12 +103,12 @@ def parse_imu(byte_ids,is_buffer_data):
         if next_sentinel in sentinels:
             imu_bytes = bytes[ind+sentinel_size*8:ind+(num_imu_bytes+sentinel_size)*8]
             imu_time[id,pos] = imu_bytes[0:4*8].uintle*t_scale
-            acc[id,0,pos] = imu_bytes[4  *8:6  *8].intle*a_scale
-            acc[id,1,pos] = imu_bytes[6  *8:8  *8].intle*a_scale
-            acc[id,2,pos] = imu_bytes[8  *8:10 *8].intle*a_scale
-            mag[id,0,pos] = imu_bytes[10 *8:12 *8].intle*m_scale
-            mag[id,1,pos] = imu_bytes[12 *8:14 *8].intle*m_scale
-            mag[id,2,pos] = imu_bytes[14 *8:16 *8].intle*m_scale
+            mag[id,0,pos] = imu_bytes[4  *8:6  *8].intle*m_scale
+            mag[id,1,pos] = imu_bytes[6  *8:8  *8].intle*m_scale
+            mag[id,2,pos] = imu_bytes[8  *8:10 *8].intle*m_scale
+            acc[id,0,pos] = imu_bytes[10 *8:12 *8].intle*a_scale
+            acc[id,1,pos] = imu_bytes[12 *8:14 *8].intle*a_scale
+            acc[id,2,pos] = imu_bytes[14 *8:16 *8].intle*a_scale
             gyr[id,0,pos] = imu_bytes[16 *8:18 *8].intle*g_scale
             gyr[id,1,pos] = imu_bytes[18 *8:20 *8].intle*g_scale
             gyr[id,2,pos] = imu_bytes[20 *8:22 *8].intle*g_scale
@@ -147,10 +158,16 @@ swp_time[inv_ids_swp] = np.nan
 imu_time[inv_ids_imu] = np.nan
 
 # plot
+ax_labels = {0:'x',1:'y',2:'z'}
 def plot_data(ax,x,y,lw,xlabel,ylabel,xticks_off):
-    ylim0 = np.nanquantile(y.flatten(),0.1)
-    ylim1 = np.nanquantile(y.flatten(),0.9)
-    ylim_offset = 2*(ylim1-ylim0)
+    if is_expanded:
+        ylim0 = np.min(y.flatten())
+        ylim1 = np.max(y.flatten())
+        ylim_offset = 0.1*(ylim1-ylim0)
+    else:
+        ylim0 = np.nanquantile(y.flatten(),0.1)
+        ylim1 = np.nanquantile(y.flatten(),0.9)
+        ylim_offset = 2*(ylim1-ylim0)
     # ylim_avg = np.nanmedian(y.flatten())
     # ylim_rng = 0.5*np.nanstd(y.flatten())
     ax.clear()
@@ -160,11 +177,12 @@ def plot_data(ax,x,y,lw,xlabel,ylabel,xticks_off):
         else:
             ax.plot(x,y,linewidth=lw)
     else:
-        for yy in y:
+        for i, yy in enumerate(y):
             if scatter_plot:
-                ax.scatter(x,yy,s=lw)
+                ax.scatter(x,yy,s=lw,label = ax_labels[i])
             else:
                 ax.plot(x,yy,linewidth=lw)
+        ax.legend()
     ax.set_xlabel(xlabel,fontsize=fs)
     ax.set_ylabel(ylabel,fontsize=fs)
     ax.grid()
@@ -187,7 +205,7 @@ ax5.text(0.3*dim,-0.8, '$2\sigma_1$: {0:.1f} mV'.format(2*pip1_std), transform=a
 ax5.text(0.5*dim,-0.8, 'CAD: {0:.1f} ms'.format(imu_cad_avg), transform=ax5.transAxes)
 
 if buffered:
-    plot_data(ax0b,imu_time[1],acc[0],lw,lbl_imu,'',0)
+    plot_data(ax0b,imu_time[1],acc[1],lw,lbl_imu,'',0)
     ax0b.xaxis.tick_top()
     ax0b.xaxis.set_label_position('top')
     plot_data(ax1b,imu_time[1],mag[1],lw,'','',1)
@@ -195,4 +213,22 @@ if buffered:
     plot_data(ax3b,imu_time[1,:-2],imu_cad[0,:-2],lw,'','',1)
     plot_data(ax4b,swp_time[1],volts[1,0],lw/2,'','',1)
     plot_data(ax5b,swp_time[1],volts[1,1],lw/2,lbl_swp,'',0)
+
+def onselect(xmin,xmax):
+    for tt in ax5.texts:
+        tt.remove()
+    indmin,indmax = np.searchsorted(swp_time[0], (xmin,xmax))
+    indmax = min(len(swp_time[0])-1,indmax)
+    thisx = (swp_time[0])[indmin:indmax]
+    thisy = (volts[0,0])[indmin:indmax]
+    this_std0 = np.nanstd(volts[0,0,indmin:indmax])*1e3
+    this_std1 = np.nanstd(volts[0,1,indmin:indmax])*1e3
+    ax5.text(0.0*dim,-0.8, 'ID: ' + str(payload_id[0,0]), transform=ax5.transAxes)
+    ax5.text(0.1*dim,-0.8, '$2\sigma_0$: {0:.1f} mv'.format(2*this_std0), transform=ax5.transAxes)
+    ax5.text(0.3*dim,-0.8, '$2\sigma_1$: {0:.1f} mv'.format(2*this_std1), transform=ax5.transAxes)
+    ax5.text(0.5*dim,-0.8, '$CAD: {0:.1f} ms'.format(imu_cad_avg), transform=ax5.transAxes)
+    fig.canvas.draw_idle()
+ 
+span = SpanSelector(ax5,onselect,'horizontal',useblit=True)
+
 plt.show()
